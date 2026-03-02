@@ -1,9 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/service-center/center-register-page';
+import 'package:gear_up/service-center/service_center_form_page.dart';
+
 import '../admin/admin_register.dart';
 import '../admin/admin_dashboard.dart';
+
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,7 +28,6 @@ class _LoginPageState extends State<LoginPage> {
         isLoading = true;
       });
 
-      // Step 1: Sign in with Firebase Auth
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
             email: emailController.text.trim(),
@@ -33,17 +36,13 @@ class _LoginPageState extends State<LoginPage> {
 
       String uid = userCredential.user!.uid;
 
-      // Step 2: Get user data from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
           .get();
 
       if (!userDoc.exists) {
-        setState(() {
-          isLoading = false;
-        });
-
+        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("User account data not found.")),
         );
@@ -52,14 +51,12 @@ class _LoginPageState extends State<LoginPage> {
 
       String role = userDoc['role'] ?? "";
       bool isApproved = userDoc['isApproved'] ?? false;
+      bool profileCompleted = userDoc['profileCompleted'] ?? false;
 
-      // Step 3: Role-based logic
+      // ---------------- ADMIN ----------------
       if (role == "admin") {
         if (!isApproved) {
-          setState(() {
-            isLoading = false;
-          });
-
+          setState(() => isLoading = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Admin account is waiting for approval."),
@@ -68,29 +65,48 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
-        setState(() {
-          isLoading = false;
-        });
+        setState(() => isLoading = false);
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const AdminDashboard()),
         );
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Access denied. Invalid role.")),
-        );
       }
-    }
-    // Step 4: Handle Firebase errors cleanly
-    on FirebaseAuthException catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      // ---------------- SERVICE CENTER ----------------
+      else if (role == "service_center") {
+        if (!profileCompleted) {
+          setState(() => isLoading = false);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ServiceCenterFormPage()),
+          );
+          return;
+        }
+
+        if (!isApproved) {
+          setState(() => isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Waiting for admin approval.")),
+          );
+          return;
+        }
+
+        setState(() => isLoading = false);
+
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(
+        //       builder: (_) => const ServiceCenterDashboard()),
+        // );
+      } else {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Invalid user role.")));
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() => isLoading = false);
 
       String errorMessage = "Login failed. Please try again.";
 
@@ -110,9 +126,7 @@ class _LoginPageState extends State<LoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
 
       ScaffoldMessenger.of(
         context,
