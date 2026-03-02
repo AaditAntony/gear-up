@@ -23,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
         isLoading = true;
       });
 
+      // Step 1: Sign in with Firebase Auth
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
             email: emailController.text.trim(),
@@ -31,49 +32,91 @@ class _LoginPageState extends State<LoginPage> {
 
       String uid = userCredential.user!.uid;
 
+      // Step 2: Get user data from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
           .get();
 
       if (!userDoc.exists) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("User data not found.")));
+        setState(() {
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("User account data not found.")),
+        );
         return;
       }
 
-      String role = userDoc['role'];
+      String role = userDoc['role'] ?? "";
       bool isApproved = userDoc['isApproved'] ?? false;
 
+      // Step 3: Role-based logic
       if (role == "admin") {
         if (!isApproved) {
+          setState(() {
+            isLoading = false;
+          });
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("Admin account waiting for approval."),
+              content: Text("Admin account is waiting for approval."),
             ),
           );
           return;
         }
+
+        setState(() {
+          isLoading = false;
+        });
 
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const AdminDashboard()),
         );
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Invalid role.")));
+        setState(() {
+          isLoading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Access denied. Invalid role.")),
+        );
       }
-    } on FirebaseAuthException catch (e) {
+    }
+    // Step 4: Handle Firebase errors cleanly
+    on FirebaseAuthException catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      String errorMessage = "Login failed. Please try again.";
+
+      if (e.code == 'user-not-found') {
+        errorMessage = "No account found with this email.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "Incorrect password.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Invalid email format.";
+      } else if (e.code == 'user-disabled') {
+        errorMessage = "This account has been disabled.";
+      } else if (e.code == 'too-many-requests') {
+        errorMessage = "Too many login attempts. Try again later.";
+      }
+
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? "Login Failed")));
-    }
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
 
-    setState(() {
-      isLoading = false;
-    });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
+    }
   }
 
   @override

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/admin/admin_login_page.dart';
 
-
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
 
@@ -25,8 +24,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> checkAdminType() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    DocumentSnapshot userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
 
     setState(() {
       isSuperAdmin = userDoc['isSuperAdmin'] ?? false;
@@ -45,42 +46,52 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Widget getSelectedPage() {
     if (selectedIndex == 0) {
-      return const Center(child: Text("Admin Dashboard Home"));
+      return const Center(
+        child: Text("Admin Dashboard Home", style: TextStyle(fontSize: 20)),
+      );
     } else if (selectedIndex == 1) {
-      return const Center(child: Text("Service Categories Section"));
+      return const Center(
+        child: Text(
+          "Service Categories Section",
+          style: TextStyle(fontSize: 20),
+        ),
+      );
     } else if (selectedIndex == 2) {
-      return const Center(child: Text("View All Bookings Section"));
+      return const Center(
+        child: Text(
+          "View All Bookings Section",
+          style: TextStyle(fontSize: 20),
+        ),
+      );
     } else if (selectedIndex == 3 && isSuperAdmin) {
-      return const Center(child: Text("Approve Admins Section"));
+      return const ApproveAdminsPage();
     }
+
     return const Center(child: Text("Section"));
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       body: Row(
         children: [
-
           // Sidebar
           Container(
             width: 250,
             color: Colors.grey.shade200,
             child: Column(
               children: [
-
                 const SizedBox(height: 40),
+
                 const Text(
                   "Admin Panel",
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
+
                 const SizedBox(height: 30),
 
                 ListTile(
@@ -122,10 +133,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                 const Spacer(),
 
-                ListTile(
-                  title: const Text("Logout"),
-                  onTap: logout,
-                ),
+                ListTile(title: const Text("Logout"), onTap: logout),
 
                 const SizedBox(height: 20),
               ],
@@ -141,6 +149,67 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class ApproveAdminsPage extends StatefulWidget {
+  const ApproveAdminsPage({super.key});
+
+  @override
+  State<ApproveAdminsPage> createState() => _ApproveAdminsPageState();
+}
+
+class _ApproveAdminsPageState extends State<ApproveAdminsPage> {
+  Future<void> approveAdmin(String uid) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'isApproved': true,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Admin approved successfully.")),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .where('role', isEqualTo: 'admin')
+          .where('isApproved', isEqualTo: false)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text("No pending admin approvals."));
+        }
+
+        var admins = snapshot.data!.docs;
+
+        return ListView.builder(
+          itemCount: admins.length,
+          itemBuilder: (context, index) {
+            var admin = admins[index];
+            String uid = admin.id;
+
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: ListTile(
+                title: Text(admin['name'] ?? ''),
+                subtitle: Text(admin['email'] ?? ''),
+                trailing: ElevatedButton(
+                  onPressed: () => approveAdmin(uid),
+                  child: const Text("Approve"),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -14,18 +14,29 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   bool isLoading = false;
 
   final String superAdminEmail = "superadmin@gearup.com";
 
   Future<void> registerAdmin() async {
+    if (nameController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty ||
+        confirmPasswordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields.")));
+      return;
+    }
+
     if (passwordController.text.trim() !=
         confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Passwords do not match.")));
       return;
     }
 
@@ -34,12 +45,11 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
         isLoading = true;
       });
 
-      // Create user in Firebase Auth
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       String uid = userCredential.user!.uid;
 
@@ -48,7 +58,6 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
 
       bool isApproved = isSuperAdmin ? true : false;
 
-      // Store in Firestore
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'name': nameController.text.trim(),
         'email': emailController.text.trim(),
@@ -56,6 +65,10 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
         'isApproved': isApproved,
         'isSuperAdmin': isSuperAdmin,
         'createdAt': Timestamp.now(),
+      });
+
+      setState(() {
+        isLoading = false;
       });
 
       if (isApproved) {
@@ -66,19 +79,38 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text("Registration successful. Waiting for approval.")),
+            content: Text("Registration successful. Waiting for approval."),
+          ),
         );
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? "Registration Failed")),
-      );
-    }
+      setState(() {
+        isLoading = false;
+      });
 
-    setState(() {
-      isLoading = false;
-    });
+      String errorMessage = "Registration failed.";
+
+      if (e.code == 'email-already-in-use') {
+        errorMessage = "This email is already registered.";
+      } else if (e.code == 'weak-password') {
+        errorMessage = "Password must be at least 6 characters.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Invalid email format.";
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
+    }
   }
 
   @override
@@ -95,7 +127,6 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               const Text(
                 "Admin Registration",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -163,7 +194,7 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
                   Navigator.pop(context);
                 },
                 child: const Text("Back to Login"),
-              )
+              ),
             ],
           ),
         ),
