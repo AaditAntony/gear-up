@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:gear_up/admin/admin_login_page.dart';
+import 'package:gear_up/auth/login_page.dart';
 import 'package:gear_up/firebase_options.dart';
 
 void main() async {
