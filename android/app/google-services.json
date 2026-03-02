@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "374121484664",
+    "project_id": "gear-up-b140f",
+    "storage_bucket": "gear-up-b140f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374121484664:android:a7be106294cfc6cc9eb88d",
+        "android_client_info": {
+          "package_name": "com.example.gear_up"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiNJ-Upn_sqNSrlWEiqwLqZpKbUaYNNoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
