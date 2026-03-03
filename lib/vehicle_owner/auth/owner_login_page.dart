@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/vehicle_owner/pages/complete_profile_page.dart';
+import 'package:gear_up/vehicle_owner/pages/owner_dashboard.dart';
 import 'owner_register_page.dart';
 
 class OwnerLoginPage extends StatefulWidget {
@@ -56,19 +58,19 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
       setState(() => isLoading = false);
 
       if (!profileCompleted) {
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (_) =>
-        //           const CompleteProfilePage()),
-        // );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (_) =>
+                  const CompleteProfilePage()),
+        );
       } else {
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (_) =>
-        //           const OwnerDashboard()),
-        // );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (_) =>
+                  const OwnerDashboard()),
+        );
       }
     } on FirebaseAuthException catch (e) {
       setState(() => isLoading = false);
