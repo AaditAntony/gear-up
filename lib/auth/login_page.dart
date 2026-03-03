@@ -21,135 +21,151 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
 
   Future<void> loginUser() async {
-  try {
-    setState(() {
-      isLoading = true;
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-    // Step 1: Sign in
-    UserCredential userCredential =
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: emailController.text.trim(),
-      password: passwordController.text.trim(),
-    );
+      // Step 1: Sign in
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
-    String uid = userCredential.user!.uid;
+      String uid = userCredential.user!.uid;
 
-    // Step 2: Get Firestore user document
-    DocumentSnapshot userDoc =
-        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      // Step 2: Get Firestore user document
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
 
-    if (!userDoc.exists) {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User account data not found.")),
-      );
-      return;
-    }
-
-    Map<String, dynamic> data =
-        userDoc.data() as Map<String, dynamic>;
-
-    String role = data['role'] ?? "";
-    bool isApproved = data['isApproved'] ?? false;
-
-    // ---------------- ADMIN ----------------
-    if (role == "admin") {
-
-      if (!isApproved) {
+      if (!userDoc.exists) {
         setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Admin account is waiting for approval.")),
+          const SnackBar(content: Text("User account data not found.")),
         );
         return;
       }
 
-      setState(() => isLoading = false);
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminDashboard()),
-      );
-    }
+      String role = data['role'] ?? "";
+      bool isApproved = data['isApproved'] ?? false;
 
-    // ---------------- SERVICE CENTER ----------------
-    else if (role == "service_center") {
+      // ---------------- ADMIN ----------------
+      if (role == "admin") {
+        if (!isApproved) {
+          setState(() => isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Admin account is waiting for approval."),
+            ),
+          );
+          return;
+        }
 
-      bool profileCompleted =
-          data.containsKey('profileCompleted')
-              ? data['profileCompleted']
-              : false;
-
-      if (!profileCompleted) {
         setState(() => isLoading = false);
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-              builder: (_) => const ServiceCenterFormPage()),
+          MaterialPageRoute(builder: (_) => const AdminDashboard()),
         );
-        return;
       }
+      // ---------------- SERVICE CENTER ----------------
+      else if (role == "service_center") {
+        bool profileCompleted = data.containsKey('profileCompleted')
+            ? data['profileCompleted']
+            : false;
 
-      if (!isApproved) {
+        if (!profileCompleted) {
+          setState(() => isLoading = false);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ServiceCenterFormPage()),
+          );
+          return;
+        }
+
+        // Get service center details document
+        DocumentSnapshot detailsDoc = await FirebaseFirestore.instance
+            .collection('service_center_details')
+            .doc(uid)
+            .get();
+
+        if (!detailsDoc.exists) {
+          setState(() => isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Profile details not found.")),
+          );
+          return;
+        }
+
+        String status = detailsDoc['status'] ?? "pending";
+
+        if (status == "rejected") {
+          setState(() => isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Your application was rejected by admin."),
+            ),
+          );
+          return;
+        }
+
+        if (!isApproved) {
+          setState(() => isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Waiting for admin approval.")),
+          );
+          return;
+        }
+
         setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Waiting for admin approval.")),
-        );
-        return;
+
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(
+        //       builder: (_) => const ServiceCenterDashboard()),
+        // );
+      } else {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Invalid user role.")));
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() => isLoading = false);
+
+      String errorMessage = "Login failed. Please try again.";
+
+      if (e.code == 'user-not-found') {
+        errorMessage = "No account found with this email.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "Incorrect password.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Invalid email format.";
+      } else if (e.code == 'user-disabled') {
+        errorMessage = "This account has been disabled.";
+      } else if (e.code == 'too-many-requests') {
+        errorMessage = "Too many login attempts. Try again later.";
       }
 
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    } catch (e) {
       setState(() => isLoading = false);
 
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(
-      //       builder: (_) => const ServiceCenterDashboard()),
-      // );
+      print("LOGIN ERROR: $e");
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
     }
-
-    else {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid user role.")),
-      );
-    }
-
-  } on FirebaseAuthException catch (e) {
-
-    setState(() => isLoading = false);
-
-    String errorMessage = "Login failed. Please try again.";
-
-    if (e.code == 'user-not-found') {
-      errorMessage = "No account found with this email.";
-    } else if (e.code == 'wrong-password') {
-      errorMessage = "Incorrect password.";
-    } else if (e.code == 'invalid-email') {
-      errorMessage = "Invalid email format.";
-    } else if (e.code == 'user-disabled') {
-      errorMessage = "This account has been disabled.";
-    } else if (e.code == 'too-many-requests') {
-      errorMessage = "Too many login attempts. Try again later.";
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(errorMessage)),
-    );
-
-  } catch (e) {
-
-    setState(() => isLoading = false);
-
-    print("LOGIN ERROR: $e");
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Something went wrong.")),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
