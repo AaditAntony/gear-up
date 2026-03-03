@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:gear_up/admin/pages/approve_admin_pages.dart';
+import 'package:gear_up/admin/pages/approve_admins_pages.dart';
 
 import 'widgets/admin_sidebar.dart';
-import 'pages/admin_home_page.dart';
 import 'pages/approve_service_centers_page.dart';
 
 class AdminDashboard extends StatefulWidget {
