@@ -21,28 +21,49 @@ class AdminSidebar extends StatelessWidget {
       color: Colors.grey.shade200,
       child: Column(
         children: [
-
           const SizedBox(height: 40),
+
           const Text(
             "Admin Panel",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 30),
 
+          // 0
           ListTile(
+            selected: selectedIndex == 0,
             title: const Text("Dashboard"),
             onTap: () => onItemSelected(0),
           ),
 
+          // 1 (Only Super Admin)
           if (isSuperAdmin)
             ListTile(
+              selected: selectedIndex == 1,
               title: const Text("Approve Admins"),
               onTap: () => onItemSelected(1),
             ),
 
+          // 2
           ListTile(
+            selected: selectedIndex == 2,
             title: const Text("Approve Service Centers"),
             onTap: () => onItemSelected(2),
+          ),
+
+          // 3
+          ListTile(
+            selected: selectedIndex == 3,
+            title: const Text("Service Categories"),
+            onTap: () => onItemSelected(3),
+          ),
+
+          // 4
+          ListTile(
+            selected: selectedIndex == 4,
+            title: const Text("View Bookings"),
+            onTap: () => onItemSelected(4),
           ),
 
           const Spacer(),
