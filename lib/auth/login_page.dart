@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/service-center/pages/rejected_page.dart';
 import 'package:gear_up/service-center/pages/verification_pending_page.dart';
 import 'package:gear_up/service-center/service_center_form_page.dart';
 
