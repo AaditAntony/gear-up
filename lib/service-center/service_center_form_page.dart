@@ -35,6 +35,7 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
 
     Uint8List bytes = await pickedFile.readAsBytes();
 
+    // 300 KB validation
     if (bytes.length > 300 * 1024) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Image must be under 300 KB")),
@@ -69,40 +70,52 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-    String uid = FirebaseAuth.instance.currentUser!.uid;
+      String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    await FirebaseFirestore.instance
-        .collection('service_center_details')
-        .doc(uid)
-        .set({
-          'phone': phoneController.text.trim(),
-          'location': locationController.text.trim(),
-          'description': descriptionController.text.trim(),
-          'image1': image1Base64,
-          'image2': image2Base64,
-          'status': 'pending',
-          'createdAt': Timestamp.now(),
-        });
+      // Create service center details document
+      await FirebaseFirestore.instance
+          .collection('service_center_details')
+          .doc(uid)
+          .set({
+            'phone': phoneController.text.trim(),
+            'location': locationController.text.trim(),
+            'description': descriptionController.text.trim(),
+            'image1': image1Base64,
+            'image2': image2Base64,
+            'status': 'pending',
+            'createdAt': Timestamp.now(),
+          });
 
-    await FirebaseFirestore.instance.collection('users').doc(uid).update({
-      'profileCompleted': true,
-    });
+      // Update users collection
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'profileCompleted': true,
+      });
 
-    setState(() {
-      isLoading = false;
-    });
+      setState(() {
+        isLoading = false;
+      });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Details submitted. Waiting for admin approval."),
-      ),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile submitted successfully.")),
+      );
 
-    Navigator.pop(context);
+      Navigator.pop(context);
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      print("FORM ERROR: $e");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Submission failed. Try again.")),
+      );
+    }
   }
 
   @override
