@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/service-center/pages/verification_pending_page.dart';
 import 'package:gear_up/service-center/service_center_form_page.dart';
 
 import '../admin/admin_register.dart';
@@ -89,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
-        // Get service center details document
+        // Fetch details document ONCE
         DocumentSnapshot detailsDoc = await FirebaseFirestore.instance
             .collection('service_center_details')
             .doc(uid)
@@ -105,31 +106,39 @@ class _LoginPageState extends State<LoginPage> {
 
         String status = detailsDoc['status'] ?? "pending";
 
-        if (status == "rejected") {
-          setState(() => isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Your application was rejected by admin."),
-            ),
-          );
-          return;
-        }
-
-        if (!isApproved) {
-          setState(() => isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Waiting for admin approval.")),
-          );
-          return;
-        }
-
         setState(() => isLoading = false);
 
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (_) => const ServiceCenterDashboard()),
-        // );
+        if (status == "pending") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const VerificationPendingPage()),
+          );
+          return;
+        }
+
+        if (status == "approved") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ServiceCenterDashboard()),
+          );
+          return;
+        }
+
+        if (status == "rejected") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const RejectedPage()),
+          );
+          return;
+        }
+
+        if (status == "blocked") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const BlockedPage()),
+          );
+          return;
+        }
       } else {
         setState(() => isLoading = false);
         ScaffoldMessenger.of(
