@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -65,8 +67,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
       );
     } else if (selectedIndex == 3 && isSuperAdmin) {
       return const ApproveAdminsPage();
+    } else if (selectedIndex == 4) {
+      return const ApproveServiceCentersPage();
     }
-
     return const Center(child: Text("Section"));
   }
 
@@ -130,7 +133,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       });
                     },
                   ),
-
+                ListTile(
+                  title: const Text("Approve Service Centers"),
+                  onTap: () {
+                    setState(() {
+                      selectedIndex = 4;
+                    });
+                  },
+                ),
                 const Spacer(),
 
                 ListTile(title: const Text("Logout"), onTap: logout),
@@ -204,6 +214,134 @@ class _ApproveAdminsPageState extends State<ApproveAdminsPage> {
                 trailing: ElevatedButton(
                   onPressed: () => approveAdmin(uid),
                   child: const Text("Approve"),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class ApproveServiceCentersPage extends StatelessWidget {
+  const ApproveServiceCentersPage({super.key});
+
+  Future<void> approveCenter(String uid) async {
+    await FirebaseFirestore.instance
+        .collection('service_center_details')
+        .doc(uid)
+        .update({'status': 'approved'});
+
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'isApproved': true,
+    });
+  }
+
+  Future<void> rejectCenter(String uid) async {
+    await FirebaseFirestore.instance
+        .collection('service_center_details')
+        .doc(uid)
+        .update({'status': 'rejected'});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('service_center_details')
+          .where('status', isEqualTo: 'pending')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text("No pending service center approvals."),
+          );
+        }
+
+        var centers = snapshot.data!.docs;
+
+        return ListView.builder(
+          itemCount: centers.length,
+          itemBuilder: (context, index) {
+            var center = centers[index];
+            String uid = center.id;
+
+            String phone = center['phone'] ?? '';
+            String location = center['location'] ?? '';
+            String description = center['description'] ?? '';
+            String image1 = center['image1'];
+            String image2 = center['image2'];
+
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Phone: $phone"),
+                    Text("Location: $location"),
+                    const SizedBox(height: 5),
+                    Text("Description: $description"),
+
+                    const SizedBox(height: 10),
+
+                    Row(
+                      children: [
+                        Image.memory(
+                          base64Decode(image1),
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                        const SizedBox(width: 20),
+                        Image.memory(
+                          base64Decode(image2),
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            await approveCenter(uid);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Service Center Approved"),
+                              ),
+                            );
+                          },
+                          child: const Text("Approve"),
+                        ),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () async {
+                            await rejectCenter(uid);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Service Center Rejected"),
+                              ),
+                            );
+                          },
+                          child: const Text("Reject"),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             );
