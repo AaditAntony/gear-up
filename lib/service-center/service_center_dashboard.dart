@@ -9,13 +9,10 @@ class ServiceCenterDashboard extends StatefulWidget {
   const ServiceCenterDashboard({super.key});
 
   @override
-  State<ServiceCenterDashboard> createState() =>
-      _ServiceCenterDashboardState();
+  State<ServiceCenterDashboard> createState() => _ServiceCenterDashboardState();
 }
 
-class _ServiceCenterDashboardState
-    extends State<ServiceCenterDashboard> {
-
+class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
   int selectedIndex = 0;
 
   Widget getSelectedPage() {
@@ -25,7 +22,7 @@ class _ServiceCenterDashboardState
       case 1:
         return const AddServicesPage();
       case 2:
-        return const CenterBookingsPage();
+        return const MyBookingsPage();
       default:
         return const CenterHomePage();
     }
@@ -36,7 +33,6 @@ class _ServiceCenterDashboardState
     return Scaffold(
       body: Row(
         children: [
-
           ServiceCenterSidebar(
             selectedIndex: selectedIndex,
             onItemSelected: (index) {

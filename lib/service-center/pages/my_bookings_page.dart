@@ -3,27 +3,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'center_booking_detail_page.dart';
 
-class CenterBookingsPage extends StatelessWidget {
-  const CenterBookingsPage({super.key});
+class MyBookingsPage extends StatelessWidget {
+  const MyBookingsPage({super.key});
 
   Future<void> updateStatus(String bookingId, String status) async {
     await FirebaseFirestore.instance
         .collection('bookings')
         .doc(bookingId)
-        .update({
-      'status': status
-    });
+        .update({'status': status});
   }
 
   @override
   Widget build(BuildContext context) {
-
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Customer Bookings"),
-      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
@@ -31,38 +25,31 @@ class CenterBookingsPage extends StatelessWidget {
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           var bookings = snapshot.data!.docs;
 
           if (bookings.isEmpty) {
-            return const Center(
-              child: Text("No bookings yet"),
-            );
+            return const Center(child: Text("No bookings yet"));
           }
 
           return ListView.builder(
             itemCount: bookings.length,
             itemBuilder: (context, index) {
-
               var booking = bookings[index];
               var data = booking.data() as Map<String, dynamic>;
 
               String status = data['status'];
 
               return Card(
-                margin: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(12),
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
                         data['categoryName'],
                         style: const TextStyle(
@@ -71,7 +58,7 @@ class CenterBookingsPage extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 6),
 
                       Text("Vehicle: ${data['vehicleNumber']}"),
 
@@ -81,13 +68,11 @@ class CenterBookingsPage extends StatelessWidget {
 
                       Text("Slot: ${data['bookingSlot']}"),
 
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 6),
 
-                      Text(
-                        "Complaint: ${data['complaint']}",
-                      ),
+                      Text("Complaint: ${data['complaint'] ?? "No complaint"}"),
 
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 6),
 
                       Text(
                         "Status: ${status.toUpperCase()}",
@@ -96,10 +81,12 @@ class CenterBookingsPage extends StatelessWidget {
                           color: status == "pending"
                               ? Colors.orange
                               : status == "accepted"
-                                  ? Colors.green
-                                  : status == "completed"
-                                      ? Colors.blue
-                                      : Colors.red,
+                              ? Colors.green
+                              : status == "completed"
+                              ? Colors.blue
+                              : status == "rejected"
+                              ? Colors.red
+                              : Colors.grey,
                         ),
                       ),
 
@@ -108,7 +95,6 @@ class CenterBookingsPage extends StatelessWidget {
                       if (status == "pending")
                         Row(
                           children: [
-
                             ElevatedButton(
                               onPressed: () {
                                 updateStatus(booking.id, "accepted");
@@ -137,8 +123,7 @@ class CenterBookingsPage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  CenterBookingDetailPage(
+                              builder: (_) => CenterBookingDetailPage(
                                 bookingId: booking.id,
                                 bookingData: data,
                               ),
