@@ -104,7 +104,7 @@ class CenterDetailPage extends StatelessWidget {
                                 centerName: centerData['companyName'],
                                 categoryId: service['categoryId'],
                                 categoryName: service['categoryName'],
-                                price: service['price'],
+                                price: (service['price'] as num).toDouble(),
                               ),
                             ),
                           );
