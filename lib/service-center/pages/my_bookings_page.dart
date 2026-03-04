@@ -25,25 +25,19 @@ class MyBookingsPage extends StatelessWidget {
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           var bookings = snapshot.data!.docs;
 
           if (bookings.isEmpty) {
-            return const Center(
-              child: Text("No bookings yet"),
-            );
+            return const Center(child: Text("No bookings yet"));
           }
 
           return ListView.builder(
             itemCount: bookings.length,
             itemBuilder: (context, index) {
-
               var booking = bookings[index];
               var data = booking.data() as Map<String, dynamic>;
 
@@ -56,7 +50,6 @@ class MyBookingsPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
                         data['categoryName'],
                         style: const TextStyle(
@@ -77,9 +70,7 @@ class MyBookingsPage extends StatelessWidget {
 
                       const SizedBox(height: 6),
 
-                      Text(
-                        "Complaint: ${data['complaint'] ?? "No complaint"}",
-                      ),
+                      Text("Complaint: ${data['complaint'] ?? "No complaint"}"),
 
                       const SizedBox(height: 6),
 
@@ -90,12 +81,12 @@ class MyBookingsPage extends StatelessWidget {
                           color: status == "pending"
                               ? Colors.orange
                               : status == "accepted"
-                                  ? Colors.green
-                                  : status == "completed"
-                                      ? Colors.blue
-                                      : status == "rejected"
-                                          ? Colors.red
-                                          : Colors.grey,
+                              ? Colors.green
+                              : status == "completed"
+                              ? Colors.blue
+                              : status == "rejected"
+                              ? Colors.red
+                              : Colors.grey,
                         ),
                       ),
 
@@ -104,7 +95,6 @@ class MyBookingsPage extends StatelessWidget {
                       if (status == "pending")
                         Row(
                           children: [
-
                             ElevatedButton(
                               onPressed: () {
                                 updateStatus(booking.id, "accepted");
