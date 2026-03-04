@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gear_up/vehicle_owner/pages/booking_detail_page.dart';
 
 class MyBookingsPage extends StatelessWidget {
   const MyBookingsPage({super.key});
@@ -89,6 +90,18 @@ class MyBookingsPage extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  BookingDetailPage(bookingId: booking.id),
+                            ),
+                          );
+                        },
+                        child: const Text("View Details"),
+                      ),
 
                       if (status == "pending" || status == "accepted")
                         Align(
