@@ -17,23 +17,25 @@ class MyBookingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
+    // Debug print (remove later if you want)
+    print("CENTER UID: $centerId");
+
     return Scaffold(
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
             .where('centerId', isEqualTo: centerId)
-            .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          var bookings = snapshot.data!.docs;
-
-          if (bookings.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text("No bookings yet"));
           }
+
+          var bookings = snapshot.data!.docs;
 
           return ListView.builder(
             itemCount: bookings.length,
