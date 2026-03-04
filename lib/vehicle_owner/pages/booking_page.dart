@@ -75,24 +75,53 @@ class _BookingPageState extends State<BookingPage> {
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Check if slot already booked
-      var query = await FirebaseFirestore.instance
+      String date = selectedDate!.toIso8601String();
+
+      // Check if slot already booked in this center
+      var centerCheck = await FirebaseFirestore.instance
           .collection('bookings')
           .where('centerId', isEqualTo: widget.centerId)
-          .where('bookingDate', isEqualTo: selectedDate!.toIso8601String())
+          .where('bookingDate', isEqualTo: date)
           .where('bookingSlot', isEqualTo: selectedSlot)
           .get();
 
-      if (query.docs.isNotEmpty) {
+      if (centerCheck.docs.isNotEmpty) {
         setState(() => isLoading = false);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("This slot is already booked")),
+          const SnackBar(
+            content: Text(
+              "This service center already has a booking in this slot",
+            ),
+          ),
         );
 
         return;
       }
 
+      // Check if user already booked another vehicle in same slot
+      var userCheck = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('userId', isEqualTo: uid)
+          .where('bookingDate', isEqualTo: date)
+          .where('bookingSlot', isEqualTo: selectedSlot)
+          .get();
+
+      if (userCheck.docs.isNotEmpty) {
+        setState(() => isLoading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "You already have another vehicle booked at this time",
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      // Create booking
       await FirebaseFirestore.instance.collection('bookings').add({
         'userId': uid,
 
@@ -105,12 +134,11 @@ class _BookingPageState extends State<BookingPage> {
         'vehicleId': selectedVehicleId,
         'vehicleNumber': selectedVehicleNumber,
 
-        'bookingDate': selectedDate!.toIso8601String(),
+        'bookingDate': date,
         'bookingSlot': selectedSlot,
 
         'price': widget.price,
 
-        // NEW FIELD
         'complaint': complaintController.text.trim(),
 
         'status': 'pending',
