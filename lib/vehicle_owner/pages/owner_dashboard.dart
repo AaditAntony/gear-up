@@ -33,6 +33,11 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             selectedIndex = index;
           });
         },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(

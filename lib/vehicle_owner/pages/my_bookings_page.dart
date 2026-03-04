@@ -103,7 +103,7 @@ class MyBookingsPage extends StatelessWidget {
                         child: const Text("View Details"),
                       ),
 
-                      if (status == "pending" || status == "accepted")
+                      if (status == "pending")
                         Align(
                           alignment: Alignment.centerRight,
                           child: ElevatedButton(
