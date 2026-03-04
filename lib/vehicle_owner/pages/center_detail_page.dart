@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/vehicle_owner/pages/booking_page.dart';
 
 class CenterDetailPage extends StatelessWidget {
   final String centerId;
@@ -21,14 +22,12 @@ class CenterDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // CENTER INFO
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Text(
                     centerData['companyName'] ?? "",
                     style: const TextStyle(
@@ -48,7 +47,6 @@ class CenterDetailPage extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   Text(centerData['description'] ?? ""),
-
                 ],
               ),
             ),
@@ -60,10 +58,7 @@ class CenterDetailPage extends StatelessWidget {
               padding: EdgeInsets.all(16),
               child: Text(
                 "Available Services",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -74,11 +69,8 @@ class CenterDetailPage extends StatelessWidget {
                   .where('centerId', isEqualTo: centerId)
                   .snapshots(),
               builder: (context, snapshot) {
-
                 if (!snapshot.hasData) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 var services = snapshot.data!.docs;
@@ -95,7 +87,6 @@ class CenterDetailPage extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: services.length,
                   itemBuilder: (context, index) {
-
                     var service = services[index];
 
                     return ListTile(
@@ -105,9 +96,18 @@ class CenterDetailPage extends StatelessWidget {
                       trailing: ElevatedButton(
                         child: const Text("Book"),
                         onPressed: () {
-
-                          // Booking page will be next step
-
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => BookingPage(
+                                centerId: centerId,
+                                centerName: centerData['companyName'],
+                                categoryId: service['categoryId'],
+                                categoryName: service['categoryName'],
+                                price: service['price'],
+                              ),
+                            ),
+                          );
                         },
                       ),
                     );
