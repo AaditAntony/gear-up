@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/vehicle_owner/pages/center_detail_page.dart';
 
 class BrowseCentersPage extends StatelessWidget {
   const BrowseCentersPage({super.key});
@@ -57,7 +58,15 @@ class BrowseCentersPage extends StatelessWidget {
                   trailing: const Icon(Icons.arrow_forward_ios),
 
                   onTap: () {
-                    // Next step we will open center details page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CenterDetailPage(
+                          centerId: data.id,
+                          centerData: data.data() as Map<String, dynamic>,
+                        ),
+                      ),
+                    );
                   },
                 ),
               );
