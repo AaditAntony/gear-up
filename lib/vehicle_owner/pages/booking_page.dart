@@ -23,11 +23,13 @@ class BookingPage extends StatefulWidget {
 }
 
 class _BookingPageState extends State<BookingPage> {
-
   DateTime? selectedDate;
   String? selectedSlot;
+
   String? selectedVehicleId;
   String? selectedVehicleNumber;
+
+  final TextEditingController complaintController = TextEditingController();
 
   bool isLoading = false;
 
@@ -39,15 +41,29 @@ class _BookingPageState extends State<BookingPage> {
     "02:00 PM",
     "03:00 PM",
     "04:00 PM",
-    "05:00 PM"
+    "05:00 PM",
   ];
 
-  Future<void> createBooking() async {
+  Future<void> pickDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
+    );
 
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+        selectedSlot = null;
+      });
+    }
+  }
+
+  Future<void> createBooking() async {
     if (selectedDate == null ||
         selectedSlot == null ||
         selectedVehicleId == null) {
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please complete booking details")),
       );
@@ -55,12 +71,11 @@ class _BookingPageState extends State<BookingPage> {
     }
 
     try {
-
       setState(() => isLoading = true);
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Check slot availability
+      // Check if slot already booked
       var query = await FirebaseFirestore.instance
           .collection('bookings')
           .where('centerId', isEqualTo: widget.centerId)
@@ -80,16 +95,26 @@ class _BookingPageState extends State<BookingPage> {
 
       await FirebaseFirestore.instance.collection('bookings').add({
         'userId': uid,
+
         'centerId': widget.centerId,
         'centerName': widget.centerName,
+
         'categoryId': widget.categoryId,
         'categoryName': widget.categoryName,
+
         'vehicleId': selectedVehicleId,
         'vehicleNumber': selectedVehicleNumber,
+
         'bookingDate': selectedDate!.toIso8601String(),
         'bookingSlot': selectedSlot,
+
         'price': widget.price,
+
+        // NEW FIELD
+        'complaint': complaintController.text.trim(),
+
         'status': 'pending',
+
         'createdAt': Timestamp.now(),
       });
 
@@ -100,55 +125,29 @@ class _BookingPageState extends State<BookingPage> {
       );
 
       Navigator.pop(context);
-
     } catch (e) {
-
       setState(() => isLoading = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Booking failed")),
-      );
-    }
-  }
-
-  Future<void> pickDate() async {
-
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
-    );
-
-    if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-        selectedSlot = null;
-      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Booking failed")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Book Service"),
-      ),
+      appBar: AppBar(title: const Text("Book Service")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Text(
               widget.categoryName,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 4),
@@ -168,7 +167,6 @@ class _BookingPageState extends State<BookingPage> {
                   .where('userId', isEqualTo: uid)
                   .snapshots(),
               builder: (context, snapshot) {
-
                 if (!snapshot.hasData) {
                   return const CircularProgressIndicator();
                 }
@@ -179,7 +177,6 @@ class _BookingPageState extends State<BookingPage> {
                   value: selectedVehicleId,
                   hint: const Text("Choose Vehicle"),
                   items: vehicles.map((doc) {
-
                     return DropdownMenuItem(
                       value: doc.id,
                       child: Text(doc['vehicleNumber']),
@@ -187,7 +184,6 @@ class _BookingPageState extends State<BookingPage> {
                         selectedVehicleNumber = doc['vehicleNumber'];
                       },
                     );
-
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
@@ -196,6 +192,25 @@ class _BookingPageState extends State<BookingPage> {
                   },
                 );
               },
+            ),
+
+            const SizedBox(height: 20),
+
+            const Text(
+              "Describe Issue (Optional)",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            TextField(
+              controller: complaintController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText:
+                    "Example: engine noise, brake issue, AC not cooling...",
+                border: OutlineInputBorder(),
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -219,7 +234,6 @@ class _BookingPageState extends State<BookingPage> {
             Wrap(
               spacing: 10,
               children: slots.map((slot) {
-
                 bool isSelected = selectedSlot == slot;
 
                 return ChoiceChip(
@@ -231,7 +245,6 @@ class _BookingPageState extends State<BookingPage> {
                     });
                   },
                 );
-
               }).toList(),
             ),
 
@@ -252,4 +265,3 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 }
-// done
