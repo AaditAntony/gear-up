@@ -46,8 +46,9 @@ class MyVehiclesPage extends StatelessWidget {
               onPressed: () async {
                 String uid = FirebaseAuth.instance.currentUser!.uid;
 
-                String vehicleNumber =
-                    vehicleNumberController.text.trim().toUpperCase();
+                String vehicleNumber = vehicleNumberController.text
+                    .trim()
+                    .toUpperCase();
 
                 if (vehicleNumber.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -82,14 +83,35 @@ class MyVehiclesPage extends StatelessWidget {
 
                 Navigator.pop(context);
               },
-            )
+            ),
           ],
         );
       },
     );
   }
 
-  Future<void> deleteVehicle(String vehicleId) async {
+  Future<void> deleteVehicle(
+    BuildContext context,
+    String vehicleId,
+    String vehicleNumber,
+  ) async {
+    // Check if vehicle has active bookings
+    var bookingCheck = await FirebaseFirestore.instance
+        .collection('bookings')
+        .where('vehicleNumber', isEqualTo: vehicleNumber)
+        .where('status', whereIn: ['pending', 'accepted', 'in_progress'])
+        .get();
+
+    if (bookingCheck.docs.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Cannot delete vehicle with active bookings"),
+        ),
+      );
+      return;
+    }
+
+    // Safe to delete
     await FirebaseFirestore.instance
         .collection('vehicles')
         .doc(vehicleId)
@@ -101,9 +123,7 @@ class MyVehiclesPage extends StatelessWidget {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("My Vehicles"),
-      ),
+      appBar: AppBar(title: const Text("My Vehicles")),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showAddVehicleDialog(context);
@@ -140,7 +160,7 @@ class MyVehiclesPage extends StatelessWidget {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
-                      deleteVehicle(vehicle.id);
+                      deleteVehicle(context, vehicle.id, data['vehicleNumber']);
                     },
                   ),
                 ),
