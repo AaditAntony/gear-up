@@ -18,13 +18,13 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
   Widget getSelectedPage() {
     switch (selectedIndex) {
       case 0:
-        return const CenterHomePage();
+        return const ServiceHomePage();
       case 1:
         return const AddServicesPage();
       case 2:
         return const MyBookingsPage();
       default:
-        return const CenterHomePage();
+        return const ServiceHomePage();
     }
   }
 
