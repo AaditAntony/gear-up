@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'browse_centers_page.dart';
 import 'my_bookings_page.dart';
+import 'my_vehicles_page.dart';
 import 'profile_page.dart';
 
 class OwnerDashboard extends StatefulWidget {
@@ -16,6 +17,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   final List<Widget> pages = const [
     BrowseCentersPage(),
     MyBookingsPage(),
+    MyVehiclesPage(),
     ProfilePage(),
   ];
 
@@ -36,6 +38,10 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: "My Bookings",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.directions_car),
+            label: "My Vehicles",
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
