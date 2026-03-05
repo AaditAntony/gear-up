@@ -88,7 +88,13 @@ class MyBookingsPage extends StatelessWidget {
                               : Colors.blue,
                         ),
                       ),
-
+                      if (status == "completed")
+                        ElevatedButton(
+                          onPressed: () {
+                            showRatingDialog(context, data);
+                          },
+                          child: const Text("Rate Service"),
+                        ),
                       const SizedBox(height: 10),
                       ElevatedButton(
                         onPressed: () {
@@ -124,6 +130,82 @@ class MyBookingsPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  void showRatingDialog(
+    BuildContext context,
+    Map<String, dynamic> bookingData,
+  ) {
+    int rating = 5;
+    TextEditingController reviewController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Rate Service"),
+
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<int>(
+                value: rating,
+                items: [1, 2, 3, 4, 5]
+                    .map(
+                      (e) => DropdownMenuItem(value: e, child: Text("$e Star")),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  rating = value!;
+                },
+              ),
+
+              const SizedBox(height: 10),
+
+              TextField(
+                controller: reviewController,
+                decoration: const InputDecoration(labelText: "Review"),
+              ),
+            ],
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Cancel"),
+            ),
+
+            ElevatedButton(
+              onPressed: () async {
+                await FirebaseFirestore.instance.collection('ratings').add({
+                  "centerId": bookingData['centerId'],
+                  "centerName": bookingData['centerName'],
+
+                  "serviceId": bookingData['categoryId'],
+                  "serviceName": bookingData['categoryName'],
+
+                  "userId": FirebaseAuth.instance.currentUser!.uid,
+
+                  "rating": rating,
+                  "review": reviewController.text.trim(),
+
+                  "createdAt": Timestamp.now(),
+                });
+
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Rating submitted")),
+                );
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
