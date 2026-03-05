@@ -2,199 +2,165 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class AIRecommendationPage extends StatelessWidget {
+class AIRecommendationPage extends StatefulWidget {
   const AIRecommendationPage({super.key});
+
+  @override
+  State<AIRecommendationPage> createState() => _AIRecommendationPageState();
+}
+
+class _AIRecommendationPageState extends State<AIRecommendationPage> {
+  String introText = "";
+  List<Map<String, String>> visibleRecommendations = [];
+
+  String fullIntro =
+      "Hello! I analyzed your vehicle data and generated maintenance recommendations.";
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> typeIntro() async {
+    for (int i = 0; i < fullIntro.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 25));
+
+      setState(() {
+        introText += fullIntro[i];
+      });
+    }
+  }
+
+  Future<void> showRecommendations(List<Map<String, String>> recs) async {
+    for (var rec in recs) {
+      await Future.delayed(const Duration(milliseconds: 600));
+
+      setState(() {
+        visibleRecommendations.add(rec);
+      });
+    }
+  }
 
   List<Map<String, String>> generateRecommendations(
     Map<String, dynamic> vehicle,
   ) {
-    List<Map<String, String>> recommendations = [];
+    List<Map<String, String>> recs = [];
 
     int mileage = int.tryParse(vehicle['mileage'].toString()) ?? 0;
     int lastServiceKm = int.tryParse(vehicle['lastServiceKm'].toString()) ?? 0;
     int year = int.tryParse(vehicle['year'].toString()) ?? DateTime.now().year;
 
     int vehicleAge = DateTime.now().year - year;
-    int distanceSinceService = mileage - lastServiceKm;
+    int distance = mileage - lastServiceKm;
 
-    if (distanceSinceService > 5000) {
-      recommendations.add({
+    if (distance > 5000) {
+      recs.add({
         "title": "Oil Change Required",
-        "reason":
-            "Vehicle travelled $distanceSinceService km since last service.",
+        "reason": "Vehicle travelled $distance km since last service.",
       });
     }
 
     if (vehicleAge > 3) {
-      recommendations.add({
+      recs.add({
         "title": "Brake Inspection Suggested",
         "reason": "Vehicle is $vehicleAge years old.",
       });
     }
 
     if (mileage > 20000) {
-      recommendations.add({
+      recs.add({
         "title": "Engine Inspection Recommended",
         "reason": "Vehicle mileage exceeded 20,000 km.",
       });
     }
 
-    if (vehicleAge > 4) {
-      recommendations.add({
-        "title": "Battery Check Recommended",
-        "reason": "Vehicle battery performance may degrade after 4 years.",
-      });
-    }
-
-    if (distanceSinceService > 7000) {
-      recommendations.add({
-        "title": "Service Overdue",
-        "reason": "Vehicle exceeded recommended service interval.",
-      });
-    }
-
-    return recommendations;
+    return recs;
   }
 
   @override
   Widget build(BuildContext context) {
-    String userId = FirebaseAuth.instance.currentUser!.uid;
+    String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("AI Maintenance Assistant")),
+      appBar: AppBar(title: const Text("AI Assistant")),
 
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('vehicles')
-            .where('userId', isEqualTo: userId)
+            .where('userId', isEqualTo: uid)
             .snapshots(),
 
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("Add a vehicle to receive AI recommendations."),
-            );
           }
 
           var vehicles = snapshot.data!.docs;
 
+          if (introText.isEmpty) {
+            typeIntro();
+          }
+
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              /// AI HEADER
+              /// AI intro chat
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(12),
                 ),
+
                 child: Row(
-                  children: const [
-                    Icon(Icons.smart_toy, size: 40, color: Colors.blue),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        "Your AI assistant analyzes vehicle data and recommends maintenance before problems occur.",
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.smart_toy, color: Colors.blue),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(child: Text(introText)),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              /// VEHICLE LIST
               ...vehicles.map((doc) {
                 var vehicle = doc.data() as Map<String, dynamic>;
 
-                int mileage = int.tryParse(vehicle['mileage'].toString()) ?? 0;
+                var recs = generateRecommendations(vehicle);
 
-                int lastService =
-                    int.tryParse(vehicle['lastServiceKm'].toString()) ?? 0;
+                if (visibleRecommendations.isEmpty) {
+                  showRecommendations(recs);
+                }
 
-                int year =
-                    int.tryParse(vehicle['year'].toString()) ??
-                    DateTime.now().year;
-
-                var recommendations = generateRecommendations(vehicle);
-
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  elevation: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// VEHICLE TITLE
-                        Text(
-                          "Vehicle: ${vehicle['vehicleNumber']}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        /// VEHICLE DETAILS
-                        Text(
-                          "${vehicle['brand']} ${vehicle['model']}",
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Row(
-                          children: [
-                            Text("Mileage: $mileage km"),
-                            const SizedBox(width: 20),
-                            Text("Last Service: $lastService km"),
-                          ],
-                        ),
-
-                        const SizedBox(height: 15),
-
-                        /// AI RESULTS
-                        if (recommendations.isEmpty)
-                          const Text(
-                            "No maintenance needed right now.",
-                            style: TextStyle(color: Colors.green),
-                          )
-                        else
-                          Column(
-                            children: recommendations.map((rec) {
-                              return Card(
-                                color: Colors.orange.shade50,
-                                margin: const EdgeInsets.symmetric(vertical: 5),
-
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.warning_amber,
-                                    color: Colors.orange,
-                                  ),
-
-                                  title: Text(
-                                    rec["title"]!,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-
-                                  subtitle: Text(rec["reason"]!),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                      ],
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Vehicle: ${vehicle['vehicleNumber']}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 10),
+
+                    ...visibleRecommendations.map((rec) {
+                      return Card(
+                        child: ListTile(
+                          leading: const Icon(
+                            Icons.warning,
+                            color: Colors.orange,
+                          ),
+                          title: Text(rec['title']!),
+                          subtitle: Text(rec['reason']!),
+                        ),
+                      );
+                    }).toList(),
+                  ],
                 );
               }).toList(),
             ],
