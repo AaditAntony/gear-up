@@ -28,7 +28,9 @@ class ServiceHomePage extends StatelessWidget {
           child: Column(
             children: [
               Icon(icon, size: 35, color: color),
+
               const SizedBox(height: 10),
+
               Text(
                 value.toString(),
                 style: const TextStyle(
@@ -36,7 +38,9 @@ class ServiceHomePage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const SizedBox(height: 5),
+
               Text(title, style: const TextStyle(fontSize: 15)),
             ],
           ),
@@ -54,12 +58,13 @@ class ServiceHomePage extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const Center(child: Text("No bookings yet"));
+        if (!snapshot.hasData) {
+          return const Center(child: Text("Error loading data"));
         }
 
         var docs = snapshot.data!.docs;
 
+        int totalBookings = docs.length;
         int pending = countStatus(docs, "pending");
         int accepted = countStatus(docs, "accepted");
         int inProgress = countStatus(docs, "in_progress");
@@ -77,10 +82,26 @@ class ServiceHomePage extends StatelessWidget {
 
               const SizedBox(height: 20),
 
+              /// TOTAL BOOKINGS
+              Row(
+                children: [
+                  statCard(
+                    "Total Bookings",
+                    totalBookings,
+                    Icons.analytics,
+                    Colors.black,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+
               Row(
                 children: [
                   statCard("Pending", pending, Icons.schedule, Colors.orange),
+
                   const SizedBox(width: 10),
+
                   statCard(
                     "Accepted",
                     accepted,
@@ -100,7 +121,9 @@ class ServiceHomePage extends StatelessWidget {
                     Icons.build,
                     Colors.purple,
                   ),
+
                   const SizedBox(width: 10),
+
                   statCard(
                     "Completed",
                     completed,
