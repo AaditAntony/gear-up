@@ -8,12 +8,11 @@ class AIRecommendationPage extends StatelessWidget {
   List<String> generateRecommendations(Map<String, dynamic> vehicle) {
     List<String> recommendations = [];
 
-    int mileage = vehicle['mileage'] ?? 0;
-    int lastServiceKm = vehicle['lastServiceKm'] ?? 0;
-    int year = vehicle['year'] ?? DateTime.now().year;
+    int mileage = int.tryParse(vehicle['mileage'].toString()) ?? 0;
+    int lastServiceKm = int.tryParse(vehicle['lastServiceKm'].toString()) ?? 0;
+    int year = int.tryParse(vehicle['year'].toString()) ?? DateTime.now().year;
 
     int vehicleAge = DateTime.now().year - year;
-
     if (mileage - lastServiceKm > 5000) {
       recommendations.add("Oil Change Recommended");
     }
@@ -49,7 +48,6 @@ class AIRecommendationPage extends StatelessWidget {
             .where('userId', isEqualTo: userId)
             .snapshots(),
         builder: (context, snapshot) {
-
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -65,7 +63,6 @@ class AIRecommendationPage extends StatelessWidget {
           return ListView.builder(
             itemCount: vehicles.length,
             itemBuilder: (context, index) {
-
               var vehicle = vehicles[index].data() as Map<String, dynamic>;
               var recommendations = generateRecommendations(vehicle);
 
@@ -76,7 +73,6 @@ class AIRecommendationPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Text(
                         "Vehicle: ${vehicle['vehicleNumber']}",
                         style: const TextStyle(
