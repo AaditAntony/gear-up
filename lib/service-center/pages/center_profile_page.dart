@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'edit_center_profile_page.dart';
 
 class CenterProfilePage extends StatelessWidget {
   const CenterProfilePage({super.key});
@@ -20,36 +21,45 @@ class CenterProfilePage extends StatelessWidget {
       future: getCenterDetails(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return const Center(child: Text("Profile not found"));
+          return const Scaffold(
+            body: Center(child: Text("Profile not found")),
+          );
         }
 
         var data = snapshot.data!.data() as Map<String, dynamic>;
 
         return Scaffold(
-          appBar: AppBar(title: const Text("Company Profile")),
+          appBar: AppBar(
+            title: const Text("Company Profile"),
+          ),
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: ListView(
               children: [
                 const Text(
                   "Service Center Details",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
                 const SizedBox(height: 20),
 
-                infoTile("Company Name", data['companyName']),
-                infoTile("Owner Name", data['ownerName']),
-                infoTile("Phone", data['phone']),
-                infoTile("Email", data['email']),
-                infoTile("Location", data['location']),
-                infoTile("District", data['district']),
-                infoTile("State", data['state']),
-                infoTile("Description", data['description']),
+                infoTile("Company Name", data['companyName'] ?? ""),
+                infoTile("Owner Name", data['ownerName'] ?? ""),
+                infoTile("Phone", data['phone'] ?? ""),
+                infoTile("Email", data['email'] ?? ""),
+                infoTile("Location", data['location'] ?? ""),
+                infoTile("District", data['district'] ?? ""),
+                infoTile("State", data['state'] ?? ""),
+                infoTile("Description", data['description'] ?? ""),
 
                 const SizedBox(height: 20),
 
@@ -58,6 +68,24 @@ class CenterProfilePage extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                /// EDIT PROFILE BUTTON
+                SizedBox(
+                  height: 45,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EditCenterProfilePage(),
+                        ),
+                      );
+                    },
+                    child: const Text("Edit Profile"),
                   ),
                 ),
               ],
@@ -70,7 +98,10 @@ class CenterProfilePage extends StatelessWidget {
 
   Widget infoTile(String title, String value) {
     return Card(
-      child: ListTile(title: Text(title), subtitle: Text(value)),
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(value),
+      ),
     );
   }
 }
