@@ -11,35 +11,27 @@ class AIRecommendationPage extends StatefulWidget {
 
 class _AIRecommendationPageState extends State<AIRecommendationPage> {
   String introText = "";
-  List<Map<String, String>> visibleRecommendations = [];
-
   String fullIntro =
       "Hello! I analyzed your vehicle data and generated maintenance recommendations.";
 
   @override
   void initState() {
     super.initState();
+    startTyping();
   }
 
-  Future<void> typeIntro() async {
-    for (int i = 0; i < fullIntro.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 25));
+  Future<void> startTyping() async {
+  for (int i = 0; i < fullIntro.length; i++) {
 
-      setState(() {
-        introText += fullIntro[i];
-      });
-    }
+    await Future.delayed(const Duration(milliseconds: 35));
+
+    if (!mounted) return;
+
+    setState(() {
+      introText += fullIntro[i];
+    });
   }
-
-  Future<void> showRecommendations(List<Map<String, String>> recs) async {
-    for (var rec in recs) {
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      setState(() {
-        visibleRecommendations.add(rec);
-      });
-    }
-  }
+}
 
   List<Map<String, String>> generateRecommendations(
     Map<String, dynamic> vehicle,
@@ -74,6 +66,13 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
       });
     }
 
+    if (vehicleAge > 4) {
+      recs.add({
+        "title": "Battery Check Recommended",
+        "reason": "Battery efficiency may reduce after 4 years.",
+      });
+    }
+
     return recs;
   }
 
@@ -97,14 +96,16 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
           var vehicles = snapshot.data!.docs;
 
-          if (introText.isEmpty) {
-            typeIntro();
+          if (vehicles.isEmpty) {
+            return const Center(
+              child: Text("Add a vehicle to get AI recommendations"),
+            );
           }
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              /// AI intro chat
+              /// AI intro message
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -126,41 +127,53 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
               const SizedBox(height: 20),
 
+              /// Vehicle recommendations
               ...vehicles.map((doc) {
                 var vehicle = doc.data() as Map<String, dynamic>;
 
                 var recs = generateRecommendations(vehicle);
 
-                if (visibleRecommendations.isEmpty) {
-                  showRecommendations(recs);
-                }
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Vehicle: ${vehicle['vehicleNumber']}",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    ...visibleRecommendations.map((rec) {
-                      return Card(
-                        child: ListTile(
-                          leading: const Icon(
-                            Icons.warning,
-                            color: Colors.orange,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Vehicle: ${vehicle['vehicleNumber']}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          title: Text(rec['title']!),
-                          subtitle: Text(rec['reason']!),
                         ),
-                      );
-                    }).toList(),
-                  ],
+
+                        const SizedBox(height: 10),
+
+                        if (recs.isEmpty)
+                          const Text(
+                            "No maintenance required right now.",
+                            style: TextStyle(color: Colors.green),
+                          )
+                        else
+                          Column(
+                            children: recs.map((rec) {
+                              return Card(
+                                child: ListTile(
+                                  leading: const Icon(
+                                    Icons.warning,
+                                    color: Colors.orange,
+                                  ),
+                                  title: Text(rec["title"]!),
+                                  subtitle: Text(rec["reason"]!),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                      ],
+                    ),
+                  ),
                 );
               }).toList(),
             ],
