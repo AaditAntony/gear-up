@@ -39,6 +39,7 @@ class AIRecommendationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     String userId = FirebaseAuth.instance.currentUser!.uid;
 
     return StreamBuilder<QuerySnapshot>(
@@ -47,6 +48,7 @@ class AIRecommendationWidget extends StatelessWidget {
           .where('userId', isEqualTo: userId)
           .snapshots(),
       builder: (context, snapshot) {
+
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -60,17 +62,23 @@ class AIRecommendationWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             const Text(
               "AI Maintenance Recommendations",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 10),
 
             ...vehicles.map((doc) {
+
               var vehicle = doc.data() as Map<String, dynamic>;
 
-              List<String> recommendations = generateRecommendations(vehicle);
+              List<String> recommendations =
+                  generateRecommendations(vehicle);
 
               if (recommendations.isEmpty) {
                 return const SizedBox();
@@ -83,22 +91,24 @@ class AIRecommendationWidget extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
                       Text(
                         "Vehicle: ${vehicle['vehicleNumber']}",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
 
                       const SizedBox(height: 8),
 
-                      ...recommendations.map(
-                        (rec) => Row(
-                          children: [
-                            const Icon(Icons.build, size: 18),
-                            const SizedBox(width: 6),
-                            Text(rec),
-                          ],
-                        ),
-                      ),
+                      ...recommendations.map((rec) => Row(
+                        children: [
+                          const Icon(Icons.build, size: 18),
+                          const SizedBox(width: 6),
+                          Text(rec),
+                        ],
+                      )),
+
                     ],
                   ),
                 ),
