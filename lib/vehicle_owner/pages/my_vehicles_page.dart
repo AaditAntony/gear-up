@@ -9,30 +9,71 @@ class MyVehiclesPage extends StatelessWidget {
     final vehicleNumberController = TextEditingController();
     final brandController = TextEditingController();
     final modelController = TextEditingController();
+    final mileageController = TextEditingController();
+    final lastServiceController = TextEditingController();
+    final yearController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text("Add Vehicle"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: vehicleNumberController,
-                decoration: const InputDecoration(labelText: "Vehicle Number"),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: brandController,
-                decoration: const InputDecoration(labelText: "Brand"),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: modelController,
-                decoration: const InputDecoration(labelText: "Model"),
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: vehicleNumberController,
+                  decoration: const InputDecoration(
+                    labelText: "Vehicle Number",
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: brandController,
+                  decoration: const InputDecoration(labelText: "Brand"),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: modelController,
+                  decoration: const InputDecoration(labelText: "Model"),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: mileageController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Current Mileage (km)",
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: lastServiceController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Last Service Mileage (km)",
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                TextField(
+                  controller: yearController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Manufacturing Year",
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -41,6 +82,7 @@ class MyVehiclesPage extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
+
             ElevatedButton(
               child: const Text("Save"),
               onPressed: () async {
@@ -57,7 +99,7 @@ class MyVehiclesPage extends StatelessWidget {
                   return;
                 }
 
-                // Check duplicate vehicle
+                /// Duplicate check
                 var existingVehicle = await FirebaseFirestore.instance
                     .collection('vehicles')
                     .where('userId', isEqualTo: uid)
@@ -78,6 +120,11 @@ class MyVehiclesPage extends StatelessWidget {
                   'vehicleNumber': vehicleNumber,
                   'brand': brandController.text.trim(),
                   'model': modelController.text.trim(),
+                  'mileage': int.tryParse(mileageController.text) ?? 0,
+                  'lastServiceKm':
+                      int.tryParse(lastServiceController.text) ?? 0,
+                  'year':
+                      int.tryParse(yearController.text) ?? DateTime.now().year,
                   'createdAt': Timestamp.now(),
                 });
 
@@ -95,7 +142,6 @@ class MyVehiclesPage extends StatelessWidget {
     String vehicleId,
     String vehicleNumber,
   ) async {
-    // Check if vehicle has active bookings
     var bookingCheck = await FirebaseFirestore.instance
         .collection('bookings')
         .where('vehicleNumber', isEqualTo: vehicleNumber)
@@ -111,7 +157,6 @@ class MyVehiclesPage extends StatelessWidget {
       return;
     }
 
-    // Safe to delete
     await FirebaseFirestore.instance
         .collection('vehicles')
         .doc(vehicleId)
@@ -124,12 +169,14 @@ class MyVehiclesPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("My Vehicles")),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showAddVehicleDialog(context);
         },
         child: const Icon(Icons.add),
       ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('vehicles')
@@ -156,7 +203,9 @@ class MyVehiclesPage extends StatelessWidget {
                 margin: const EdgeInsets.all(10),
                 child: ListTile(
                   title: Text(data['vehicleNumber']),
+
                   subtitle: Text("${data['brand']} - ${data['model']}"),
+
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
