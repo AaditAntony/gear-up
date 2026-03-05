@@ -4,6 +4,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ViewBookingsPage extends StatelessWidget {
   const ViewBookingsPage({super.key});
 
+  Color statusColor(String status) {
+    switch (status) {
+      case "pending":
+        return Colors.orange;
+      case "accepted":
+        return Colors.blue;
+      case "in_progress":
+        return Colors.purple;
+      case "completed":
+        return Colors.green;
+      case "rejected":
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -23,30 +40,53 @@ class ViewBookingsPage extends StatelessWidget {
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              var bookings = snapshot.data!.docs;
-
-              if (bookings.isEmpty) {
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const Center(child: Text("No bookings available."));
               }
+
+              var bookings = snapshot.data!.docs;
 
               return ListView.builder(
                 itemCount: bookings.length,
                 itemBuilder: (context, index) {
                   var booking = bookings[index];
+                  var data = booking.data() as Map<String, dynamic>;
 
                   return Card(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 4,
+                    ),
                     child: ListTile(
-                      title: Text("Service: ${booking['categoryId']}"),
+                      title: Text(
+                        data['categoryName'],
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Center ID: ${booking['centerId']}"),
-                          Text("User ID: ${booking['userId']}"),
-                          Text("Status: ${booking['status']}"),
+                          Text("Vehicle: ${data['vehicleNumber']}"),
+
+                          Text("Service Center: ${data['centerName']}"),
+
+                          Text("Date: ${data['bookingDate']}"),
+
+                          Text("Slot: ${data['bookingSlot']}"),
+
+                          const SizedBox(height: 5),
+
+                          Text(
+                            "Status: ${data['status'].toUpperCase()}",
+                            style: TextStyle(
+                              color: statusColor(data['status']),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -60,3 +100,4 @@ class ViewBookingsPage extends StatelessWidget {
     );
   }
 }
+//
