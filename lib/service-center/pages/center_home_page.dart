@@ -49,6 +49,31 @@ class ServiceHomePage extends StatelessWidget {
     );
   }
 
+  Widget recentBookingTile(Map data) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.directions_car),
+        title: Text(data['vehicleNumber']),
+        subtitle: Text(data['categoryName']),
+        trailing: Text(
+          data['status'].toUpperCase(),
+          style: TextStyle(
+            color: data['status'] == "pending"
+                ? Colors.orange
+                : data['status'] == "accepted"
+                ? Colors.blue
+                : data['status'] == "in_progress"
+                ? Colors.purple
+                : data['status'] == "completed"
+                ? Colors.green
+                : Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -70,7 +95,9 @@ class ServiceHomePage extends StatelessWidget {
         int inProgress = countStatus(docs, "in_progress");
         int completed = countStatus(docs, "completed");
 
-        return Padding(
+        var recentBookings = docs.take(5).toList();
+
+        return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,6 +159,21 @@ class ServiceHomePage extends StatelessWidget {
                   ),
                 ],
               ),
+
+              const SizedBox(height: 25),
+
+              /// RECENT BOOKINGS
+              const Text(
+                "Recent Bookings",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 10),
+
+              ...recentBookings.map((booking) {
+                var data = booking.data() as Map<String, dynamic>;
+                return recentBookingTile(data);
+              }).toList(),
             ],
           ),
         );
