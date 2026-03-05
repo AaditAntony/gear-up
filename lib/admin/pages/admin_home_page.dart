@@ -8,9 +8,7 @@ class AdminHomePage extends StatelessWidget {
     return Expanded(
       child: Card(
         elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -39,13 +37,11 @@ class AdminHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('service_center_details')
           .snapshots(),
       builder: (context, centerSnapshot) {
-
         if (!centerSnapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -53,15 +49,13 @@ class AdminHomePage extends StatelessWidget {
         var centers = centerSnapshot.data!.docs;
 
         int totalCenters = centers.length;
-        int pendingCenters =
-            centers.where((c) => c['status'] == "pending").length;
+        int pendingCenters = centers
+            .where((c) => c['status'] == "pending")
+            .length;
 
         return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('bookings')
-              .snapshots(),
+          stream: FirebaseFirestore.instance.collection('bookings').snapshots(),
           builder: (context, bookingSnapshot) {
-
             if (!bookingSnapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -69,21 +63,18 @@ class AdminHomePage extends StatelessWidget {
             var bookings = bookingSnapshot.data!.docs;
 
             int totalBookings = bookings.length;
-            int completedBookings =
-                bookings.where((b) => b['status'] == "completed").length;
+            int completedBookings = bookings
+                .where((b) => b['status'] == "completed")
+                .length;
 
             return Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   const Text(
                     "Admin Dashboard",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 20),
