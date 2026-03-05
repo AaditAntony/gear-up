@@ -16,27 +16,19 @@ class CenterBookingDetailPage extends StatefulWidget {
       _CenterBookingDetailPageState();
 }
 
-class _CenterBookingDetailPageState
-    extends State<CenterBookingDetailPage> {
+class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
+  final TextEditingController titleController = TextEditingController();
 
-  final TextEditingController titleController =
-      TextEditingController();
-
-  final TextEditingController descriptionController =
-      TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
   String status = "pending";
 
   Future<void> addUpdate() async {
-
     if (titleController.text.trim().isEmpty ||
         descriptionController.text.trim().isEmpty) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Fill all fields"),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Fill all fields")));
       return;
     }
 
@@ -44,63 +36,60 @@ class _CenterBookingDetailPageState
         .collection('bookings')
         .doc(widget.bookingId)
         .update({
-
-      "serviceUpdates": FieldValue.arrayUnion([
-        {
-          "title": titleController.text.trim(),
-          "description": descriptionController.text.trim(),
-          "status": status,
-          "createdAt": Timestamp.now(),
-        }
-      ])
-    });
+          "serviceUpdates": FieldValue.arrayUnion([
+            {
+              "title": titleController.text.trim(),
+              "description": descriptionController.text.trim(),
+              "status": status,
+              "createdAt": Timestamp.now(),
+            },
+          ]),
+        });
 
     titleController.clear();
     descriptionController.clear();
   }
 
   Future<void> updateBookingStatus(String newStatus) async {
-
     await FirebaseFirestore.instance
         .collection('bookings')
         .doc(widget.bookingId)
-        .update({
-      "status": newStatus
-    });
+        .update({"status": newStatus});
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Booking status updated to $newStatus")),
+    );
+
+    if (newStatus == "completed") {
+      Navigator.pop(context);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Booking Details"),
-      ),
+      appBar: AppBar(title: const Text("Booking Details")),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
             .doc(widget.bookingId)
             .snapshots(),
         builder: (context, snapshot) {
-
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
-          var data = snapshot.data!.data()
-              as Map<String, dynamic>;
+          var data = snapshot.data!.data() as Map<String, dynamic>;
 
           List updates = data["serviceUpdates"] ?? [];
 
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
                   "Service: ${data['categoryName']}",
                   style: const TextStyle(
@@ -117,19 +106,14 @@ class _CenterBookingDetailPageState
 
                 Text(
                   "Booking Status: ${data['status']}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 20),
 
                 const Text(
                   "Service Progress",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 10),
@@ -138,22 +122,74 @@ class _CenterBookingDetailPageState
                   child: ListView.builder(
                     itemCount: updates.length,
                     itemBuilder: (context, index) {
-
                       var update = updates[index];
 
-                      return Card(
-                        child: ListTile(
-                          title: Text(update["title"]),
-                          subtitle: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(update["description"]),
-                              Text(
-                                "Status: ${update["status"]}",
+                      Color statusColor;
+
+                      switch (update["status"]) {
+                        case "completed":
+                          statusColor = Colors.green;
+                          break;
+                        case "in_progress":
+                          statusColor = Colors.orange;
+                          break;
+                        default:
+                          statusColor = Colors.grey;
+                      }
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// Timeline dot
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                shape: BoxShape.circle,
                               ),
-                            ],
-                          ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            /// Content
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    update["title"],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(update["description"]),
+
+                                  const SizedBox(height: 4),
+
+                                  Text(
+                                    update["status"].toUpperCase(),
+                                    style: TextStyle(
+                                      color: statusColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -164,9 +200,7 @@ class _CenterBookingDetailPageState
 
                 const Text(
                   "Add Service Update",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 10),
@@ -194,10 +228,7 @@ class _CenterBookingDetailPageState
                 DropdownButtonFormField(
                   value: status,
                   items: const [
-                    DropdownMenuItem(
-                      value: "pending",
-                      child: Text("Pending"),
-                    ),
+                    DropdownMenuItem(value: "pending", child: Text("Pending")),
                     DropdownMenuItem(
                       value: "in_progress",
                       child: Text("In Progress"),
@@ -225,7 +256,6 @@ class _CenterBookingDetailPageState
 
                 Row(
                   children: [
-
                     ElevatedButton(
                       onPressed: () {
                         updateBookingStatus("in_progress");
@@ -242,7 +272,7 @@ class _CenterBookingDetailPageState
                       child: const Text("Mark Completed"),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           );

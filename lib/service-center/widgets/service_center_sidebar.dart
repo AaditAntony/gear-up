@@ -19,14 +19,11 @@ class ServiceCenterSidebar extends StatelessWidget {
       color: Colors.grey.shade200,
       child: Column(
         children: [
-
           const SizedBox(height: 40),
 
           const Text(
             "Service Center",
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 30),
@@ -48,6 +45,11 @@ class ServiceCenterSidebar extends StatelessWidget {
             title: const Text("My Bookings"),
             onTap: () => onItemSelected(2),
           ),
+          ListTile(
+            selected: selectedIndex == 3,
+            title: const Text("Profile"),
+            onTap: () => onItemSelected(3),
+          ),
 
           const Spacer(),
 
@@ -57,8 +59,7 @@ class ServiceCenterSidebar extends StatelessWidget {
               await FirebaseAuth.instance.signOut();
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(
-                    builder: (_) => const LoginPage()),
+                MaterialPageRoute(builder: (_) => const LoginPage()),
                 (route) => false,
               );
             },
