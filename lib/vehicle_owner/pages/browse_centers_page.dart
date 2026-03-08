@@ -28,10 +28,15 @@ class BrowseCentersPage extends StatelessWidget {
           return ListView.builder(
             itemCount: centers.length,
             itemBuilder: (context, index) {
-              var data = centers[index];
+              var doc = centers[index];
+              var data = doc.data() as Map<String, dynamic>;
+
+              double rating = (data['avgRating'] ?? 0).toDouble();
+              int totalRatings = (data['totalRatings'] ?? 0);
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+
                 child: ListTile(
                   title: Text(
                     data['companyName'] ?? "Service Center",
@@ -43,24 +48,26 @@ class BrowseCentersPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 18),
-                          SizedBox(width: 4),
+                          const Icon(Icons.star, color: Colors.amber, size: 18),
+
+                          const SizedBox(width: 4),
 
                           Text(
-                            (data['avgRating'] ?? 0).toStringAsFixed(1),
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            rating.toStringAsFixed(1),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
 
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
 
                           Text(
-                            "(${data['totalRatings'] ?? 0})",
-                            style: TextStyle(color: Colors.grey),
+                            "($totalRatings)",
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ],
                       ),
 
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
+
                       Text(data['location'] ?? ""),
 
                       Text("${data['district'] ?? ""}, ${data['state'] ?? ""}"),
@@ -82,8 +89,8 @@ class BrowseCentersPage extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => CenterDetailPage(
-                          centerId: data.id,
-                          centerData: data.data() as Map<String, dynamic>,
+                          centerId: doc.id,
+                          centerData: data,
                         ),
                       ),
                     );
