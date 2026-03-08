@@ -13,11 +13,10 @@ class AIRecommendationPage extends StatefulWidget {
 class _AIRecommendationPageState extends State<AIRecommendationPage> {
   bool isThinking = true;
 
-  String typedText = "";
+  String aiText = "";
+  String fullText = "";
 
-  String finalText = "";
-
-  List<Map<String, dynamic>> recommendedCenters = [];
+  List<Map<String, dynamic>> centers = [];
 
   @override
   void initState() {
@@ -40,7 +39,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   Future<void> generateRecommendation() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    /// Get user profile
+    /// GET USER
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -48,74 +47,91 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// Get vehicle
-    var vehicleSnapshot = await FirebaseFirestore.instance
+    /// GET VEHICLE
+    var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
         .limit(1)
         .get();
 
-    if (vehicleSnapshot.docs.isEmpty) return;
+    if (vehicleSnap.docs.isEmpty) return;
 
-    var vehicle = vehicleSnapshot.docs.first.data();
+    var vehicle = vehicleSnap.docs.first.data();
 
     int year = int.parse(vehicle['year'].toString());
+    int age = DateTime.now().year - year;
 
-    int vehicleAge = DateTime.now().year - year;
+    String recommendedService;
 
-    String recommendation;
-
-    if (vehicleAge >= 5) {
-      recommendation =
-          "Your vehicle is $vehicleAge years old.\n\nBattery check and brake inspection are recommended.";
-    } else if (vehicleAge >= 3) {
-      recommendation =
-          "Your vehicle is $vehicleAge years old.\n\nOil change and brake inspection are recommended.";
+    if (age >= 5) {
+      recommendedService = "battery replacement";
+    } else if (age >= 3) {
+      recommendedService = "brake service";
     } else {
-      recommendation =
-          "Your vehicle is $vehicleAge years old.\n\nRegular oil change is recommended.";
+      recommendedService = "oil change";
     }
 
-    finalText = recommendation;
+    fullText =
+        "Your vehicle is $age years old.\n\nRecommended service: ${recommendedService.toUpperCase()}.";
 
     await typeText();
 
-    await loadRecommendedCenters(district);
+    await loadCenters(recommendedService, district);
   }
 
   Future<void> typeText() async {
-    for (int i = 0; i < finalText.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 40));
+    for (int i = 0; i < fullText.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 35));
 
       if (!mounted) return;
 
       setState(() {
-        typedText += finalText[i];
+        aiText += fullText[i];
       });
     }
   }
 
-  Future<void> loadRecommendedCenters(String district) async {
-    var centers = await FirebaseFirestore.instance
-        .collection('service_center_details')
-        .where('district', isEqualTo: district)
-        .orderBy('avgRating', descending: true)
-        .limit(3)
+  Future<void> loadCenters(String service, String district) async {
+    /// FIND SERVICES
+    var services = await FirebaseFirestore.instance
+        .collection('center_services')
+        .where('categoryName', isEqualTo: service)
         .get();
 
-    recommendedCenters = centers.docs.map((e) => e.data()).toList();
+    if (services.docs.isEmpty) return;
+
+    List<String> centerIds = services.docs
+        .map((e) => e['centerId'] as String)
+        .toList();
+
+    /// GET CENTER DETAILS
+    var centerDocs = await FirebaseFirestore.instance
+        .collection('service_center_details')
+        .where(FieldPath.documentId, whereIn: centerIds)
+        .where('district', isEqualTo: district)
+        .get();
+
+    List<Map<String, dynamic>> list = centerDocs.docs
+        .map((e) => e.data())
+        .toList();
+
+    list.sort((a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0));
+
+    centers = list.take(3).toList();
 
     if (mounted) {
       setState(() {});
     }
   }
 
-  Widget buildCenterCard(Map<String, dynamic> center) {
+  Widget buildCenter(Map<String, dynamic> center) {
+    double rating = (center['avgRating'] ?? 0).toDouble();
+
     return Card(
       child: ListTile(
         leading: const Icon(Icons.star, color: Colors.amber),
         title: Text(center['companyName']),
-        subtitle: Text("Rating: ${center['avgRating'] ?? 0}"),
+        subtitle: Text("Rating: ${rating.toStringAsFixed(1)}"),
       ),
     );
   }
@@ -149,22 +165,22 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
               const SizedBox(height: 20),
 
-              Text(typedText, style: const TextStyle(fontSize: 16)),
+              Text(aiText, style: const TextStyle(fontSize: 16)),
 
               const SizedBox(height: 30),
 
-              const Text(
-                "Best Service Centers Near You",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 10),
-
-              Expanded(
-                child: ListView(
-                  children: recommendedCenters.map(buildCenterCard).toList(),
+              if (centers.isNotEmpty) ...[
+                const Text(
+                  "Best Centers Near You",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-              ),
+
+                const SizedBox(height: 10),
+
+                Expanded(
+                  child: ListView(children: centers.map(buildCenter).toList()),
+                ),
+              ],
             ],
           ],
         ),
