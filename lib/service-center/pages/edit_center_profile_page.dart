@@ -15,7 +15,25 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController workingHoursController = TextEditingController();
 
+  String? selectedDistrict;
+
   bool isLoading = true;
+
+  final List<String> districts = [
+    "Thiruvananthapuram",
+    "Kollam",
+    "Pathanamthitta",
+    "Alappuzha",
+    "Kottayam",
+    "Ernakulam",
+    "Thrissur",
+    "Palakkad",
+    "Malappuram",
+    "Kozhikode",
+    "Wayanad",
+    "Kannur",
+    "Kasaragod",
+  ];
 
   Future<void> loadProfile() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
@@ -32,6 +50,8 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
       locationController.text = data['location'] ?? "";
       descriptionController.text = data['description'] ?? "";
       workingHoursController.text = data['workingHours'] ?? "";
+
+      selectedDistrict = data['district'];
     }
 
     setState(() {
@@ -50,7 +70,10 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
           "location": locationController.text.trim(),
           "description": descriptionController.text.trim(),
           "workingHours": workingHoursController.text.trim(),
+          "district": selectedDistrict,
         });
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Profile updated successfully")),
@@ -73,8 +96,10 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Edit Profile")),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
+
         child: ListView(
           children: [
             TextField(
@@ -93,6 +118,27 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
                 labelText: "Location",
                 border: OutlineInputBorder(),
               ),
+            ),
+
+            const SizedBox(height: 15),
+
+            DropdownButtonFormField<String>(
+              value: selectedDistrict,
+
+              decoration: const InputDecoration(
+                labelText: "District",
+                border: OutlineInputBorder(),
+              ),
+
+              items: districts.map((district) {
+                return DropdownMenuItem(value: district, child: Text(district));
+              }).toList(),
+
+              onChanged: (value) {
+                setState(() {
+                  selectedDistrict = value;
+                });
+              },
             ),
 
             const SizedBox(height: 15),
@@ -132,4 +178,3 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
     );
   }
 }
-//
