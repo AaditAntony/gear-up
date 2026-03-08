@@ -23,6 +23,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   final TextEditingController yearController = TextEditingController();
 
   String? selectedFuelType;
+  String? selectedDistrict;
 
   bool isLoading = false;
 
@@ -30,6 +31,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     if (nameController.text.trim().isEmpty ||
         phoneController.text.trim().isEmpty ||
         addressController.text.trim().isEmpty ||
+        selectedDistrict == null ||
         vehicleNumberController.text.trim().isEmpty ||
         brandController.text.trim().isEmpty ||
         modelController.text.trim().isEmpty ||
@@ -46,11 +48,12 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Update user profile
+      // Save user profile
       await FirebaseFirestore.instance.collection('users').doc(uid).update({
         'name': nameController.text.trim(),
         'phone': phoneController.text.trim(),
         'address': addressController.text.trim(),
+        'district': selectedDistrict,
         'profileCompleted': true,
       });
 
@@ -73,6 +76,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       );
     } catch (e) {
       setState(() => isLoading = false);
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
@@ -83,8 +87,10 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Complete Profile")),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           children: [
             const Text(
@@ -121,6 +127,45 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                 labelText: "Address",
                 border: OutlineInputBorder(),
               ),
+            ),
+
+            const SizedBox(height: 10),
+
+            DropdownButtonFormField<String>(
+              value: selectedDistrict,
+              decoration: const InputDecoration(
+                labelText: "District",
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: "Thiruvananthapuram",
+                  child: Text("Thiruvananthapuram"),
+                ),
+                DropdownMenuItem(value: "Kollam", child: Text("Kollam")),
+                DropdownMenuItem(
+                  value: "Pathanamthitta",
+                  child: Text("Pathanamthitta"),
+                ),
+                DropdownMenuItem(value: "Alappuzha", child: Text("Alappuzha")),
+                DropdownMenuItem(value: "Kottayam", child: Text("Kottayam")),
+                DropdownMenuItem(value: "Ernakulam", child: Text("Ernakulam")),
+                DropdownMenuItem(value: "Thrissur", child: Text("Thrissur")),
+                DropdownMenuItem(value: "Palakkad", child: Text("Palakkad")),
+                DropdownMenuItem(
+                  value: "Malappuram",
+                  child: Text("Malappuram"),
+                ),
+                DropdownMenuItem(value: "Kozhikode", child: Text("Kozhikode")),
+                DropdownMenuItem(value: "Wayanad", child: Text("Wayanad")),
+                DropdownMenuItem(value: "Kannur", child: Text("Kannur")),
+                DropdownMenuItem(value: "Kasaragod", child: Text("Kasaragod")),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  selectedDistrict = value;
+                });
+              },
             ),
 
             const SizedBox(height: 25),
