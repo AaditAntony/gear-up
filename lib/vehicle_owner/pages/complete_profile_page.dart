@@ -7,37 +7,26 @@ class CompleteProfilePage extends StatefulWidget {
   const CompleteProfilePage({super.key});
 
   @override
-  State<CompleteProfilePage> createState() =>
-      _CompleteProfilePageState();
+  State<CompleteProfilePage> createState() => _CompleteProfilePageState();
 }
 
-class _CompleteProfilePageState
-    extends State<CompleteProfilePage> {
-
+class _CompleteProfilePageState extends State<CompleteProfilePage> {
   // Profile Controllers
-  final TextEditingController nameController =
-      TextEditingController();
-  final TextEditingController phoneController =
-      TextEditingController();
-  final TextEditingController addressController =
-      TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   // Vehicle Controllers
-  final TextEditingController vehicleNumberController =
-      TextEditingController();
-  final TextEditingController brandController =
-      TextEditingController();
-  final TextEditingController modelController =
-      TextEditingController();
-  final TextEditingController yearController =
-      TextEditingController();
+  final TextEditingController vehicleNumberController = TextEditingController();
+  final TextEditingController brandController = TextEditingController();
+  final TextEditingController modelController = TextEditingController();
+  final TextEditingController yearController = TextEditingController();
 
   String? selectedFuelType;
 
   bool isLoading = false;
 
   Future<void> submitProfile() async {
-
     if (nameController.text.trim().isEmpty ||
         phoneController.text.trim().isEmpty ||
         addressController.text.trim().isEmpty ||
@@ -46,10 +35,8 @@ class _CompleteProfilePageState
         modelController.text.trim().isEmpty ||
         yearController.text.trim().isEmpty ||
         selectedFuelType == null) {
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Please fill all required fields.")),
+        const SnackBar(content: Text("Please fill all required fields.")),
       );
       return;
     }
@@ -60,10 +47,7 @@ class _CompleteProfilePageState
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
       // Update user profile
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .update({
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
         'name': nameController.text.trim(),
         'phone': phoneController.text.trim(),
         'address': addressController.text.trim(),
@@ -71,12 +55,9 @@ class _CompleteProfilePageState
       });
 
       // Add first vehicle
-      await FirebaseFirestore.instance
-          .collection('vehicles')
-          .add({
+      await FirebaseFirestore.instance.collection('vehicles').add({
         'userId': uid,
-        'vehicleNumber':
-            vehicleNumberController.text.trim(),
+        'vehicleNumber': vehicleNumberController.text.trim(),
         'brand': brandController.text.trim(),
         'model': modelController.text.trim(),
         'fuelType': selectedFuelType,
@@ -88,34 +69,27 @@ class _CompleteProfilePageState
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (_) => const OwnerDashboard()),
+        MaterialPageRoute(builder: (_) => const OwnerDashboard()),
       );
-
     } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Something went wrong.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Complete Profile"),
-      ),
+      appBar: AppBar(title: const Text("Complete Profile")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-
             const Text(
               "Personal Details",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 15),
@@ -153,9 +127,7 @@ class _CompleteProfilePageState
 
             const Text(
               "Add Your Vehicle (Minimum 1 Required)",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 15),
@@ -197,22 +169,10 @@ class _CompleteProfilePageState
                 border: OutlineInputBorder(),
               ),
               items: const [
-                DropdownMenuItem(
-                  value: "Petrol",
-                  child: Text("Petrol"),
-                ),
-                DropdownMenuItem(
-                  value: "Diesel",
-                  child: Text("Diesel"),
-                ),
-                DropdownMenuItem(
-                  value: "Electric",
-                  child: Text("Electric"),
-                ),
-                DropdownMenuItem(
-                  value: "Hybrid",
-                  child: Text("Hybrid"),
-                ),
+                DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
+                DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
+                DropdownMenuItem(value: "Electric", child: Text("Electric")),
+                DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
               ],
               onChanged: (value) {
                 setState(() {
@@ -237,8 +197,7 @@ class _CompleteProfilePageState
             ElevatedButton(
               onPressed: isLoading ? null : submitProfile,
               child: isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.white)
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : const Text("Save Profile"),
             ),
           ],
