@@ -195,11 +195,24 @@ class MyBookingsPage extends StatelessWidget {
                   "createdAt": Timestamp.now(),
                 });
 
-                Navigator.pop(context);
+                /// UPDATE CENTER RATING
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Rating submitted")),
-                );
+                var centerRef = FirebaseFirestore.instance
+                    .collection('service_center_details')
+                    .doc(bookingData['centerId']);
+
+                var centerDoc = await centerRef.get();
+
+                double currentAvg = (centerDoc.data()?['avgRating'] ?? 0)
+                    .toDouble();
+                int total = centerDoc.data()?['totalRatings'] ?? 0;
+
+                double newAvg = ((currentAvg * total) + rating) / (total + 1);
+
+                await centerRef.update({
+                  "avgRating": newAvg,
+                  "totalRatings": total + 1,
+                });
               },
               child: const Text("Submit"),
             ),
