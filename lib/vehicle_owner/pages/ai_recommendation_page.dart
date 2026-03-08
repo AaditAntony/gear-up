@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AIRecommendationPage extends StatefulWidget {
   const AIRecommendationPage({super.key});
@@ -10,175 +11,163 @@ class AIRecommendationPage extends StatefulWidget {
 }
 
 class _AIRecommendationPageState extends State<AIRecommendationPage> {
-  String introText = "";
-  String fullIntro =
-      "Hello! I analyzed your vehicle data and generated maintenance recommendations.";
+  bool isThinking = true;
+
+  String typedText = "";
+
+  String finalText = "";
+
+  List<Map<String, dynamic>> recommendedCenters = [];
 
   @override
   void initState() {
     super.initState();
-    startTyping();
+    runAI();
   }
 
-  Future<void> startTyping() async {
-  for (int i = 0; i < fullIntro.length; i++) {
-
-    await Future.delayed(const Duration(milliseconds: 35));
+  Future<void> runAI() async {
+    await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
     setState(() {
-      introText += fullIntro[i];
+      isThinking = false;
     });
+
+    await generateRecommendation();
   }
-}
 
-  List<Map<String, String>> generateRecommendations(
-    Map<String, dynamic> vehicle,
-  ) {
-    List<Map<String, String>> recs = [];
+  Future<void> generateRecommendation() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    int mileage = int.tryParse(vehicle['mileage'].toString()) ?? 0;
-    int lastServiceKm = int.tryParse(vehicle['lastServiceKm'].toString()) ?? 0;
-    int year = int.tryParse(vehicle['year'].toString()) ?? DateTime.now().year;
+    /// Get user profile
+    var userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
+    String district = userDoc['district'];
+
+    /// Get vehicle
+    var vehicleSnapshot = await FirebaseFirestore.instance
+        .collection('vehicles')
+        .where('userId', isEqualTo: uid)
+        .limit(1)
+        .get();
+
+    if (vehicleSnapshot.docs.isEmpty) return;
+
+    var vehicle = vehicleSnapshot.docs.first.data();
+
+    int year = int.parse(vehicle['year'].toString());
 
     int vehicleAge = DateTime.now().year - year;
-    int distance = mileage - lastServiceKm;
 
-    if (distance > 5000) {
-      recs.add({
-        "title": "Oil Change Required",
-        "reason": "Vehicle travelled $distance km since last service.",
-      });
+    String recommendation;
+
+    if (vehicleAge >= 5) {
+      recommendation =
+          "Your vehicle is $vehicleAge years old.\n\nBattery check and brake inspection are recommended.";
+    } else if (vehicleAge >= 3) {
+      recommendation =
+          "Your vehicle is $vehicleAge years old.\n\nOil change and brake inspection are recommended.";
+    } else {
+      recommendation =
+          "Your vehicle is $vehicleAge years old.\n\nRegular oil change is recommended.";
     }
 
-    if (vehicleAge > 3) {
-      recs.add({
-        "title": "Brake Inspection Suggested",
-        "reason": "Vehicle is $vehicleAge years old.",
+    finalText = recommendation;
+
+    await typeText();
+
+    await loadRecommendedCenters(district);
+  }
+
+  Future<void> typeText() async {
+    for (int i = 0; i < finalText.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 40));
+
+      if (!mounted) return;
+
+      setState(() {
+        typedText += finalText[i];
       });
     }
+  }
 
-    if (mileage > 20000) {
-      recs.add({
-        "title": "Engine Inspection Recommended",
-        "reason": "Vehicle mileage exceeded 20,000 km.",
-      });
+  Future<void> loadRecommendedCenters(String district) async {
+    var centers = await FirebaseFirestore.instance
+        .collection('service_center_details')
+        .where('district', isEqualTo: district)
+        .orderBy('avgRating', descending: true)
+        .limit(3)
+        .get();
+
+    recommendedCenters = centers.docs.map((e) => e.data()).toList();
+
+    if (mounted) {
+      setState(() {});
     }
+  }
 
-    if (vehicleAge > 4) {
-      recs.add({
-        "title": "Battery Check Recommended",
-        "reason": "Battery efficiency may reduce after 4 years.",
-      });
-    }
-
-    return recs;
+  Widget buildCenterCard(Map<String, dynamic> center) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.star, color: Colors.amber),
+        title: Text(center['companyName']),
+        subtitle: Text("Rating: ${center['avgRating'] ?? 0}"),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
-
     return Scaffold(
-      appBar: AppBar(title: const Text("AI Assistant")),
+      appBar: AppBar(title: const Text("AI Vehicle Assistant")),
 
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('vehicles')
-            .where('userId', isEqualTo: uid)
-            .snapshots(),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          var vehicles = snapshot.data!.docs;
-
-          if (vehicles.isEmpty) {
-            return const Center(
-              child: Text("Add a vehicle to get AI recommendations"),
-            );
-          }
-
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              /// AI intro message
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (isThinking)
+              const Center(
+                child: Column(
                   children: [
-                    const Icon(Icons.smart_toy, color: Colors.blue),
-
-                    const SizedBox(width: 10),
-
-                    Expanded(child: Text(introText)),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 20),
+                    Text("AI is analyzing your vehicle..."),
                   ],
                 ),
+              )
+            else ...[
+              const Text(
+                "AI Recommendation",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 20),
 
-              /// Vehicle recommendations
-              ...vehicles.map((doc) {
-                var vehicle = doc.data() as Map<String, dynamic>;
+              Text(typedText, style: const TextStyle(fontSize: 16)),
 
-                var recs = generateRecommendations(vehicle);
+              const SizedBox(height: 30),
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
+              const Text(
+                "Best Service Centers Near You",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
 
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Vehicle: ${vehicle['vehicleNumber']}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+              const SizedBox(height: 10),
 
-                        const SizedBox(height: 10),
-
-                        if (recs.isEmpty)
-                          const Text(
-                            "No maintenance required right now.",
-                            style: TextStyle(color: Colors.green),
-                          )
-                        else
-                          Column(
-                            children: recs.map((rec) {
-                              return Card(
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.warning,
-                                    color: Colors.orange,
-                                  ),
-                                  title: Text(rec["title"]!),
-                                  subtitle: Text(rec["reason"]!),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+              Expanded(
+                child: ListView(
+                  children: recommendedCenters.map(buildCenterCard).toList(),
+                ),
+              ),
             ],
-          );
-        },
+          ],
+        ),
       ),
     );
   }
