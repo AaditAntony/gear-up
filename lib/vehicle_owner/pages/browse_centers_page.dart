@@ -41,6 +41,26 @@ class BrowseCentersPage extends StatelessWidget {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber, size: 18),
+                          SizedBox(width: 4),
+
+                          Text(
+                            (data['avgRating'] ?? 0).toStringAsFixed(1),
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+
+                          SizedBox(width: 6),
+
+                          Text(
+                            "(${data['totalRatings'] ?? 0})",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 4),
                       Text(data['location'] ?? ""),
 
                       Text("${data['district'] ?? ""}, ${data['state'] ?? ""}"),
