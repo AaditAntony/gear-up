@@ -3,6 +3,7 @@ import 'package:gear_up/vehicle_owner/pages/ai_recommendation_page.dart';
 import 'package:gear_up/vehicle_owner/pages/browse_centers_page.dart';
 import 'package:gear_up/vehicle_owner/pages/my_bookings_page.dart';
 import 'package:gear_up/vehicle_owner/pages/my_vehicles_page.dart';
+import 'package:gear_up/vehicle_owner/pages/product_page.dart';
 import 'package:gear_up/vehicle_owner/pages/profile_page.dart';
 
 
@@ -31,6 +32,29 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      appBar: AppBar(
+  title: const Text("GearUp"),
+
+  actions: [
+
+    IconButton(
+      icon: const Icon(Icons.shopping_cart),
+      tooltip: "Products",
+
+      onPressed: () {
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>  ProductsPage(),
+          ),
+        );
+
+      },
+    ),
+
+  ],
+),
 
       body: pages[selectedIndex],
 
