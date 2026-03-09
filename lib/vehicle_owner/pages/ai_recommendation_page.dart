@@ -48,7 +48,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// GET USER VEHICLES
+    /// VEHICLES
 
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
@@ -77,29 +77,40 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
       List<String> recommendations = [];
 
-      /// AGE RULES
+      List<String> healthIssues = [];
+
+      int healthScore = 100;
+
+      /// AGE IMPACT
 
       if (age >= 5) {
+        healthScore -= 15;
+        healthIssues.add("Vehicle age is high");
         recommendations.add("Battery Replacement");
       }
 
-      /// MILEAGE RULES
+      /// MILEAGE IMPACT
 
       if (mileage >= 40000) {
+        healthScore -= 15;
+        healthIssues.add("High mileage detected");
         recommendations.add("Brake Service");
       }
 
       if (mileage >= 60000) {
+        healthScore -= 10;
         recommendations.add("Clutch Inspection");
       }
 
       /// SERVICE INTERVAL
 
       if (monthsSinceService >= 6) {
+        healthScore -= 10;
+        healthIssues.add("Last service overdue");
         recommendations.add("Oil Change");
       }
 
-      /// CHECK LAST COMPLAINT
+      /// LAST COMPLAINT
 
       var bookingSnap = await FirebaseFirestore.instance
           .collection('bookings')
@@ -114,33 +125,47 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         String complaint = booking['complaint'] ?? "";
 
         if (complaint == "Engine Noise") {
+          healthScore -= 10;
+          healthIssues.add("Engine noise reported");
           recommendations.add("Engine Inspection");
         }
 
         if (complaint == "Brake Noise") {
+          healthScore -= 10;
+          healthIssues.add("Brake noise reported");
           recommendations.add("Brake Pad Replacement");
         }
 
         if (complaint == "Battery Drain") {
+          healthScore -= 10;
+          healthIssues.add("Battery drain issue");
           recommendations.add("Battery Replacement");
         }
 
         if (complaint == "Vibration") {
+          healthScore -= 5;
+          healthIssues.add("Vehicle vibration detected");
           recommendations.add("Wheel Alignment");
         }
 
         if (complaint == "Oil Leakage") {
+          healthScore -= 10;
+          healthIssues.add("Oil leakage issue");
           recommendations.add("Engine Oil Seal Check");
         }
 
         if (complaint == "Low Mileage") {
+          healthScore -= 5;
           recommendations.add("Engine Tune-up");
         }
 
         if (complaint == "Engine Overheating") {
+          healthScore -= 10;
           recommendations.add("Coolant System Check");
         }
       }
+
+      if (healthScore < 0) healthScore = 0;
 
       /// DEFAULT
 
@@ -148,12 +173,21 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         recommendations.add("General Inspection");
       }
 
-      /// AI TEXT
+      /// BUILD AI TEXT
 
       fullText += "\nVehicle: $vehicleNumber ($brand $model)\n\n";
 
-      fullText += "Age: $age years\n";
-      fullText += "Mileage: $mileage km\n\n";
+      fullText += "Vehicle Health Score: $healthScore%\n\n";
+
+      if (healthIssues.isNotEmpty) {
+        fullText += "Issues Detected:\n";
+
+        for (var issue in healthIssues) {
+          fullText += "• $issue\n";
+        }
+
+        fullText += "\n";
+      }
 
       fullText += "Recommended Services:\n";
 
