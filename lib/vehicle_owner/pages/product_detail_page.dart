@@ -1,0 +1,73 @@
+import 'package:flutter/material.dart';
+
+class ProductDetailPage extends StatelessWidget {
+  final String productId;
+  final Map<String, dynamic> productData;
+
+  const ProductDetailPage({
+    super.key,
+    required this.productId,
+    required this.productData,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(productData['productName'])),
+
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text(
+              productData['productName'],
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(
+              "Sold by: ${productData['centerName']}",
+              style: const TextStyle(fontSize: 16),
+            ),
+
+            const SizedBox(height: 20),
+
+            Text(
+              "Price: ₹${productData['price']}",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 20),
+
+            const Text(
+              "Description",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(productData['description']),
+
+            const Spacer(),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                child: const Text("Buy Now"),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Payment system coming next")),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
