@@ -29,7 +29,7 @@ class _BookingPageState extends State<BookingPage> {
   String? selectedVehicleId;
   String? selectedVehicleNumber;
 
-  final TextEditingController complaintController = TextEditingController();
+  String? selectedComplaint;
 
   bool isLoading = false;
 
@@ -42,6 +42,20 @@ class _BookingPageState extends State<BookingPage> {
     "03:00 PM",
     "04:00 PM",
     "05:00 PM",
+  ];
+
+  /// STRUCTURED COMPLAINT LIST
+
+  final List<String> complaints = [
+    "No Specific Issue",
+    "Engine Noise",
+    "Brake Noise",
+    "Low Mileage",
+    "Engine Overheating",
+    "Battery Drain",
+    "Starting Problem",
+    "Vibration",
+    "Oil Leakage",
   ];
 
   Future<void> pickDate() async {
@@ -63,10 +77,12 @@ class _BookingPageState extends State<BookingPage> {
   Future<void> createBooking() async {
     if (selectedDate == null ||
         selectedSlot == null ||
-        selectedVehicleId == null) {
+        selectedVehicleId == null ||
+        selectedComplaint == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please complete booking details")),
       );
+
       return;
     }
 
@@ -77,7 +93,8 @@ class _BookingPageState extends State<BookingPage> {
 
       String date = selectedDate!.toIso8601String();
 
-      // Check if slot already booked in this center
+      /// CENTER SLOT CHECK
+
       var centerCheck = await FirebaseFirestore.instance
           .collection('bookings')
           .where('centerId', isEqualTo: widget.centerId)
@@ -99,7 +116,8 @@ class _BookingPageState extends State<BookingPage> {
         return;
       }
 
-      // Check if user already booked another vehicle in same slot
+      /// USER SLOT CHECK
+
       var userCheck = await FirebaseFirestore.instance
           .collection('bookings')
           .where('userId', isEqualTo: uid)
@@ -121,7 +139,8 @@ class _BookingPageState extends State<BookingPage> {
         return;
       }
 
-      // Create booking
+      /// CREATE BOOKING
+
       await FirebaseFirestore.instance.collection('bookings').add({
         'userId': uid,
 
@@ -139,7 +158,8 @@ class _BookingPageState extends State<BookingPage> {
 
         'price': widget.price,
 
-        'complaint': complaintController.text.trim(),
+        /// STRUCTURED COMPLAINT
+        'complaint': selectedComplaint,
 
         'status': 'pending',
 
@@ -168,10 +188,13 @@ class _BookingPageState extends State<BookingPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Book Service")),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
             Text(
               widget.categoryName,
@@ -184,6 +207,7 @@ class _BookingPageState extends State<BookingPage> {
 
             const SizedBox(height: 20),
 
+            /// VEHICLE SELECT
             const Text(
               "Select Vehicle",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -194,6 +218,7 @@ class _BookingPageState extends State<BookingPage> {
                   .collection('vehicles')
                   .where('userId', isEqualTo: uid)
                   .snapshots(),
+
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const CircularProgressIndicator();
@@ -203,16 +228,20 @@ class _BookingPageState extends State<BookingPage> {
 
                 return DropdownButtonFormField<String>(
                   value: selectedVehicleId,
+
                   hint: const Text("Choose Vehicle"),
+
                   items: vehicles.map((doc) {
                     return DropdownMenuItem(
                       value: doc.id,
                       child: Text(doc['vehicleNumber']),
+
                       onTap: () {
                         selectedVehicleNumber = doc['vehicleNumber'];
                       },
                     );
                   }).toList(),
+
                   onChanged: (value) {
                     setState(() {
                       selectedVehicleId = value;
@@ -224,25 +253,33 @@ class _BookingPageState extends State<BookingPage> {
 
             const SizedBox(height: 20),
 
+            /// COMPLAINT SELECT
             const Text(
-              "Describe Issue (Optional)",
+              "Select Issue",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 8),
 
-            TextField(
-              controller: complaintController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText:
-                    "Example: engine noise, brake issue, AC not cooling...",
-                border: OutlineInputBorder(),
-              ),
+            DropdownButtonFormField<String>(
+              value: selectedComplaint,
+
+              hint: const Text("Choose Problem"),
+
+              items: complaints.map((c) {
+                return DropdownMenuItem(value: c, child: Text(c));
+              }).toList(),
+
+              onChanged: (value) {
+                setState(() {
+                  selectedComplaint = value;
+                });
+              },
             ),
 
             const SizedBox(height: 20),
 
+            /// DATE
             ElevatedButton(
               onPressed: pickDate,
               child: Text(
@@ -254,6 +291,7 @@ class _BookingPageState extends State<BookingPage> {
 
             const SizedBox(height: 20),
 
+            /// SLOT
             const Text(
               "Select Time Slot",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -261,12 +299,15 @@ class _BookingPageState extends State<BookingPage> {
 
             Wrap(
               spacing: 10,
+
               children: slots.map((slot) {
                 bool isSelected = selectedSlot == slot;
 
                 return ChoiceChip(
                   label: Text(slot),
+
                   selected: isSelected,
+
                   onSelected: (_) {
                     setState(() {
                       selectedSlot = slot;
@@ -280,8 +321,10 @@ class _BookingPageState extends State<BookingPage> {
 
             SizedBox(
               width: double.infinity,
+
               child: ElevatedButton(
                 onPressed: isLoading ? null : createBooking,
+
                 child: isLoading
                     ? const CircularProgressIndicator()
                     : const Text("Confirm Booking"),
@@ -293,4 +336,3 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 }
-//
