@@ -39,7 +39,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   Future<void> generateRecommendation() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    /// GET USER
+    /// USER
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -47,7 +47,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// GET VEHICLE
+    /// VEHICLE
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
@@ -61,18 +61,31 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     int year = int.parse(vehicle['year'].toString());
     int age = DateTime.now().year - year;
 
+    int mileage = int.tryParse(vehicle['mileage']?.toString() ?? "0") ?? 0;
+
+    Timestamp? lastServiceTimestamp = vehicle['lastServiceDate'];
+    int monthsSinceService = 0;
+
+    if (lastServiceTimestamp != null) {
+      DateTime lastService = lastServiceTimestamp.toDate();
+      monthsSinceService = DateTime.now().difference(lastService).inDays ~/ 30;
+    }
+
     String recommendedService;
 
+    /// AI LOGIC
     if (age >= 5) {
-      recommendedService = "battery replacement";
-    } else if (age >= 3) {
-      recommendedService = "brake service";
+      recommendedService = "Battery Replacement";
+    } else if (mileage >= 40000) {
+      recommendedService = "Brake Service";
+    } else if (monthsSinceService >= 6) {
+      recommendedService = "Oil Change";
     } else {
-      recommendedService = "oil change";
+      recommendedService = "General Inspection";
     }
 
     fullText =
-        "Your vehicle is $age years old.\n\nRecommended service: ${recommendedService.toUpperCase()}.";
+        "Your vehicle is $age years old.\n\nMileage: $mileage km.\n\nRecommended service: $recommendedService.";
 
     await typeText();
 
@@ -95,7 +108,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     /// FIND SERVICES
     var services = await FirebaseFirestore.instance
         .collection('center_services')
-        .where('categoryName', isEqualTo: service)
+        .where('categoryName', isEqualTo: service.trim())
         .get();
 
     if (services.docs.isEmpty) return;
