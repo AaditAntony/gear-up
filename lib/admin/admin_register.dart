@@ -45,6 +45,10 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
         isLoading = true;
       });
 
+      // store current admin
+      String? currentAdminEmail = FirebaseAuth.instance.currentUser?.email;
+
+      // create new admin
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
@@ -67,41 +71,20 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
         'createdAt': Timestamp.now(),
       });
 
+      // logout new admin
+      await FirebaseAuth.instance.signOut();
+
       setState(() {
         isLoading = false;
       });
 
-      if (isApproved) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminDashboard()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Registration successful. Waiting for approval."),
-          ),
-        );
-        Navigator.pop(context);
-      }
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Admin registered. Waiting for approval."),
+        ),
+      );
 
-      String errorMessage = "Registration failed.";
-
-      if (e.code == 'email-already-in-use') {
-        errorMessage = "This email is already registered.";
-      } else if (e.code == 'weak-password') {
-        errorMessage = "Password must be at least 6 characters.";
-      } else if (e.code == 'invalid-email') {
-        errorMessage = "Invalid email format.";
-      }
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      Navigator.pop(context);
     } catch (e) {
       setState(() {
         isLoading = false;
