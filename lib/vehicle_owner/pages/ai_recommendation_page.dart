@@ -40,6 +40,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     /// USER DATA
+
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -47,7 +48,8 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// GET ALL VEHICLES
+    /// GET USER VEHICLES
+
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
@@ -75,27 +77,83 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
       List<String> recommendations = [];
 
-      /// AI RULES
+      /// AGE RULES
 
       if (age >= 5) {
         recommendations.add("Battery Replacement");
       }
 
+      /// MILEAGE RULES
+
       if (mileage >= 40000) {
         recommendations.add("Brake Service");
       }
+
+      if (mileage >= 60000) {
+        recommendations.add("Clutch Inspection");
+      }
+
+      /// SERVICE INTERVAL
 
       if (monthsSinceService >= 6) {
         recommendations.add("Oil Change");
       }
 
+      /// CHECK LAST COMPLAINT
+
+      var bookingSnap = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('vehicleNumber', isEqualTo: vehicleNumber)
+          .orderBy('createdAt', descending: true)
+          .limit(1)
+          .get();
+
+      if (bookingSnap.docs.isNotEmpty) {
+        var booking = bookingSnap.docs.first.data();
+
+        String complaint = booking['complaint'] ?? "";
+
+        if (complaint == "Engine Noise") {
+          recommendations.add("Engine Inspection");
+        }
+
+        if (complaint == "Brake Noise") {
+          recommendations.add("Brake Pad Replacement");
+        }
+
+        if (complaint == "Battery Drain") {
+          recommendations.add("Battery Replacement");
+        }
+
+        if (complaint == "Vibration") {
+          recommendations.add("Wheel Alignment");
+        }
+
+        if (complaint == "Oil Leakage") {
+          recommendations.add("Engine Oil Seal Check");
+        }
+
+        if (complaint == "Low Mileage") {
+          recommendations.add("Engine Tune-up");
+        }
+
+        if (complaint == "Engine Overheating") {
+          recommendations.add("Coolant System Check");
+        }
+      }
+
+      /// DEFAULT
+
       if (recommendations.isEmpty) {
         recommendations.add("General Inspection");
       }
 
+      /// AI TEXT
+
       fullText += "\nVehicle: $vehicleNumber ($brand $model)\n\n";
 
-      fullText += "Age: $age years\nMileage: $mileage km\n\n";
+      fullText += "Age: $age years\n";
+      fullText += "Mileage: $mileage km\n\n";
 
       fullText += "Recommended Services:\n";
 
@@ -113,7 +171,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
   Future<void> typeText() async {
     for (int i = aiText.length; i < fullText.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 25));
+      await Future.delayed(const Duration(milliseconds: 30));
 
       if (!mounted) return;
 
@@ -144,8 +202,6 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     List<Map<String, dynamic>> list = centerDocs.docs
         .map((e) => e.data())
         .toList();
-
-    /// SORT BY RATING
 
     list.sort((a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0));
 
