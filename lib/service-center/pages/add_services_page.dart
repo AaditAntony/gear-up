@@ -16,7 +16,9 @@ class _AddServicesPageState extends State<AddServicesPage> {
   final TextEditingController priceController = TextEditingController();
 
   Future<void> addService() async {
-    if (selectedCategoryId == null || priceController.text.trim().isEmpty) {
+    if (selectedCategoryId == null ||
+        selectedCategoryName == null ||
+        priceController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Select category and enter price")),
       );
@@ -24,6 +26,20 @@ class _AddServicesPageState extends State<AddServicesPage> {
     }
 
     String centerId = FirebaseAuth.instance.currentUser!.uid;
+
+    /// Prevent duplicate services
+    var existing = await FirebaseFirestore.instance
+        .collection('center_services')
+        .where('centerId', isEqualTo: centerId)
+        .where('categoryId', isEqualTo: selectedCategoryId)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Service already added")));
+      return;
+    }
 
     await FirebaseFirestore.instance.collection('center_services').add({
       'centerId': centerId,
@@ -61,7 +77,7 @@ class _AddServicesPageState extends State<AddServicesPage> {
 
         const SizedBox(height: 20),
 
-        // 🔹 CATEGORY DROPDOWN
+        /// CATEGORY DROPDOWN
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('service_categories')
@@ -83,14 +99,16 @@ class _AddServicesPageState extends State<AddServicesPage> {
                 return DropdownMenuItem<String>(
                   value: doc.id,
                   child: Text(doc['name']),
-                  onTap: () {
-                    selectedCategoryName = doc['name'];
-                  },
                 );
               }).toList(),
               onChanged: (value) {
+                var selectedDoc = categories.firstWhere(
+                  (doc) => doc.id == value,
+                );
+
                 setState(() {
                   selectedCategoryId = value;
+                  selectedCategoryName = selectedDoc['name'];
                 });
               },
             );
