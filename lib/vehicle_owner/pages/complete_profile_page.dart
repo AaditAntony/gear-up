@@ -11,35 +11,69 @@ class CompleteProfilePage extends StatefulWidget {
 }
 
 class _CompleteProfilePageState extends State<CompleteProfilePage> {
-  // Profile Controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
-  // Vehicle Controllers
   final TextEditingController vehicleNumberController = TextEditingController();
   final TextEditingController brandController = TextEditingController();
   final TextEditingController modelController = TextEditingController();
   final TextEditingController yearController = TextEditingController();
+  final TextEditingController mileageController = TextEditingController();
 
   String? selectedFuelType;
   String? selectedDistrict;
 
+  DateTime? lastServiceDate;
+
   bool isLoading = false;
 
+  final List<String> districts = [
+    "Thiruvananthapuram",
+    "Kollam",
+    "Pathanamthitta",
+    "Alappuzha",
+    "Kottayam",
+    "Ernakulam",
+    "Thrissur",
+    "Palakkad",
+    "Malappuram",
+    "Kozhikode",
+    "Wayanad",
+    "Kannur",
+    "Kasaragod",
+  ];
+
+  Future<void> pickServiceDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2015),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        lastServiceDate = picked;
+      });
+    }
+  }
+
   Future<void> submitProfile() async {
-    if (nameController.text.trim().isEmpty ||
-        phoneController.text.trim().isEmpty ||
-        addressController.text.trim().isEmpty ||
+    if (nameController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        addressController.text.isEmpty ||
         selectedDistrict == null ||
-        vehicleNumberController.text.trim().isEmpty ||
-        brandController.text.trim().isEmpty ||
-        modelController.text.trim().isEmpty ||
-        yearController.text.trim().isEmpty ||
-        selectedFuelType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all required fields.")),
-      );
+        vehicleNumberController.text.isEmpty ||
+        brandController.text.isEmpty ||
+        modelController.text.isEmpty ||
+        yearController.text.isEmpty ||
+        mileageController.text.isEmpty ||
+        selectedFuelType == null ||
+        lastServiceDate == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
       return;
     }
 
@@ -48,7 +82,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      // Save user profile
+      /// SAVE USER PROFILE
       await FirebaseFirestore.instance.collection('users').doc(uid).update({
         'name': nameController.text.trim(),
         'phone': phoneController.text.trim(),
@@ -57,14 +91,16 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         'profileCompleted': true,
       });
 
-      // Add first vehicle
+      /// SAVE VEHICLE
       await FirebaseFirestore.instance.collection('vehicles').add({
         'userId': uid,
         'vehicleNumber': vehicleNumberController.text.trim(),
         'brand': brandController.text.trim(),
         'model': modelController.text.trim(),
         'fuelType': selectedFuelType,
-        'year': yearController.text.trim(),
+        'year': int.parse(yearController.text.trim()),
+        'mileage': int.parse(mileageController.text.trim()),
+        'lastServiceDate': Timestamp.fromDate(lastServiceDate!),
         'createdAt': Timestamp.now(),
       });
 
@@ -79,7 +115,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
     }
   }
 
@@ -113,7 +149,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             TextField(
               controller: phoneController,
               decoration: const InputDecoration(
-                labelText: "Phone Number",
+                labelText: "Phone",
                 border: OutlineInputBorder(),
               ),
             ),
@@ -122,7 +158,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
             TextField(
               controller: addressController,
-              maxLines: 2,
               decoration: const InputDecoration(
                 labelText: "Address",
                 border: OutlineInputBorder(),
@@ -133,34 +168,16 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
             DropdownButtonFormField<String>(
               value: selectedDistrict,
+
               decoration: const InputDecoration(
                 labelText: "District",
                 border: OutlineInputBorder(),
               ),
-              items: const [
-                DropdownMenuItem(
-                  value: "Thiruvananthapuram",
-                  child: Text("Thiruvananthapuram"),
-                ),
-                DropdownMenuItem(value: "Kollam", child: Text("Kollam")),
-                DropdownMenuItem(
-                  value: "Pathanamthitta",
-                  child: Text("Pathanamthitta"),
-                ),
-                DropdownMenuItem(value: "Alappuzha", child: Text("Alappuzha")),
-                DropdownMenuItem(value: "Kottayam", child: Text("Kottayam")),
-                DropdownMenuItem(value: "Ernakulam", child: Text("Ernakulam")),
-                DropdownMenuItem(value: "Thrissur", child: Text("Thrissur")),
-                DropdownMenuItem(value: "Palakkad", child: Text("Palakkad")),
-                DropdownMenuItem(
-                  value: "Malappuram",
-                  child: Text("Malappuram"),
-                ),
-                DropdownMenuItem(value: "Kozhikode", child: Text("Kozhikode")),
-                DropdownMenuItem(value: "Wayanad", child: Text("Wayanad")),
-                DropdownMenuItem(value: "Kannur", child: Text("Kannur")),
-                DropdownMenuItem(value: "Kasaragod", child: Text("Kasaragod")),
-              ],
+
+              items: districts.map((district) {
+                return DropdownMenuItem(value: district, child: Text(district));
+              }).toList(),
+
               onChanged: (value) {
                 setState(() {
                   selectedDistrict = value;
@@ -171,7 +188,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             const SizedBox(height: 25),
 
             const Text(
-              "Add Your Vehicle (Minimum 1 Required)",
+              "Vehicle Details",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
@@ -209,16 +226,19 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
             DropdownButtonFormField<String>(
               value: selectedFuelType,
+
               decoration: const InputDecoration(
                 labelText: "Fuel Type",
                 border: OutlineInputBorder(),
               ),
+
               items: const [
                 DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
                 DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
                 DropdownMenuItem(value: "Electric", child: Text("Electric")),
                 DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
               ],
+
               onChanged: (value) {
                 setState(() {
                   selectedFuelType = value;
@@ -230,17 +250,35 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
             TextField(
               controller: yearController,
+              keyboardType: TextInputType.number,
               decoration: const InputDecoration(
                 labelText: "Manufacturing Year",
                 border: OutlineInputBorder(),
               ),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: mileageController,
               keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Current Mileage",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: pickServiceDate,
+              child: const Text("Select Last Service Date"),
             ),
 
             const SizedBox(height: 25),
 
             ElevatedButton(
-              onPressed: isLoading ? null : submitProfile,
+              onPressed: submitProfile,
               child: isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text("Save Profile"),
