@@ -2,25 +2,87 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class MyVehiclesPage extends StatelessWidget {
+class MyVehiclesPage extends StatefulWidget {
   const MyVehiclesPage({super.key});
 
-  void showAddVehicleDialog(BuildContext context) {
-    final vehicleNumberController = TextEditingController();
-    final brandController = TextEditingController();
-    final modelController = TextEditingController();
-    final mileageController = TextEditingController();
-    final lastServiceController = TextEditingController();
-    final yearController = TextEditingController();
+  @override
+  State<MyVehiclesPage> createState() => _MyVehiclesPageState();
+}
 
+class _MyVehiclesPageState extends State<MyVehiclesPage> {
+  final vehicleNumberController = TextEditingController();
+  final brandController = TextEditingController();
+  final modelController = TextEditingController();
+  final yearController = TextEditingController();
+  final mileageController = TextEditingController();
+
+  String? fuelType;
+  DateTime? lastServiceDate;
+
+  Future<void> pickServiceDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2015),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        lastServiceDate = picked;
+      });
+    }
+  }
+
+  Future<void> addVehicle() async {
+    if (vehicleNumberController.text.isEmpty ||
+        brandController.text.isEmpty ||
+        modelController.text.isEmpty ||
+        yearController.text.isEmpty ||
+        mileageController.text.isEmpty ||
+        fuelType == null ||
+        lastServiceDate == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+
+      return;
+    }
+
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+    await FirebaseFirestore.instance.collection('vehicles').add({
+      "userId": uid,
+      "vehicleNumber": vehicleNumberController.text.trim(),
+      "brand": brandController.text.trim(),
+      "model": modelController.text.trim(),
+      "fuelType": fuelType,
+      "year": int.parse(yearController.text),
+      "mileage": int.parse(mileageController.text),
+      "lastServiceDate": Timestamp.fromDate(lastServiceDate!),
+      "createdAt": Timestamp.now(),
+    });
+
+    Navigator.pop(context);
+
+    vehicleNumberController.clear();
+    brandController.clear();
+    modelController.clear();
+    yearController.clear();
+    mileageController.clear();
+  }
+
+  void showAddVehicleDialog() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text("Add Vehicle"),
+
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+
               children: [
                 TextField(
                   controller: vehicleNumberController,
@@ -29,41 +91,35 @@ class MyVehiclesPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 10),
-
                 TextField(
                   controller: brandController,
                   decoration: const InputDecoration(labelText: "Brand"),
                 ),
-
-                const SizedBox(height: 10),
 
                 TextField(
                   controller: modelController,
                   decoration: const InputDecoration(labelText: "Model"),
                 ),
 
-                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: fuelType,
 
-                TextField(
-                  controller: mileageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Current Mileage (km)",
-                  ),
+                  hint: const Text("Fuel Type"),
+
+                  items: const [
+                    DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
+                    DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
+                    DropdownMenuItem(
+                      value: "Electric",
+                      child: Text("Electric"),
+                    ),
+                    DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
+                  ],
+
+                  onChanged: (value) {
+                    fuelType = value;
+                  },
                 ),
-
-                const SizedBox(height: 10),
-
-                TextField(
-                  controller: lastServiceController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Last Service Mileage (km)",
-                  ),
-                ),
-
-                const SizedBox(height: 10),
 
                 TextField(
                   controller: yearController,
@@ -72,95 +128,36 @@ class MyVehiclesPage extends StatelessWidget {
                     labelText: "Manufacturing Year",
                   ),
                 ),
+
+                TextField(
+                  controller: mileageController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Current Mileage",
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                ElevatedButton(
+                  onPressed: pickServiceDate,
+                  child: const Text("Select Last Service Date"),
+                ),
               ],
             ),
           ),
+
           actions: [
             TextButton(
+              onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.pop(context);
-              },
             ),
 
-            ElevatedButton(
-              child: const Text("Save"),
-              onPressed: () async {
-                String uid = FirebaseAuth.instance.currentUser!.uid;
-
-                String vehicleNumber = vehicleNumberController.text
-                    .trim()
-                    .toUpperCase();
-
-                if (vehicleNumber.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Enter vehicle number")),
-                  );
-                  return;
-                }
-
-                /// Duplicate check
-                var existingVehicle = await FirebaseFirestore.instance
-                    .collection('vehicles')
-                    .where('userId', isEqualTo: uid)
-                    .where('vehicleNumber', isEqualTo: vehicleNumber)
-                    .get();
-
-                if (existingVehicle.docs.isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("This vehicle is already added"),
-                    ),
-                  );
-                  return;
-                }
-
-                await FirebaseFirestore.instance.collection('vehicles').add({
-                  'userId': uid,
-                  'vehicleNumber': vehicleNumber,
-                  'brand': brandController.text.trim(),
-                  'model': modelController.text.trim(),
-                  'mileage': int.tryParse(mileageController.text) ?? 0,
-                  'lastServiceKm':
-                      int.tryParse(lastServiceController.text) ?? 0,
-                  'year':
-                      int.tryParse(yearController.text) ?? DateTime.now().year,
-                  'createdAt': Timestamp.now(),
-                });
-
-                Navigator.pop(context);
-              },
-            ),
+            ElevatedButton(onPressed: addVehicle, child: const Text("Save")),
           ],
         );
       },
     );
-  }
-
-  Future<void> deleteVehicle(
-    BuildContext context,
-    String vehicleId,
-    String vehicleNumber,
-  ) async {
-    var bookingCheck = await FirebaseFirestore.instance
-        .collection('bookings')
-        .where('vehicleNumber', isEqualTo: vehicleNumber)
-        .where('status', whereIn: ['pending', 'accepted', 'in_progress'])
-        .get();
-
-    if (bookingCheck.docs.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cannot delete vehicle with active bookings"),
-        ),
-      );
-      return;
-    }
-
-    await FirebaseFirestore.instance
-        .collection('vehicles')
-        .doc(vehicleId)
-        .delete();
   }
 
   @override
@@ -171,9 +168,7 @@ class MyVehiclesPage extends StatelessWidget {
       appBar: AppBar(title: const Text("My Vehicles")),
 
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showAddVehicleDialog(context);
-        },
+        onPressed: showAddVehicleDialog,
         child: const Icon(Icons.add),
       ),
 
@@ -182,35 +177,32 @@ class MyVehiclesPage extends StatelessWidget {
             .collection('vehicles')
             .where('userId', isEqualTo: uid)
             .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No vehicles added"));
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           var vehicles = snapshot.data!.docs;
 
+          if (vehicles.isEmpty) {
+            return const Center(child: Text("No vehicles added"));
+          }
+
           return ListView.builder(
             itemCount: vehicles.length,
+
             itemBuilder: (context, index) {
-              var vehicle = vehicles[index];
-              var data = vehicle.data() as Map<String, dynamic>;
+              var data = vehicles[index].data() as Map<String, dynamic>;
 
               return Card(
                 margin: const EdgeInsets.all(10),
+
                 child: ListTile(
                   title: Text(data['vehicleNumber']),
 
-                  subtitle: Text("${data['brand']} - ${data['model']}"),
-
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      deleteVehicle(context, vehicle.id, data['vehicleNumber']);
-                    },
+                  subtitle: Text(
+                    "${data['brand']} ${data['model']} • ${data['year']}",
                   ),
                 ),
               );
