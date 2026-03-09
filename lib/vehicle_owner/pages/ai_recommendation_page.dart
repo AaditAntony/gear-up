@@ -39,7 +39,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   Future<void> generateRecommendation() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    /// USER
+    /// USER DATA
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -47,7 +47,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// VEHICLE
+    /// VEHICLE DATA
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
@@ -63,33 +63,36 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     int mileage = int.tryParse(vehicle['mileage']?.toString() ?? "0") ?? 0;
 
-    Timestamp? lastServiceTimestamp = vehicle['lastServiceDate'];
-    int monthsSinceService = 0;
+    List<String> recommendedServices = [];
 
-    if (lastServiceTimestamp != null) {
-      DateTime lastService = lastServiceTimestamp.toDate();
-      monthsSinceService = DateTime.now().difference(lastService).inDays ~/ 30;
-    }
+    /// AI RULES
 
-    String recommendedService;
-
-    /// AI LOGIC
     if (age >= 5) {
-      recommendedService = "Battery Replacement";
-    } else if (mileage >= 40000) {
-      recommendedService = "Brake Service";
-    } else if (monthsSinceService >= 6) {
-      recommendedService = "Oil Change";
-    } else {
-      recommendedService = "General Inspection";
+      recommendedServices.add("Battery Replacement");
     }
 
+    if (age >= 3 || mileage > 40000) {
+      recommendedServices.add("Brake Service");
+    }
+
+    if (age >= 1) {
+      recommendedServices.add("Oil Change");
+    }
+
+    recommendedServices.add("General Inspection");
+
+    /// AI MESSAGE
     fullText =
-        "Your vehicle is $age years old.\n\nMileage: $mileage km.\n\nRecommended service: $recommendedService.";
+        "Vehicle Age: $age years\nMileage: $mileage km\n\nRecommended Services:\n";
+
+    for (var service in recommendedServices) {
+      fullText += "• $service\n";
+    }
 
     await typeText();
 
-    await loadCenters(recommendedService, district);
+    /// LOAD CENTERS FOR BEST SERVICE
+    await loadCenters(recommendedServices.first, district);
   }
 
   Future<void> typeText() async {
