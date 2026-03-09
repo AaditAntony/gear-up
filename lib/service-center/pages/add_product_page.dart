@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -14,12 +17,38 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
 
+  Uint8List? imageBytes;
+  String? imageBase64;
+
   bool isLoading = false;
+
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+
+    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+
+    if (file == null) return;
+
+    Uint8List bytes = await file.readAsBytes();
+
+    if (bytes.length > 300 * 1024) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Image must be under 300 KB")),
+      );
+      return;
+    }
+
+    setState(() {
+      imageBytes = bytes;
+      imageBase64 = base64Encode(bytes);
+    });
+  }
 
   Future<void> addProduct() async {
     if (nameController.text.trim().isEmpty ||
         descriptionController.text.trim().isEmpty ||
-        priceController.text.trim().isEmpty) {
+        priceController.text.trim().isEmpty ||
+        imageBase64 == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
@@ -33,7 +62,6 @@ class _AddProductPageState extends State<AddProductPage> {
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      /// GET CENTER NAME
       var centerDoc = await FirebaseFirestore.instance
           .collection('service_center_details')
           .doc(uid)
@@ -49,6 +77,8 @@ class _AddProductPageState extends State<AddProductPage> {
         'description': descriptionController.text.trim(),
         'price': double.tryParse(priceController.text.trim()) ?? 0,
 
+        'image': imageBase64,
+
         'createdAt': Timestamp.now(),
       });
 
@@ -57,6 +87,8 @@ class _AddProductPageState extends State<AddProductPage> {
       priceController.clear();
 
       setState(() {
+        imageBytes = null;
+        imageBase64 = null;
         isLoading = false;
       });
 
@@ -125,6 +157,23 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
             ),
 
+            const SizedBox(height: 15),
+
+            Row(
+              children: [
+                imageBytes != null
+                    ? Image.memory(imageBytes!, width: 100, height: 100)
+                    : const Text("No image selected"),
+
+                const SizedBox(width: 20),
+
+                ElevatedButton(
+                  onPressed: pickImage,
+                  child: const Text("Upload Image"),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 20),
 
             SizedBox(
@@ -168,11 +217,24 @@ class _AddProductPageState extends State<AddProductPage> {
                     itemCount: products.length,
                     itemBuilder: (context, index) {
                       var product = products[index];
+                      var data = product.data() as Map<String, dynamic>;
+
+                      Uint8List? image;
+
+                      if (data['image'] != null) {
+                        image = base64Decode(data['image']);
+                      }
 
                       return Card(
                         child: ListTile(
-                          title: Text(product['productName']),
-                          subtitle: Text("₹ ${product['price']}"),
+                          leading: image != null
+                              ? Image.memory(image, width: 50, height: 50)
+                              : const Icon(Icons.image),
+
+                          title: Text(data['productName']),
+
+                          subtitle: Text("₹ ${data['price']}"),
+
                           trailing: IconButton(
                             icon: const Icon(Icons.delete),
                             onPressed: () async {
