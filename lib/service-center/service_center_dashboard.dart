@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gear_up/service-center/pages/add_product_page.dart';
 import 'package:gear_up/service-center/pages/center_profile_page.dart';
 
 import 'widgets/service_center_sidebar.dart';
@@ -25,6 +26,8 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
       case 2:
         return const MyBookingsPage();
       case 3:
+        return const AddProductPage();
+      case 4:
         return const CenterProfilePage();
       default:
         return const ServiceHomePage();
