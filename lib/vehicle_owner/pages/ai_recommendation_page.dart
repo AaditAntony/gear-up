@@ -21,10 +21,10 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   @override
   void initState() {
     super.initState();
-    runAI();
+    startAI();
   }
 
-  Future<void> runAI() async {
+  Future<void> startAI() async {
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -33,10 +33,10 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
       isThinking = false;
     });
 
-    await generateRecommendation();
+    await runAI();
   }
 
-  Future<void> generateRecommendation() async {
+  Future<void> runAI() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     /// USER DATA
@@ -47,57 +47,73 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// VEHICLE DATA
+    /// GET ALL VEHICLES
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
-        .limit(1)
         .get();
 
     if (vehicleSnap.docs.isEmpty) return;
 
-    var vehicle = vehicleSnap.docs.first.data();
+    for (var doc in vehicleSnap.docs) {
+      var vehicle = doc.data();
 
-    int year = int.parse(vehicle['year'].toString());
-    int age = DateTime.now().year - year;
+      String vehicleNumber = vehicle['vehicleNumber'];
+      String brand = vehicle['brand'];
+      String model = vehicle['model'];
 
-    int mileage = int.tryParse(vehicle['mileage']?.toString() ?? "0") ?? 0;
+      int year = vehicle['year'];
+      int mileage = vehicle['mileage'];
 
-    List<String> recommendedServices = [];
+      Timestamp serviceTimestamp = vehicle['lastServiceDate'];
+      DateTime lastServiceDate = serviceTimestamp.toDate();
 
-    /// AI RULES
+      int age = DateTime.now().year - year;
 
-    if (age >= 5) {
-      recommendedServices.add("Battery Replacement");
+      int monthsSinceService =
+          DateTime.now().difference(lastServiceDate).inDays ~/ 30;
+
+      List<String> recommendations = [];
+
+      /// AI RULES
+
+      if (age >= 5) {
+        recommendations.add("Battery Replacement");
+      }
+
+      if (mileage >= 40000) {
+        recommendations.add("Brake Service");
+      }
+
+      if (monthsSinceService >= 6) {
+        recommendations.add("Oil Change");
+      }
+
+      if (recommendations.isEmpty) {
+        recommendations.add("General Inspection");
+      }
+
+      fullText += "\nVehicle: $vehicleNumber ($brand $model)\n\n";
+
+      fullText += "Age: $age years\nMileage: $mileage km\n\n";
+
+      fullText += "Recommended Services:\n";
+
+      for (var service in recommendations) {
+        fullText += "• $service\n";
+      }
+
+      fullText += "\n";
+
+      await typeText();
+
+      await loadCenters(recommendations.first, district);
     }
-
-    if (age >= 3 || mileage > 40000) {
-      recommendedServices.add("Brake Service");
-    }
-
-    if (age >= 1) {
-      recommendedServices.add("Oil Change");
-    }
-
-    recommendedServices.add("General Inspection");
-
-    /// AI MESSAGE
-    fullText =
-        "Vehicle Age: $age years\nMileage: $mileage km\n\nRecommended Services:\n";
-
-    for (var service in recommendedServices) {
-      fullText += "• $service\n";
-    }
-
-    await typeText();
-
-    /// LOAD CENTERS FOR BEST SERVICE
-    await loadCenters(recommendedServices.first, district);
   }
 
   Future<void> typeText() async {
-    for (int i = 0; i < fullText.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 35));
+    for (int i = aiText.length; i < fullText.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 25));
 
       if (!mounted) return;
 
@@ -108,7 +124,6 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   }
 
   Future<void> loadCenters(String service, String district) async {
-    /// FIND SERVICES
     var services = await FirebaseFirestore.instance
         .collection('center_services')
         .where('categoryName', isEqualTo: service.trim())
@@ -120,7 +135,6 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         .map((e) => e['centerId'] as String)
         .toList();
 
-    /// GET CENTER DETAILS
     var centerDocs = await FirebaseFirestore.instance
         .collection('service_center_details')
         .where(FieldPath.documentId, whereIn: centerIds)
@@ -130,6 +144,8 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     List<Map<String, dynamic>> list = centerDocs.docs
         .map((e) => e.data())
         .toList();
+
+    /// SORT BY RATING
 
     list.sort((a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0));
 
@@ -159,6 +175,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
       body: Padding(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
 
@@ -169,7 +186,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 20),
-                    Text("AI is analyzing your vehicle..."),
+                    Text("AI is analyzing your vehicles..."),
                   ],
                 ),
               )
@@ -181,21 +198,23 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
               const SizedBox(height: 20),
 
-              Text(aiText, style: const TextStyle(fontSize: 16)),
-
-              const SizedBox(height: 30),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(aiText, style: const TextStyle(fontSize: 16)),
+                ),
+              ),
 
               if (centers.isNotEmpty) ...[
+                const SizedBox(height: 20),
+
                 const Text(
-                  "Best Centers Near You",
+                  "Top Service Centers",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 10),
 
-                Expanded(
-                  child: ListView(children: centers.map(buildCenter).toList()),
-                ),
+                ...centers.map(buildCenter),
               ],
             ],
           ],
