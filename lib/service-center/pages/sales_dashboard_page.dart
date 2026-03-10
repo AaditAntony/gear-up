@@ -5,36 +5,27 @@ import 'package:firebase_auth/firebase_auth.dart';
 class SalesDashboardPage extends StatelessWidget {
   const SalesDashboardPage({super.key});
 
-  Stream<QuerySnapshot> getSales() {
+  Stream<QuerySnapshot> getOrders() {
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
     return FirebaseFirestore.instance
         .collection('product_orders')
         .where('centerId', isEqualTo: centerId)
+        .where('status', isEqualTo: 'paid')
         .snapshots();
   }
 
-  double getTotalRevenue(List docs) {
+  double calculateRevenue(List docs) {
     double total = 0;
 
     for (var doc in docs) {
-      total += (doc['totalAmount'] ?? 0);
+      total += (doc['price'] ?? 0);
     }
 
     return total;
   }
 
-  int getTotalProducts(List docs) {
-    int total = 0;
-
-    for (var doc in docs) {
-      total += (doc['quantity'] ?? 0) as int;
-    }
-
-    return total;
-  }
-
-  double getTodayRevenue(List docs) {
+  double calculateTodayRevenue(List docs) {
     double total = 0;
 
     DateTime today = DateTime.now();
@@ -46,7 +37,7 @@ class SalesDashboardPage extends StatelessWidget {
       if (date.year == today.year &&
           date.month == today.month &&
           date.day == today.day) {
-        total += (doc['totalAmount'] ?? 0);
+        total += (doc['price'] ?? 0);
       }
     }
 
@@ -82,7 +73,7 @@ class SalesDashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: getSales(),
+      stream: getOrders(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
@@ -90,9 +81,9 @@ class SalesDashboardPage extends StatelessWidget {
 
         var orders = snapshot.data!.docs;
 
-        double totalRevenue = getTotalRevenue(orders);
-        int totalProducts = getTotalProducts(orders);
-        double todayRevenue = getTodayRevenue(orders);
+        double totalRevenue = calculateRevenue(orders);
+        double todayRevenue = calculateTodayRevenue(orders);
+        int totalOrders = orders.length;
 
         return Padding(
           padding: const EdgeInsets.all(16),
@@ -120,7 +111,7 @@ class SalesDashboardPage extends StatelessWidget {
 
                   statCard(
                     "Products Sold",
-                    totalProducts.toString(),
+                    totalOrders.toString(),
                     Icons.shopping_cart,
                     Colors.blue,
                   ),
@@ -142,7 +133,7 @@ class SalesDashboardPage extends StatelessWidget {
 
                   statCard(
                     "Orders",
-                    orders.length.toString(),
+                    totalOrders.toString(),
                     Icons.receipt,
                     Colors.purple,
                   ),
@@ -164,6 +155,9 @@ class SalesDashboardPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     var order = orders[index];
 
+                    Timestamp ts = order['createdAt'];
+                    DateTime date = ts.toDate();
+
                     return Card(
                       child: ListTile(
                         title: Text(order['productName']),
@@ -171,8 +165,8 @@ class SalesDashboardPage extends StatelessWidget {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Quantity: ${order['quantity']}"),
-                            Text("Total: ₹${order['totalAmount']}"),
+                            Text("Price: ₹${order['price']}"),
+                            Text("Date: ${date.toString().split(" ")[0]}"),
                           ],
                         ),
 
