@@ -95,6 +95,7 @@ class ProductDetailPage extends StatelessWidget {
 
                         "productId": productId,
                         "productName": productData['productName'],
+                        "productImage": productData['image'],
 
                         "price": productData['price'],
 
