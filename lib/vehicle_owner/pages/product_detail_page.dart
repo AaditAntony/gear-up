@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:gear_up/vehicle_owner/pages/invoice_page.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final String productId;
