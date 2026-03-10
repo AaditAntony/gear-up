@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'booking_page.dart';
+import 'center_detail_page.dart';
 
 class AIRecommendationPage extends StatefulWidget {
   const AIRecommendationPage({super.key});
@@ -14,11 +14,9 @@ class AIRecommendationPage extends StatefulWidget {
 class _AIRecommendationPageState extends State<AIRecommendationPage> {
   bool isThinking = true;
 
-  String aiSummary = "";
+  String aiText = "";
 
   List<Map<String, dynamic>> vehicles = [];
-  List<Map<String, dynamic>> services = [];
-  List<Map<String, dynamic>> centers = [];
 
   @override
   void initState() {
@@ -38,14 +36,14 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     await runAI();
   }
 
-  Future<void> typeSummary(String text) async {
+  Future<void> typeText(String text) async {
     for (int i = 0; i < text.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 25));
+      await Future.delayed(const Duration(milliseconds: 20));
 
       if (!mounted) return;
 
       setState(() {
-        aiSummary += text[i];
+        aiText += text[i];
       });
     }
   }
@@ -64,10 +62,6 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
         .get();
-
-    List<String> recommendations = [];
-
-    String summaryText = "Analyzing your vehicles...\n\n";
 
     for (var doc in vehicleSnap.docs) {
       var data = doc.data();
@@ -99,58 +93,22 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         health = "Needs Attention";
       }
 
-      vehicles.add({
-        "vehicleNumber": data['vehicleNumber'],
-        "brand": data['brand'],
-        "model": data['model'],
-        "age": age,
-        "mileage": mileage,
-        "health": health,
-      });
-
-      summaryText += "Vehicle ${data['vehicleNumber']} analyzed.\n";
+      List<String> recommendations = [];
 
       if (age >= 5) recommendations.add("Battery Replacement");
-
       if (mileage >= 40000) recommendations.add("Brake Service");
-
       if (monthsSinceService >= 6) recommendations.add("Oil Change");
-
       if (age >= 8) recommendations.add("Engine Check");
-    }
 
-    if (recommendations.isEmpty) {
-      recommendations.add("General Inspection");
-    }
-
-    summaryText += "\nMaintenance recommendations generated.\n";
-
-    await typeSummary(summaryText);
-
-    for (var service in recommendations.toSet()) {
-      var category = await FirebaseFirestore.instance
-          .collection('service_categories')
-          .where('name', isEqualTo: service)
-          .limit(1)
-          .get();
-
-      double price = 0;
-      String categoryId = "";
-
-      if (category.docs.isNotEmpty) {
-        price = (category.docs.first['basePrice'] as num).toDouble();
-        categoryId = category.docs.first.id;
+      if (recommendations.isEmpty) {
+        recommendations.add("General Inspection");
       }
 
-      services.add({"name": service, "price": price, "id": categoryId});
-    }
-
-    if (services.isNotEmpty) {
-      var service = services.first['name'];
+      List<Map<String, dynamic>> vehicleCenters = [];
 
       var serviceDocs = await FirebaseFirestore.instance
           .collection('center_services')
-          .where('categoryName', isEqualTo: service)
+          .where('categoryName', isEqualTo: recommendations.first)
           .get();
 
       List<String> centerIds = serviceDocs.docs
@@ -164,18 +122,39 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
             .where('district', isEqualTo: district)
             .get();
 
-        centers = centerDocs.docs.map((e) => e.data()).toList();
+        vehicleCenters = centerDocs.docs.map((doc) {
+          var centerData = doc.data();
+          centerData['uid'] = doc.id;
 
-        centers.sort(
+          return centerData;
+        }).toList();
+
+        vehicleCenters.sort(
           (a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0),
         );
       }
+
+      vehicles.add({
+        "vehicleNumber": data['vehicleNumber'],
+        "brand": data['brand'],
+        "model": data['model'],
+        "age": age,
+        "mileage": mileage,
+        "health": health,
+        "score": healthScore,
+        "recommendations": recommendations,
+        "centers": vehicleCenters,
+      });
+
+      await typeText("Analyzing vehicle ${data['vehicleNumber']}...\n");
     }
 
-    setState(() {});
+    await typeText("\nAI analysis completed.\n\n");
+
+    if (mounted) setState(() {});
   }
 
-  Widget vehicleCard(Map vehicle) {
+  Widget buildVehicle(Map<String, dynamic> vehicle) {
     Color color;
 
     if (vehicle['health'] == "Good") {
@@ -187,63 +166,99 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     }
 
     return Card(
-      child: ListTile(
-        title: Text(vehicle['vehicleNumber']),
-        subtitle: Column(
+      margin: const EdgeInsets.only(bottom: 20),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              vehicle['vehicleNumber'],
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 4),
+
             Text("${vehicle['brand']} ${vehicle['model']}"),
+
+            const SizedBox(height: 8),
+
             Text("Age: ${vehicle['age']} years"),
             Text("Mileage: ${vehicle['mileage']} km"),
+
+            const SizedBox(height: 8),
+
+            Row(
+              children: [
+                const Text("Health: "),
+
+                Text(
+                  vehicle['health'],
+                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(width: 10),
+
+                Text("Score ${vehicle['score']}/100"),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            const Text(
+              "Recommended Services",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 6),
+
+            ...vehicle['recommendations'].map<Widget>((service) {
+              return ListTile(
+                leading: const Icon(Icons.build),
+                title: Text(service),
+              );
+            }).toList(),
+
+            const SizedBox(height: 10),
+
+            if (vehicle['centers'].isNotEmpty) ...[
+              const Text(
+                "Top Service Centers",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 8),
+
+              ...vehicle['centers'].take(3).map<Widget>((center) {
+                double rating = (center['avgRating'] ?? 0).toDouble();
+
+                return Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.store, color: Colors.blue),
+
+                    title: Text(center['companyName']),
+
+                    subtitle: Text("Rating ${rating.toStringAsFixed(1)}"),
+
+                    trailing: const Icon(Icons.arrow_forward_ios),
+
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CenterDetailPage(
+                            centerId: center['uid'],
+                            centerData: Map<String, dynamic>.from(center),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }).toList(),
+            ],
           ],
         ),
-        trailing: Text(
-          vehicle['health'],
-          style: TextStyle(color: color, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-
-  Widget serviceCard(Map service) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.build),
-
-        title: Text(service['name']),
-
-        subtitle: Text("Estimated Cost: ₹${service['price']}"),
-
-        trailing: const Icon(Icons.arrow_forward_ios),
-
-        onTap: () {
-          if (centers.isEmpty) return;
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BookingPage(
-                centerId: centers.first['centerId'],
-                centerName: centers.first['companyName'],
-                categoryId: service['id'],
-                categoryName: service['name'],
-                price: service['price'],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget centerCard(Map center) {
-    double rating = (center['avgRating'] ?? 0).toDouble();
-
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.star, color: Colors.amber),
-        title: Text(center['companyName']),
-        subtitle: Text("Rating: ${rating.toStringAsFixed(1)}"),
       ),
     );
   }
@@ -259,60 +274,20 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   CircularProgressIndicator(),
-
                   SizedBox(height: 20),
-
-                  Text(
-                    "AI is analyzing your vehicles...",
-                    style: TextStyle(fontSize: 16),
-                  ),
+                  Text("AI is analyzing your vehicles..."),
                 ],
               ),
             )
           : Padding(
               padding: const EdgeInsets.all(16),
-
               child: ListView(
                 children: [
-                  Text(aiSummary, style: const TextStyle(fontSize: 16)),
+                  Text(aiText, style: const TextStyle(fontSize: 16)),
 
                   const SizedBox(height: 20),
 
-                  const Text(
-                    "Vehicle Health",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  ...vehicles.map(vehicleCard),
-
-                  const SizedBox(height: 20),
-
-                  const Text(
-                    "Recommended Services",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  ...services.map(serviceCard),
-
-                  const SizedBox(height: 20),
-
-                  if (centers.isNotEmpty) ...[
-                    const Text(
-                      "Top Service Centers",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    ...centers.take(3).map(centerCard),
-                  ],
+                  ...vehicles.map(buildVehicle),
                 ],
               ),
             ),
