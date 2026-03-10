@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -8,7 +9,6 @@ class ProductSalesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
         const Text(
           "Product Sales",
@@ -39,17 +39,32 @@ class ProductSalesPage extends StatelessWidget {
                 itemCount: orders.length,
                 itemBuilder: (context, index) {
                   var order = orders[index];
+                  var data = order.data() as Map<String, dynamic>;
 
                   return Card(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+
                     child: ListTile(
-                      title: Text(order['productName']),
+                      leading: data['productImage'] != null
+                          ? Image.memory(
+                              base64Decode(data['productImage']),
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : const Icon(Icons.image_not_supported),
+
+                      title: Text(data['productName']),
 
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("Center: ${order['centerName']}"),
+                          Text("Center: ${data['centerName']}"),
 
-                          Text("Price: ₹${order['price']}"),
+                          Text("Price: ₹${data['price']}"),
                         ],
                       ),
                     ),
