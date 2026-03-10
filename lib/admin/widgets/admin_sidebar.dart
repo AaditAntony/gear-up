@@ -65,7 +65,7 @@ class AdminSidebar extends StatelessWidget {
             onTap: () => onItemSelected(4),
           ),
 
-          // 4
+          // 5
           ListTile(
             selected: selectedIndex == 5,
             title: const Text("View Bookings"),
