@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/admin/pages/admin_home_page.dart';
 import 'package:gear_up/admin/pages/approve_admins_pages.dart';
+import 'package:gear_up/admin/pages/product_sales_page.dart';
 import 'package:gear_up/admin/pages/service_categories_page.dart';
 import 'package:gear_up/admin/pages/view_bookings_page.dart';
 
@@ -52,6 +53,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 3:
         return ServiceCategoriesPage();
       case 4:
+        return ProductSalesPage();
+      case 5:
         return ViewBookingsPage();
       default:
         return Scaffold(body: AdminHomePage());
