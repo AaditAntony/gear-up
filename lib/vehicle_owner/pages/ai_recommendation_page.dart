@@ -39,7 +39,6 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   Future<void> runAI() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    /// USER DATA
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -47,13 +46,17 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// GET ALL VEHICLES
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
         .get();
 
     if (vehicleSnap.docs.isEmpty) return;
+
+    List<String> finalRecommendations = [];
+
+    fullText += "AI Vehicle Health Report\n";
+    fullText += "--------------------------------\n\n";
 
     for (var doc in vehicleSnap.docs) {
       var vehicle = doc.data();
@@ -73,46 +76,56 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
       int monthsSinceService =
           DateTime.now().difference(lastServiceDate).inDays ~/ 30;
 
-      List<String> recommendations = [];
+      int healthScore = 100;
 
-      /// AI RULES
+      if (age >= 5) healthScore -= 25;
+      if (mileage >= 40000) healthScore -= 25;
+      if (monthsSinceService >= 6) healthScore -= 25;
 
-      if (age >= 5) {
-        recommendations.add("Battery Replacement");
+      String healthStatus;
+
+      if (healthScore >= 80) {
+        healthStatus = "GOOD";
+      } else if (healthScore >= 50) {
+        healthStatus = "MODERATE";
+      } else {
+        healthStatus = "NEEDS ATTENTION";
       }
 
-      if (mileage >= 40000) {
-        recommendations.add("Brake Service");
-      }
+      fullText += "Vehicle: $vehicleNumber ($brand $model)\n\n";
 
-      if (monthsSinceService >= 6) {
-        recommendations.add("Oil Change");
-      }
+      fullText += "Age: $age years\n";
+      fullText += "Mileage: $mileage km\n";
+      fullText += "Last Service: $monthsSinceService months ago\n\n";
 
-      if (age >= 8) {
-        recommendations.add("Engine Check");
-      }
+      fullText += "Vehicle Health: $healthStatus\n";
 
-      if (recommendations.isEmpty) {
-        recommendations.add("General Inspection");
-      }
+      fullText += "\n--------------------------------\n\n";
 
-      fullText += "\nVehicle: $vehicleNumber ($brand $model)\n\n";
+      if (age >= 5) finalRecommendations.add("Battery Replacement");
 
-      fullText += "Age: $age years\nMileage: $mileage km\n\n";
+      if (mileage >= 40000) finalRecommendations.add("Brake Service");
 
-      fullText += "Recommended Services:\n";
+      if (monthsSinceService >= 6) finalRecommendations.add("Oil Change");
 
-      for (var service in recommendations) {
-        fullText += "• $service\n";
-      }
-
-      fullText += "\n";
-
-      await typeText();
-
-      await loadCenters(recommendations.first, district);
+      if (age >= 8) finalRecommendations.add("Engine Check");
     }
+
+    if (finalRecommendations.isEmpty) {
+      finalRecommendations.add("General Inspection");
+    }
+
+    fullText += "Recommended Services\n\n";
+
+    for (var service in finalRecommendations.toSet()) {
+      fullText += "• $service\n";
+    }
+
+    fullText += "\n";
+
+    await typeText();
+
+    await loadCenters(finalRecommendations.first, district);
   }
 
   Future<void> typeText() async {
