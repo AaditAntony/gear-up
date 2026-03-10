@@ -40,7 +40,6 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     /// USER DATA
-
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -48,8 +47,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
     String district = userDoc['district'];
 
-    /// VEHICLES
-
+    /// GET ALL VEHICLES
     var vehicleSnap = await FirebaseFirestore.instance
         .collection('vehicles')
         .where('userId', isEqualTo: uid)
@@ -64,8 +62,8 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
       String brand = vehicle['brand'];
       String model = vehicle['model'];
 
-      int year = vehicle['year'];
-      int mileage = vehicle['mileage'];
+      int year = int.parse(vehicle['year'].toString());
+      int mileage = int.parse(vehicle['mileage'].toString());
 
       Timestamp serviceTimestamp = vehicle['lastServiceDate'];
       DateTime lastServiceDate = serviceTimestamp.toDate();
@@ -77,117 +75,31 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
       List<String> recommendations = [];
 
-      List<String> healthIssues = [];
-
-      int healthScore = 100;
-
-      /// AGE IMPACT
+      /// AI RULES
 
       if (age >= 5) {
-        healthScore -= 15;
-        healthIssues.add("Vehicle age is high");
         recommendations.add("Battery Replacement");
       }
 
-      /// MILEAGE IMPACT
-
       if (mileage >= 40000) {
-        healthScore -= 15;
-        healthIssues.add("High mileage detected");
         recommendations.add("Brake Service");
       }
 
-      if (mileage >= 60000) {
-        healthScore -= 10;
-        recommendations.add("Clutch Inspection");
-      }
-
-      /// SERVICE INTERVAL
-
       if (monthsSinceService >= 6) {
-        healthScore -= 10;
-        healthIssues.add("Last service overdue");
         recommendations.add("Oil Change");
       }
 
-      /// LAST COMPLAINT
-
-      var bookingSnap = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('vehicleNumber', isEqualTo: vehicleNumber)
-          .orderBy('createdAt', descending: true)
-          .limit(1)
-          .get();
-
-      if (bookingSnap.docs.isNotEmpty) {
-        var booking = bookingSnap.docs.first.data();
-
-        String complaint = booking['complaint'] ?? "";
-
-        if (complaint == "Engine Noise") {
-          healthScore -= 10;
-          healthIssues.add("Engine noise reported");
-          recommendations.add("Engine Inspection");
-        }
-
-        if (complaint == "Brake Noise") {
-          healthScore -= 10;
-          healthIssues.add("Brake noise reported");
-          recommendations.add("Brake Pad Replacement");
-        }
-
-        if (complaint == "Battery Drain") {
-          healthScore -= 10;
-          healthIssues.add("Battery drain issue");
-          recommendations.add("Battery Replacement");
-        }
-
-        if (complaint == "Vibration") {
-          healthScore -= 5;
-          healthIssues.add("Vehicle vibration detected");
-          recommendations.add("Wheel Alignment");
-        }
-
-        if (complaint == "Oil Leakage") {
-          healthScore -= 10;
-          healthIssues.add("Oil leakage issue");
-          recommendations.add("Engine Oil Seal Check");
-        }
-
-        if (complaint == "Low Mileage") {
-          healthScore -= 5;
-          recommendations.add("Engine Tune-up");
-        }
-
-        if (complaint == "Engine Overheating") {
-          healthScore -= 10;
-          recommendations.add("Coolant System Check");
-        }
+      if (age >= 8) {
+        recommendations.add("Engine Check");
       }
-
-      if (healthScore < 0) healthScore = 0;
-
-      /// DEFAULT
 
       if (recommendations.isEmpty) {
         recommendations.add("General Inspection");
       }
 
-      /// BUILD AI TEXT
-
       fullText += "\nVehicle: $vehicleNumber ($brand $model)\n\n";
 
-      fullText += "Vehicle Health Score: $healthScore%\n\n";
-
-      if (healthIssues.isNotEmpty) {
-        fullText += "Issues Detected:\n";
-
-        for (var issue in healthIssues) {
-          fullText += "• $issue\n";
-        }
-
-        fullText += "\n";
-      }
+      fullText += "Age: $age years\nMileage: $mileage km\n\n";
 
       fullText += "Recommended Services:\n";
 
@@ -216,9 +128,11 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
   }
 
   Future<void> loadCenters(String service, String district) async {
+    /// FIND SERVICES OFFERED BY CENTERS
+
     var services = await FirebaseFirestore.instance
         .collection('center_services')
-        .where('categoryName', isEqualTo: service.trim())
+        .where('categoryName', isEqualTo: service)
         .get();
 
     if (services.docs.isEmpty) return;
@@ -226,6 +140,8 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     List<String> centerIds = services.docs
         .map((e) => e['centerId'] as String)
         .toList();
+
+    /// GET CENTER DETAILS
 
     var centerDocs = await FirebaseFirestore.instance
         .collection('service_center_details')
@@ -236,6 +152,8 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     List<Map<String, dynamic>> list = centerDocs.docs
         .map((e) => e.data())
         .toList();
+
+    /// SORT BY RATING
 
     list.sort((a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0));
 
@@ -298,7 +216,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                 const SizedBox(height: 20),
 
                 const Text(
-                  "Top Service Centers",
+                  "Top Service Centers Near You",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
 
