@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gear_up/service-center/pages/add_product_page.dart';
 import 'package:gear_up/service-center/pages/center_profile_page.dart';
+import 'package:gear_up/service-center/pages/sales_dashboard_page.dart';
 
 import 'widgets/service_center_sidebar.dart';
 import 'pages/center_home_page.dart';
@@ -28,6 +29,8 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
       case 3:
         return const AddProductPage();
       case 4:
+        return const SalesDashboardPage();
+      case 5:
         return const CenterProfilePage();
       default:
         return const ServiceHomePage();

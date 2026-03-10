@@ -52,8 +52,13 @@ class ServiceCenterSidebar extends StatelessWidget {
           ),
           ListTile(
             selected: selectedIndex == 4,
-            title: const Text("Profile"),
+            title: const Text("Sales Board"),
             onTap: () => onItemSelected(4),
+          ),
+          ListTile(
+            selected: selectedIndex == 5,
+            title: const Text("Profile"),
+            onTap: () => onItemSelected(5),
           ),
 
           const Spacer(),
