@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class ProductDetailPage extends StatelessWidget {
+
   final String productId;
   final Map<String, dynamic> productData;
 
@@ -12,8 +15,17 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    Uint8List? image;
+
+    if (productData['image'] != null) {
+      image = base64Decode(productData['image']);
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text(productData['productName'])),
+      appBar: AppBar(
+        title: Text(productData['productName']),
+      ),
 
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -22,9 +34,26 @@ class ProductDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
+
+            if (image != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.memory(
+                  image,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+            const SizedBox(height: 20),
+
             Text(
               productData['productName'],
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 10),
@@ -38,14 +67,20 @@ class ProductDetailPage extends StatelessWidget {
 
             Text(
               "Price: ₹${productData['price']}",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 20),
 
             const Text(
               "Description",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 10),
@@ -59,12 +94,16 @@ class ProductDetailPage extends StatelessWidget {
               child: ElevatedButton(
                 child: const Text("Buy Now"),
                 onPressed: () {
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Payment system coming next")),
+                    const SnackBar(
+                      content: Text("Payment system coming next"),
+                    ),
                   );
+
                 },
               ),
-            ),
+            )
           ],
         ),
       ),
