@@ -58,13 +58,12 @@ class AdminSidebar extends StatelessWidget {
             title: const Text("Service Categories"),
             onTap: () => onItemSelected(3),
           ),
-           // 4
+          // 4
           ListTile(
             selected: selectedIndex == 4,
             title: const Text("Product Sale"),
             onTap: () => onItemSelected(4),
           ),
-
 
           // 5
           ListTile(
