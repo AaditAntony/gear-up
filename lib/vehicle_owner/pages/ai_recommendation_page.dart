@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'booking_page.dart';
 
 class AIRecommendationPage extends StatefulWidget {
   const AIRecommendationPage({super.key});
@@ -13,9 +14,10 @@ class AIRecommendationPage extends StatefulWidget {
 class _AIRecommendationPageState extends State<AIRecommendationPage> {
   bool isThinking = true;
 
-  String aiText = "";
-  String fullText = "";
+  String aiSummary = "";
 
+  List<Map<String, dynamic>> vehicles = [];
+  List<Map<String, dynamic>> services = [];
   List<Map<String, dynamic>> centers = [];
 
   @override
@@ -36,6 +38,18 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     await runAI();
   }
 
+  Future<void> typeSummary(String text) async {
+    for (int i = 0; i < text.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 25));
+
+      if (!mounted) return;
+
+      setState(() {
+        aiSummary += text[i];
+      });
+    }
+  }
+
   Future<void> runAI() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
@@ -51,30 +65,23 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         .where('userId', isEqualTo: uid)
         .get();
 
-    if (vehicleSnap.docs.isEmpty) return;
+    List<String> recommendations = [];
 
-    List<String> finalRecommendations = [];
-
-    fullText += "AI Vehicle Health Report\n";
-    fullText += "--------------------------------\n\n";
+    String summaryText = "Analyzing your vehicles...\n\n";
 
     for (var doc in vehicleSnap.docs) {
-      var vehicle = doc.data();
+      var data = doc.data();
 
-      String vehicleNumber = vehicle['vehicleNumber'];
-      String brand = vehicle['brand'];
-      String model = vehicle['model'];
+      int year = int.parse(data['year'].toString());
+      int mileage = int.parse(data['mileage'].toString());
 
-      int year = int.parse(vehicle['year'].toString());
-      int mileage = int.parse(vehicle['mileage'].toString());
-
-      Timestamp serviceTimestamp = vehicle['lastServiceDate'];
-      DateTime lastServiceDate = serviceTimestamp.toDate();
+      Timestamp serviceTimestamp = data['lastServiceDate'];
+      DateTime lastService = serviceTimestamp.toDate();
 
       int age = DateTime.now().year - year;
 
       int monthsSinceService =
-          DateTime.now().difference(lastServiceDate).inDays ~/ 30;
+          DateTime.now().difference(lastService).inDays ~/ 30;
 
       int healthScore = 100;
 
@@ -82,102 +89,154 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
       if (mileage >= 40000) healthScore -= 25;
       if (monthsSinceService >= 6) healthScore -= 25;
 
-      String healthStatus;
+      String health;
 
       if (healthScore >= 80) {
-        healthStatus = "GOOD";
+        health = "Good";
       } else if (healthScore >= 50) {
-        healthStatus = "MODERATE";
+        health = "Moderate";
       } else {
-        healthStatus = "NEEDS ATTENTION";
+        health = "Needs Attention";
       }
 
-      fullText += "Vehicle: $vehicleNumber ($brand $model)\n\n";
-
-      fullText += "Age: $age years\n";
-      fullText += "Mileage: $mileage km\n";
-      fullText += "Last Service: $monthsSinceService months ago\n\n";
-
-      fullText += "Vehicle Health: $healthStatus\n";
-
-      fullText += "\n--------------------------------\n\n";
-
-      if (age >= 5) finalRecommendations.add("Battery Replacement");
-
-      if (mileage >= 40000) finalRecommendations.add("Brake Service");
-
-      if (monthsSinceService >= 6) finalRecommendations.add("Oil Change");
-
-      if (age >= 8) finalRecommendations.add("Engine Check");
-    }
-
-    if (finalRecommendations.isEmpty) {
-      finalRecommendations.add("General Inspection");
-    }
-
-    fullText += "Recommended Services\n\n";
-
-    for (var service in finalRecommendations.toSet()) {
-      fullText += "• $service\n";
-    }
-
-    fullText += "\n";
-
-    await typeText();
-
-    await loadCenters(finalRecommendations.first, district);
-  }
-
-  Future<void> typeText() async {
-    for (int i = aiText.length; i < fullText.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 30));
-
-      if (!mounted) return;
-
-      setState(() {
-        aiText += fullText[i];
+      vehicles.add({
+        "vehicleNumber": data['vehicleNumber'],
+        "brand": data['brand'],
+        "model": data['model'],
+        "age": age,
+        "mileage": mileage,
+        "health": health,
       });
+
+      summaryText += "Vehicle ${data['vehicleNumber']} analyzed.\n";
+
+      if (age >= 5) recommendations.add("Battery Replacement");
+
+      if (mileage >= 40000) recommendations.add("Brake Service");
+
+      if (monthsSinceService >= 6) recommendations.add("Oil Change");
+
+      if (age >= 8) recommendations.add("Engine Check");
     }
+
+    if (recommendations.isEmpty) {
+      recommendations.add("General Inspection");
+    }
+
+    summaryText += "\nMaintenance recommendations generated.\n";
+
+    await typeSummary(summaryText);
+
+    for (var service in recommendations.toSet()) {
+      var category = await FirebaseFirestore.instance
+          .collection('service_categories')
+          .where('name', isEqualTo: service)
+          .limit(1)
+          .get();
+
+      double price = 0;
+      String categoryId = "";
+
+      if (category.docs.isNotEmpty) {
+        price = (category.docs.first['basePrice'] as num).toDouble();
+        categoryId = category.docs.first.id;
+      }
+
+      services.add({"name": service, "price": price, "id": categoryId});
+    }
+
+    if (services.isNotEmpty) {
+      var service = services.first['name'];
+
+      var serviceDocs = await FirebaseFirestore.instance
+          .collection('center_services')
+          .where('categoryName', isEqualTo: service)
+          .get();
+
+      List<String> centerIds = serviceDocs.docs
+          .map((e) => e['centerId'] as String)
+          .toList();
+
+      if (centerIds.isNotEmpty) {
+        var centerDocs = await FirebaseFirestore.instance
+            .collection('service_center_details')
+            .where(FieldPath.documentId, whereIn: centerIds)
+            .where('district', isEqualTo: district)
+            .get();
+
+        centers = centerDocs.docs.map((e) => e.data()).toList();
+
+        centers.sort(
+          (a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0),
+        );
+      }
+    }
+
+    setState(() {});
   }
 
-  Future<void> loadCenters(String service, String district) async {
-    /// FIND SERVICES OFFERED BY CENTERS
+  Widget vehicleCard(Map vehicle) {
+    Color color;
 
-    var services = await FirebaseFirestore.instance
-        .collection('center_services')
-        .where('categoryName', isEqualTo: service)
-        .get();
-
-    if (services.docs.isEmpty) return;
-
-    List<String> centerIds = services.docs
-        .map((e) => e['centerId'] as String)
-        .toList();
-
-    /// GET CENTER DETAILS
-
-    var centerDocs = await FirebaseFirestore.instance
-        .collection('service_center_details')
-        .where(FieldPath.documentId, whereIn: centerIds)
-        .where('district', isEqualTo: district)
-        .get();
-
-    List<Map<String, dynamic>> list = centerDocs.docs
-        .map((e) => e.data())
-        .toList();
-
-    /// SORT BY RATING
-
-    list.sort((a, b) => (b['avgRating'] ?? 0).compareTo(a['avgRating'] ?? 0));
-
-    centers = list.take(3).toList();
-
-    if (mounted) {
-      setState(() {});
+    if (vehicle['health'] == "Good") {
+      color = Colors.green;
+    } else if (vehicle['health'] == "Moderate") {
+      color = Colors.orange;
+    } else {
+      color = Colors.red;
     }
+
+    return Card(
+      child: ListTile(
+        title: Text(vehicle['vehicleNumber']),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("${vehicle['brand']} ${vehicle['model']}"),
+            Text("Age: ${vehicle['age']} years"),
+            Text("Mileage: ${vehicle['mileage']} km"),
+          ],
+        ),
+        trailing: Text(
+          vehicle['health'],
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
   }
 
-  Widget buildCenter(Map<String, dynamic> center) {
+  Widget serviceCard(Map service) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.build),
+
+        title: Text(service['name']),
+
+        subtitle: Text("Estimated Cost: ₹${service['price']}"),
+
+        trailing: const Icon(Icons.arrow_forward_ios),
+
+        onTap: () {
+          if (centers.isEmpty) return;
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BookingPage(
+                centerId: centers.first['centerId'],
+                centerName: centers.first['companyName'],
+                categoryId: service['id'],
+                categoryName: service['name'],
+                price: service['price'],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget centerCard(Map center) {
     double rating = (center['avgRating'] ?? 0).toDouble();
 
     return Card(
@@ -194,53 +253,69 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     return Scaffold(
       appBar: AppBar(title: const Text("AI Vehicle Assistant")),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: isThinking
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+                  SizedBox(height: 20),
 
-          children: [
-            if (isThinking)
-              const Center(
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 20),
-                    Text("AI is analyzing your vehicles..."),
+                  Text(
+                    "AI is analyzing your vehicles...",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16),
+
+              child: ListView(
+                children: [
+                  Text(aiSummary, style: const TextStyle(fontSize: 16)),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Vehicle Health",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  ...vehicles.map(vehicleCard),
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    "Recommended Services",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  ...services.map(serviceCard),
+
+                  const SizedBox(height: 20),
+
+                  if (centers.isNotEmpty) ...[
+                    const Text(
+                      "Top Service Centers",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    ...centers.take(3).map(centerCard),
                   ],
-                ),
-              )
-            else ...[
-              const Text(
-                "AI Recommendation",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ],
               ),
-
-              const SizedBox(height: 20),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(aiText, style: const TextStyle(fontSize: 16)),
-                ),
-              ),
-
-              if (centers.isNotEmpty) ...[
-                const SizedBox(height: 20),
-
-                const Text(
-                  "Top Service Centers Near You",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                ...centers.map(buildCenter),
-              ],
-            ],
-          ],
-        ),
-      ),
+            ),
     );
   }
 }
