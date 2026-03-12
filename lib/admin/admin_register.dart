@@ -45,10 +45,8 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
         isLoading = true;
       });
 
-      // store current admin
       String? currentAdminEmail = FirebaseAuth.instance.currentUser?.email;
 
-      // create new admin
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: emailController.text.trim(),
@@ -71,7 +69,6 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
         'createdAt': Timestamp.now(),
       });
 
-      // logout new admin
       await FirebaseAuth.instance.signOut();
 
       setState(() {
@@ -99,74 +96,121 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xfff8fafc),
       body: Center(
         child: Container(
-          width: 450,
-          padding: const EdgeInsets.all(24),
+          width: 460,
+          padding: const EdgeInsets.all(30),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.08),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Icon(
+                Icons.admin_panel_settings,
+                size: 50,
+                color: Color(0xFF334155),
+              ),
+
+              const SizedBox(height: 10),
+
               const Text(
                 "Admin Registration",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
+              /// NAME
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Full Name",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
+              /// EMAIL
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Email",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
+              /// PASSWORD
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Password",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
+              /// CONFIRM PASSWORD
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Confirm Password",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
+              /// BUTTON
               SizedBox(
                 width: double.infinity,
-                height: 45,
+                height: 48,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF334155),
+                    foregroundColor: Colors.white, // FIXED TEXT COLOR
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   onPressed: isLoading ? null : registerAdmin,
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Register"),
+                      : const Text(
+                          "Register",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
 
