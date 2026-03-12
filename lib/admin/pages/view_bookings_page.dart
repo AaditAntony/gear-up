@@ -21,6 +21,22 @@ class ViewBookingsPage extends StatelessWidget {
     }
   }
 
+  Widget infoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey.shade600),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF475569)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -28,10 +44,21 @@ class ViewBookingsPage extends StatelessWidget {
       children: [
         const Text(
           "All Bookings",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF0F172A),
+          ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 6),
+
+        const Text(
+          "Monitor all service bookings across the platform",
+          style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+        ),
+
+        const SizedBox(height: 25),
 
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
@@ -45,7 +72,12 @@ class ViewBookingsPage extends StatelessWidget {
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text("No bookings available."));
+                return const Center(
+                  child: Text(
+                    "No bookings available.",
+                    style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
+                  ),
+                );
               }
 
               var bookings = snapshot.data!.docs;
@@ -56,39 +88,78 @@ class ViewBookingsPage extends StatelessWidget {
                   var booking = bookings[index];
                   var data = booking.data() as Map<String, dynamic>;
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 4,
+                  String status = data['status'];
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: ListTile(
-                      title: Text(
-                        data['categoryName'],
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /// SERVICE NAME
+                        Text(
+                          data['categoryName'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
 
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Vehicle: ${data['vehicleNumber']}"),
+                        const SizedBox(height: 12),
 
-                          Text("Service Center: ${data['centerName']}"),
+                        infoRow(
+                          Icons.directions_car,
+                          "Vehicle: ${data['vehicleNumber']}",
+                        ),
 
-                          Text("Date: ${data['bookingDate']}"),
+                        infoRow(
+                          Icons.business,
+                          "Service Center: ${data['centerName']}",
+                        ),
 
-                          Text("Slot: ${data['bookingSlot']}"),
+                        infoRow(
+                          Icons.calendar_today,
+                          "Date: ${data['bookingDate']}",
+                        ),
 
-                          const SizedBox(height: 5),
+                        infoRow(
+                          Icons.access_time,
+                          "Slot: ${data['bookingSlot']}",
+                        ),
 
-                          Text(
-                            "Status: ${data['status'].toUpperCase()}",
+                        const SizedBox(height: 10),
+
+                        /// STATUS BADGE
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor(status).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            status.toUpperCase(),
                             style: TextStyle(
-                              color: statusColor(data['status']),
+                              color: statusColor(status),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -100,4 +171,3 @@ class ViewBookingsPage extends StatelessWidget {
     );
   }
 }
-//
