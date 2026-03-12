@@ -5,6 +5,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ProductSalesPage extends StatelessWidget {
   const ProductSalesPage({super.key});
 
+  Widget infoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey.shade600),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF475569)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -12,10 +28,21 @@ class ProductSalesPage extends StatelessWidget {
       children: [
         const Text(
           "Product Sales",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF0F172A),
+          ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 6),
+
+        const Text(
+          "Track all spare parts and product purchases",
+          style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+        ),
+
+        const SizedBox(height: 25),
 
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
@@ -32,7 +59,12 @@ class ProductSalesPage extends StatelessWidget {
               var orders = snapshot.data!.docs;
 
               if (orders.isEmpty) {
-                return const Center(child: Text("No product sales yet."));
+                return const Center(
+                  child: Text(
+                    "No product sales yet.",
+                    style: TextStyle(fontSize: 16, color: Color(0xFF64748B)),
+                  ),
+                );
               }
 
               return ListView.builder(
@@ -41,32 +73,72 @@ class ProductSalesPage extends StatelessWidget {
                   var order = orders[index];
                   var data = order.data() as Map<String, dynamic>;
 
-                  return Card(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
 
-                    child: ListTile(
-                      leading: data['productImage'] != null
-                          ? Image.memory(
-                              base64Decode(data['productImage']),
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            )
-                          : const Icon(Icons.image_not_supported),
+                    child: Row(
+                      children: [
+                        /// PRODUCT IMAGE
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: data['productImage'] != null
+                              ? Image.memory(
+                                  base64Decode(data['productImage']),
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(
+                                  width: 70,
+                                  height: 70,
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.image_not_supported),
+                                ),
+                        ),
 
-                      title: Text(data['productName']),
+                        const SizedBox(width: 16),
 
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Center: ${data['centerName']}"),
+                        /// PRODUCT DETAILS
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data['productName'],
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
 
-                          Text("Price: ₹${data['price']}"),
-                        ],
-                      ),
+                              const SizedBox(height: 10),
+
+                              infoRow(
+                                Icons.store,
+                                "Center: ${data['centerName']}",
+                              ),
+
+                              infoRow(
+                                Icons.currency_rupee,
+                                "Price: ₹${data['price']}",
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
