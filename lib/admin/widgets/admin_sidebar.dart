@@ -14,80 +14,132 @@ class AdminSidebar extends StatelessWidget {
     required this.onItemSelected,
   });
 
+  Widget buildMenuItem({
+    required IconData icon,
+    required String title,
+    required int index,
+  }) {
+    bool isSelected = selectedIndex == index;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      child: Material(
+        color: isSelected ? const Color(0xFF334155) : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        child: ListTile(
+          leading: Icon(
+            icon,
+            color: isSelected ? Colors.white : Colors.grey[300],
+          ),
+          title: Text(
+            title,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey[300],
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          onTap: () => onItemSelected(index),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 250,
-      color: Colors.grey.shade200,
+      width: 260,
+      color: const Color(0xFF1E293B),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          /// TOP LOGO / TITLE
           const SizedBox(height: 40),
 
-          const Text(
-            "Admin Panel",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Icon(Icons.admin_panel_settings, color: Colors.white),
+                SizedBox(width: 10),
+                Text(
+                  "Admin Panel",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 40),
 
-          // 0
-          ListTile(
-            selected: selectedIndex == 0,
-            title: const Text("Dashboard"),
-            onTap: () => onItemSelected(0),
-          ),
+          /// MENU ITEMS
+          buildMenuItem(icon: Icons.dashboard, title: "Dashboard", index: 0),
 
-          // 1 (Only Super Admin)
           if (isSuperAdmin)
-            ListTile(
-              selected: selectedIndex == 1,
-              title: const Text("Approve Admins"),
-              onTap: () => onItemSelected(1),
+            buildMenuItem(
+              icon: Icons.verified_user,
+              title: "Approve Admins",
+              index: 1,
             ),
 
-          // 2
-          ListTile(
-            selected: selectedIndex == 2,
-            title: const Text("Approve Service Centers"),
-            onTap: () => onItemSelected(2),
+          buildMenuItem(
+            icon: Icons.approval,
+            title: "Approve Centers",
+            index: 2,
           ),
 
-          // 3
-          ListTile(
-            selected: selectedIndex == 3,
-            title: const Text("Service Categories"),
-            onTap: () => onItemSelected(3),
-          ),
-           // 4
-          ListTile(
-            selected: selectedIndex == 4,
-            title: const Text("Product Sale"),
-            onTap: () => onItemSelected(4),
+          buildMenuItem(
+            icon: Icons.build,
+            title: "Service Categories",
+            index: 3,
           ),
 
+          buildMenuItem(
+            icon: Icons.shopping_cart,
+            title: "Product Sales",
+            index: 4,
+          ),
 
-          // 5
-          ListTile(
-            selected: selectedIndex == 5,
-            title: const Text("View Bookings"),
-            onTap: () => onItemSelected(5),
+          buildMenuItem(
+            icon: Icons.calendar_month,
+            title: "View Bookings",
+            index: 5,
           ),
 
           const Spacer(),
 
-          ListTile(
-            title: const Text("Logout"),
-            onTap: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-                (route) => false,
-              );
-            },
+          /// LOGOUT BUTTON
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              child: ListTile(
+                leading: const Icon(Icons.logout, color: Colors.redAccent),
+                title: const Text(
+                  "Logout",
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginPage()),
+                    (route) => false,
+                  );
+                },
+              ),
+            ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
         ],
       ),
     );
