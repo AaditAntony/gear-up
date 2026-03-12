@@ -6,30 +6,58 @@ class AdminHomePage extends StatelessWidget {
 
   Widget statCard(String title, int value, IconData icon, Color color) {
     return Expanded(
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(icon, size: 35, color: color),
-
-              const SizedBox(height: 10),
-
-              Text(
-                value.toString(),
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            /// ICON CONTAINER
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: Icon(icon, color: color, size: 28),
+            ),
 
-              const SizedBox(height: 5),
+            const SizedBox(width: 16),
 
-              Text(title),
-            ],
-          ),
+            /// TEXT SECTION
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value.toString(),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -49,6 +77,7 @@ class AdminHomePage extends StatelessWidget {
         var centers = centerSnapshot.data!.docs;
 
         int totalCenters = centers.length;
+
         int pendingCenters = centers
             .where((c) => c['status'] == "pending")
             .length;
@@ -63,60 +92,75 @@ class AdminHomePage extends StatelessWidget {
             var bookings = bookingSnapshot.data!.docs;
 
             int totalBookings = bookings.length;
+
             int completedBookings = bookings
                 .where((b) => b['status'] == "completed")
                 .length;
 
             return Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  /// PAGE TITLE
                   const Text(
-                    "Admin Dashboard",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    "Dashboard Overview",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 6),
 
+                  const Text(
+                    "Monitor platform activity and service statistics",
+                    style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  /// FIRST ROW
                   Row(
                     children: [
                       statCard(
                         "Service Centers",
                         totalCenters,
                         Icons.business,
-                        Colors.blue,
+                        const Color(0xFF3B82F6),
                       ),
 
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 16),
 
                       statCard(
                         "Pending Approval",
                         pendingCenters,
                         Icons.hourglass_bottom,
-                        Colors.orange,
+                        const Color(0xFFF59E0B),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 20),
 
+                  /// SECOND ROW
                   Row(
                     children: [
                       statCard(
                         "Total Bookings",
                         totalBookings,
                         Icons.analytics,
-                        Colors.black,
+                        const Color(0xFF1E293B),
                       ),
 
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 16),
 
                       statCard(
                         "Completed Services",
                         completedBookings,
                         Icons.done_all,
-                        Colors.green,
+                        const Color(0xFF22C55E),
                       ),
                     ],
                   ),
