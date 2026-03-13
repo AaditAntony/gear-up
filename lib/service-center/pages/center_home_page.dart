@@ -20,56 +20,131 @@ class ServiceHomePage extends StatelessWidget {
 
   Widget statCard(String title, int value, IconData icon, Color color) {
     return Expanded(
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(icon, size: 35, color: color),
-
-              const SizedBox(height: 10),
-
-              Text(
-                value.toString(),
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(.15),
+                borderRadius: BorderRadius.circular(10),
               ),
+              child: Icon(icon, color: color),
+            ),
 
-              const SizedBox(height: 5),
+            const SizedBox(height: 15),
 
-              Text(title, style: const TextStyle(fontSize: 15)),
-            ],
-          ),
+            Text(
+              value.toString(),
+              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 4),
+
+            Text(
+              title,
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget statusBadge(String status) {
+    Color color;
+
+    switch (status) {
+      case "pending":
+        color = Colors.orange;
+        break;
+      case "accepted":
+        color = Colors.blue;
+        break;
+      case "in_progress":
+        color = Colors.purple;
+        break;
+      case "completed":
+        color = Colors.green;
+        break;
+      default:
+        color = Colors.red;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
         ),
       ),
     );
   }
 
   Widget recentBookingTile(Map data) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.directions_car),
-        title: Text(data['vehicleNumber']),
-        subtitle: Text(data['categoryName']),
-        trailing: Text(
-          data['status'].toUpperCase(),
-          style: TextStyle(
-            color: data['status'] == "pending"
-                ? Colors.orange
-                : data['status'] == "accepted"
-                ? Colors.blue
-                : data['status'] == "in_progress"
-                ? Colors.purple
-                : data['status'] == "completed"
-                ? Colors.green
-                : Colors.red,
-            fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(.04)),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.directions_car, color: Colors.orange),
           ),
-        ),
+
+          const SizedBox(width: 15),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data['vehicleNumber'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  data['categoryName'],
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+
+          statusBadge(data['status']),
+        ],
       ),
     );
   }
@@ -98,37 +173,35 @@ class ServiceHomePage extends StatelessWidget {
         var recentBookings = docs.take(5).toList();
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Dashboard",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                "Service Dashboard",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
-              /// TOTAL BOOKINGS
+              /// STATS
               Row(
                 children: [
                   statCard(
                     "Total Bookings",
                     totalBookings,
                     Icons.analytics,
-                    Colors.black,
+                    Colors.orange,
                   ),
                 ],
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
               Row(
                 children: [
                   statCard("Pending", pending, Icons.schedule, Colors.orange),
-
-                  const SizedBox(width: 10),
-
+                  const SizedBox(width: 12),
                   statCard(
                     "Accepted",
                     accepted,
@@ -138,7 +211,7 @@ class ServiceHomePage extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
               Row(
                 children: [
@@ -148,9 +221,7 @@ class ServiceHomePage extends StatelessWidget {
                     Icons.build,
                     Colors.purple,
                   ),
-
-                  const SizedBox(width: 10),
-
+                  const SizedBox(width: 12),
                   statCard(
                     "Completed",
                     completed,
@@ -160,7 +231,7 @@ class ServiceHomePage extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 30),
 
               /// RECENT BOOKINGS
               const Text(
@@ -168,7 +239,7 @@ class ServiceHomePage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
               ...recentBookings.map((booking) {
                 var data = booking.data() as Map<String, dynamic>;
