@@ -22,17 +22,17 @@ class ServiceCenterSidebar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       child: Material(
-        color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+        color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         child: ListTile(
           leading: Icon(
             icon,
-            color: isSelected ? Colors.white : Colors.grey[300],
+            color: isSelected ? Colors.white : Colors.green[100],
           ),
           title: Text(
             title,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[300],
+              color: isSelected ? Colors.white : Colors.green[100],
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -46,11 +46,10 @@ class ServiceCenterSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 260,
-      color: const Color(0xFF0F172A),
+      color: const Color(0xFF064E3B),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// HEADER
           const SizedBox(height: 40),
 
           const Padding(
@@ -73,7 +72,6 @@ class ServiceCenterSidebar extends StatelessWidget {
 
           const SizedBox(height: 40),
 
-          /// MENU ITEMS
           buildMenuItem(icon: Icons.dashboard, title: "Dashboard", index: 0),
 
           buildMenuItem(icon: Icons.build, title: "Add Services", index: 1),
@@ -92,7 +90,6 @@ class ServiceCenterSidebar extends StatelessWidget {
 
           const Spacer(),
 
-          /// LOGOUT
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Material(
