@@ -46,7 +46,7 @@ class ServiceCenterSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 260,
-      color: const Color(0xFF1F2937),
+      color: const Color(0xFF0F172A),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,7 +57,7 @@ class ServiceCenterSidebar extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Icon(Icons.build_circle, color: Colors.white),
+                Icon(Icons.build_circle, color: Colors.white, size: 28),
                 SizedBox(width: 10),
                 Text(
                   "Service Center",
@@ -84,11 +84,7 @@ class ServiceCenterSidebar extends StatelessWidget {
             index: 2,
           ),
 
-          buildMenuItem(
-            icon: Icons.inventory_2,
-            title: "Add Products",
-            index: 3,
-          ),
+          buildMenuItem(icon: Icons.inventory, title: "Add Products", index: 3),
 
           buildMenuItem(icon: Icons.bar_chart, title: "Sales Board", index: 4),
 
