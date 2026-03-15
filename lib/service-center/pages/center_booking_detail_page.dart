@@ -77,6 +77,33 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
     }
   }
 
+  IconData getStatusIcon(String status) {
+    switch (status) {
+      case "completed":
+        return Icons.check;
+      case "in_progress":
+        return Icons.build;
+      default:
+        return Icons.hourglass_empty;
+    }
+  }
+
+  Widget statusBadge(String status) {
+    Color color = getStatusColor(status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
   Widget infoRow(IconData icon, String title, String value) {
     return Row(
       children: [
@@ -100,7 +127,6 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
         backgroundColor: const Color(0xFFF97316),
         title: const Text("Booking Details"),
       ),
-
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
@@ -120,7 +146,7 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// BOOKING INFORMATION
+                /// BOOKING INFO
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -154,7 +180,6 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
                         "Vehicle",
                         data['vehicleNumber'],
                       ),
-
                       const SizedBox(height: 8),
 
                       infoRow(
@@ -169,35 +194,8 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
                         children: [
                           const Icon(Icons.info, color: Colors.orange),
                           const SizedBox(width: 8),
-
-                          const Text(
-                            "Status:",
-                            style: TextStyle(fontWeight: FontWeight.w500),
-                          ),
-
-                          const SizedBox(width: 8),
-
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-
-                            decoration: BoxDecoration(
-                              color: getStatusColor(
-                                data['status'],
-                              ).withOpacity(.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-
-                            child: Text(
-                              data['status'].toUpperCase(),
-                              style: TextStyle(
-                                color: getStatusColor(data['status']),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                          const Text("Status: "),
+                          statusBadge(data['status']),
                         ],
                       ),
                     ],
@@ -217,7 +215,9 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
                 Column(
                   children: List.generate(updates.length, (index) {
                     var update = updates[index];
+
                     Color statusColor = getStatusColor(update["status"]);
+                    IconData icon = getStatusIcon(update["status"]);
 
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,18 +226,19 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
                         Column(
                           children: [
                             Container(
-                              width: 14,
-                              height: 14,
+                              width: 28,
+                              height: 28,
                               decoration: BoxDecoration(
                                 color: statusColor,
                                 shape: BoxShape.circle,
                               ),
+                              child: Icon(icon, color: Colors.white, size: 16),
                             ),
 
                             if (index != updates.length - 1)
                               Container(
                                 width: 2,
-                                height: 60,
+                                height: 70,
                                 color: Colors.grey.shade300,
                               ),
                           ],
@@ -250,38 +251,34 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             padding: const EdgeInsets.all(14),
-
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-
                               border: Border.all(color: Colors.grey.shade300),
                             ),
 
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  update["title"],
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      update["title"],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+
+                                    statusBadge(update["status"]),
+                                  ],
                                 ),
-
-                                const SizedBox(height: 4),
-
-                                Text(update["description"]),
 
                                 const SizedBox(height: 6),
 
-                                Text(
-                                  update["status"].toUpperCase(),
-                                  style: TextStyle(
-                                    color: statusColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                Text(update["description"]),
                               ],
                             ),
                           ),
@@ -299,7 +296,6 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
-
                     boxShadow: [
                       BoxShadow(
                         blurRadius: 12,
