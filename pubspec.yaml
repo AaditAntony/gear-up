@@ -38,6 +38,8 @@ dependencies:
   firebase_auth: ^6.1.4
   cloud_firestore: ^6.1.2
   image_picker: ^1.2.1
+  flutter_flow_chart: ^4.1.1
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:
