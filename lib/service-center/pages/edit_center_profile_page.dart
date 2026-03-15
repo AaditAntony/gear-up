@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditCenterProfilePage extends StatefulWidget {
   const EditCenterProfilePage({super.key});
@@ -18,6 +21,9 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
   String? selectedDistrict;
 
   bool isLoading = true;
+
+  Uint8List? imageBytes;
+  String? imageBase64;
 
   final List<String> districts = [
     "Thiruvananthapuram",
@@ -52,10 +58,30 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
       workingHoursController.text = data['workingHours'] ?? "";
 
       selectedDistrict = data['district'];
+
+      if (data['image'] != null) {
+        imageBase64 = data['image'];
+        imageBytes = base64Decode(data['image']);
+      }
     }
 
     setState(() {
       isLoading = false;
+    });
+  }
+
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+
+    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+
+    if (file == null) return;
+
+    Uint8List bytes = await file.readAsBytes();
+
+    setState(() {
+      imageBytes = bytes;
+      imageBase64 = base64Encode(bytes);
     });
   }
 
@@ -71,6 +97,7 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
           "description": descriptionController.text.trim(),
           "workingHours": workingHoursController.text.trim(),
           "district": selectedDistrict,
+          "image": imageBase64,
         });
 
     if (!mounted) return;
@@ -95,45 +122,91 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Profile")),
+      backgroundColor: const Color(0xFFFFF7ED),
+
+      appBar: AppBar(
+        title: const Text("Edit Profile"),
+        backgroundColor: const Color(0xFFF97316),
+      ),
 
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
 
         child: ListView(
           children: [
+            /// PROFILE IMAGE
+            Center(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.orange.withOpacity(.2),
+                    backgroundImage: imageBytes != null
+                        ? MemoryImage(imageBytes!)
+                        : null,
+                    child: imageBytes == null
+                        ? const Icon(
+                            Icons.store,
+                            size: 40,
+                            color: Colors.orange,
+                          )
+                        : null,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextButton.icon(
+                    onPressed: pickImage,
+                    icon: const Icon(Icons.upload),
+                    label: const Text("Change Profile Image"),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            /// PHONE
             TextField(
               controller: phoneController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Phone Number",
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.phone),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
 
             const SizedBox(height: 15),
 
+            /// LOCATION
             TextField(
               controller: locationController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Location",
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
 
             const SizedBox(height: 15),
 
+            /// DISTRICT
             DropdownButtonFormField<String>(
               value: selectedDistrict,
-
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "District",
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.map),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-
               items: districts.map((district) {
                 return DropdownMenuItem(value: district, child: Text(district));
               }).toList(),
-
               onChanged: (value) {
                 setState(() {
                   selectedDistrict = value;
@@ -143,33 +216,53 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
 
             const SizedBox(height: 15),
 
+            /// DESCRIPTION
             TextField(
               controller: descriptionController,
               maxLines: 3,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Description",
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.description),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
 
             const SizedBox(height: 15),
 
+            /// WORKING HOURS
             TextField(
               controller: workingHoursController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Working Hours",
                 hintText: "Example: 9 AM - 6 PM",
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.access_time),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
 
             const SizedBox(height: 25),
 
+            /// UPDATE BUTTON
             SizedBox(
-              height: 45,
-              child: ElevatedButton(
+              height: 50,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF97316),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 onPressed: updateProfile,
-                child: const Text("Update Profile"),
+                icon: const Icon(Icons.save),
+                label: const Text(
+                  "Update Profile",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
