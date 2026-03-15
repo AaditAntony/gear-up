@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class ServiceHomePage extends StatelessWidget {
   const ServiceHomePage({super.key});
@@ -16,6 +17,117 @@ class ServiceHomePage extends StatelessWidget {
 
   int countStatus(List docs, String status) {
     return docs.where((doc) => doc['status'] == status).length;
+  }
+
+  /// SERVICE PIPELINE SUMMARY
+  Widget servicePipeline(
+    int pending,
+    int accepted,
+    int inProgress,
+    int completed,
+  ) {
+    Widget item(String title, int count, Color color) {
+      return Expanded(
+        child: Column(
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              count.toString(),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+        ],
+      ),
+      child: Row(
+        children: [
+          item("Pending", pending, Colors.orange),
+          item("Accepted", accepted, Colors.blue),
+          item("Progress", inProgress, Colors.purple),
+          item("Completed", completed, Colors.green),
+        ],
+      ),
+    );
+  }
+
+  /// BOOKING TREND GRAPH
+  Widget bookingTrendChart(List docs) {
+    Map<int, int> dailyBookings = {};
+    DateTime now = DateTime.now();
+
+    for (int i = 6; i >= 0; i--) {
+      DateTime day = now.subtract(Duration(days: i));
+      dailyBookings[day.day] = 0;
+    }
+
+    for (var doc in docs) {
+      Timestamp ts = doc['createdAt'];
+      DateTime date = ts.toDate();
+
+      if (dailyBookings.containsKey(date.day)) {
+        dailyBookings[date.day] = dailyBookings[date.day]! + 1;
+      }
+    }
+
+    List<FlSpot> spots = [];
+    int index = 0;
+
+    dailyBookings.forEach((day, value) {
+      spots.add(FlSpot(index.toDouble(), value.toDouble()));
+      index++;
+    });
+
+    return Container(
+      height: 220,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+        ],
+      ),
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(show: false),
+          titlesData: FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              barWidth: 4,
+              color: Colors.orange,
+              dotData: FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: Colors.orange.withOpacity(.15),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget statCard(String title, int value, IconData icon, Color color) {
@@ -40,16 +152,12 @@ class ServiceHomePage extends StatelessWidget {
               ),
               child: Icon(icon, color: color),
             ),
-
             const SizedBox(height: 15),
-
             Text(
               value.toString(),
               style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 4),
-
             Text(
               title,
               style: const TextStyle(fontSize: 14, color: Colors.grey),
@@ -118,9 +226,7 @@ class ServiceHomePage extends StatelessWidget {
             ),
             child: const Icon(Icons.directions_car, color: Colors.orange),
           ),
-
           const SizedBox(width: 15),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,9 +238,7 @@ class ServiceHomePage extends StatelessWidget {
                     fontSize: 15,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
                 Text(
                   data['categoryName'],
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
@@ -142,7 +246,6 @@ class ServiceHomePage extends StatelessWidget {
               ],
             ),
           ),
-
           statusBadge(data['status']),
         ],
       ),
@@ -184,7 +287,6 @@ class ServiceHomePage extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              /// STATS
               Row(
                 children: [
                   statCard(
@@ -231,9 +333,23 @@ class ServiceHomePage extends StatelessWidget {
                 ],
               ),
 
+              const SizedBox(height: 25),
+
+              servicePipeline(pending, accepted, inProgress, completed),
+
               const SizedBox(height: 30),
 
-              /// RECENT BOOKINGS
+              const Text(
+                "Booking Trend",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 15),
+
+              bookingTrendChart(docs),
+
+              const SizedBox(height: 30),
+
               const Text(
                 "Recent Bookings",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
