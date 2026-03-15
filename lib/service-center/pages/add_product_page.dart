@@ -106,262 +106,287 @@ class _AddProductPageState extends State<AddProductPage> {
   Widget build(BuildContext context) {
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
-        title: const Text("Add Products"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// ADD PRODUCT CARD
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 10,
-                      color: Colors.black.withOpacity(.05),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// HEADER
+          const Text(
+            "Product Manager",
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 6),
+
+          Text(
+            "Add and manage your spare parts & accessories",
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+
+          const SizedBox(height: 25),
+
+          /// ADD PRODUCT CARD
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+              ],
+            ),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
                   children: [
-                    const Text(
+                    Icon(Icons.add_box, color: Colors.orange),
+                    SizedBox(width: 10),
+                    Text(
                       "Add New Product",
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ],
+                ),
 
-                    const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: "Product Name",
-                        prefixIcon: const Icon(Icons.inventory),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    labelText: "Product Name",
+                    prefixIcon: const Icon(Icons.inventory),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                TextField(
+                  controller: descriptionController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: "Description",
+                    prefixIcon: const Icon(Icons.description),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                TextField(
+                  controller: priceController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: "Price",
+                    prefixIcon: const Icon(Icons.currency_rupee),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                Row(
+                  children: [
+                    /// IMAGE PREVIEW
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(.08),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: imageBytes != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.memory(
+                                imageBytes!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.image_outlined,
+                              size: 40,
+                              color: Colors.orange,
+                            ),
                     ),
 
-                    const SizedBox(height: 15),
+                    const SizedBox(width: 20),
 
-                    TextField(
-                      controller: descriptionController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: "Description",
-                        prefixIcon: const Icon(Icons.description),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF97316),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
                         ),
                       ),
+                      onPressed: pickImage,
+                      icon: const Icon(Icons.upload),
+                      label: const Text("Upload Image"),
                     ),
+                  ],
+                ),
 
-                    const SizedBox(height: 15),
+                const SizedBox(height: 20),
 
-                    TextField(
-                      controller: priceController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: "Price",
-                        prefixIcon: const Icon(Icons.currency_rupee),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                /// SMALLER BUTTON
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF97316),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
                       ),
                     ),
+                    onPressed: isLoading ? null : addProduct,
+                    icon: const Icon(Icons.add),
+                    label: isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text("Add Product"),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-                    const SizedBox(height: 15),
+          const SizedBox(height: 30),
 
-                    Row(
-                      children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: imageBytes != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.memory(
-                                    imageBytes!,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.image,
-                                  size: 40,
-                                  color: Colors.orange,
-                                ),
-                        ),
+          /// PRODUCTS TITLE
+          const Row(
+            children: [
+              Icon(Icons.store, color: Colors.orange),
+              SizedBox(width: 8),
+              Text(
+                "My Products",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
 
-                        const SizedBox(width: 20),
+          const SizedBox(height: 15),
 
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF97316),
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: pickImage,
-                          icon: const Icon(Icons.upload),
-                          label: const Text("Upload Image"),
+          /// PRODUCT LIST
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('products')
+                .where('centerId', isEqualTo: centerId)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              var products = snapshot.data!.docs;
+
+              if (products.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text("No products added yet"),
+                );
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: products.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 15,
+                  crossAxisSpacing: 15,
+                  childAspectRatio: 1.1,
+                ),
+                itemBuilder: (context, index) {
+                  var product = products[index];
+                  var data = product.data() as Map<String, dynamic>;
+
+                  Uint8List? image;
+
+                  if (data['image'] != null) {
+                    image = base64Decode(data['image']);
+                  }
+
+                  return Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 8,
+                          color: Colors.black.withOpacity(.05),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 20),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF97316),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: image != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.memory(
+                                    image,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
+                                )
+                              : const Icon(Icons.image),
                         ),
-                        onPressed: isLoading ? null : addProduct,
-                        child: isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : const Text("Add Product"),
-                      ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          data['productName'],
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+
+                        Text(
+                          "₹ ${data['price']}",
+                          style: const TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('products')
+                                .doc(product.id)
+                                .delete();
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              /// PRODUCT LIST
-              const Text(
-                "My Products",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 10),
-
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('products')
-                    .where('centerId', isEqualTo: centerId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  var products = snapshot.data!.docs;
-
-                  if (products.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Text("No products added yet"),
-                    );
-                  }
-
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      var product = products[index];
-                      var data = product.data() as Map<String, dynamic>;
-
-                      Uint8List? image;
-
-                      if (data['image'] != null) {
-                        image = base64Decode(data['image']);
-                      }
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 8,
-                              color: Colors.black.withOpacity(.05),
-                            ),
-                          ],
-                        ),
-
-                        child: Row(
-                          children: [
-                            image != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.memory(
-                                      image,
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : const Icon(Icons.image),
-
-                            const SizedBox(width: 12),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    data['productName'],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 4),
-
-                                  Text(
-                                    "₹ ${data['price']}",
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                await FirebaseFirestore.instance
-                                    .collection('products')
-                                    .doc(product.id)
-                                    .delete();
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
                   );
                 },
-              ),
-            ],
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
