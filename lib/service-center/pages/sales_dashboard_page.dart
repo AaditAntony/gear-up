@@ -44,27 +44,50 @@ class SalesDashboardPage extends StatelessWidget {
     return total;
   }
 
+  double calculateMonthlyRevenue(List docs) {
+    double total = 0;
+
+    DateTime today = DateTime.now();
+
+    for (var doc in docs) {
+      Timestamp ts = doc['createdAt'];
+      DateTime date = ts.toDate();
+
+      if (date.year == today.year && date.month == today.month) {
+        total += (doc['price'] ?? 0);
+      }
+    }
+
+    return total;
+  }
+
   Widget statCard(String title, String value, IconData icon, Color color) {
     return Expanded(
-      child: Card(
-        elevation: 3,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(icon, size: 35, color: color),
-              const SizedBox(height: 10),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(title),
-            ],
-          ),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+          ],
+        ),
+
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: color),
+
+            const SizedBox(height: 10),
+
+            Text(
+              value,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 6),
+
+            Text(title, style: const TextStyle(color: Colors.grey)),
+          ],
         ),
       ),
     );
@@ -83,10 +106,12 @@ class SalesDashboardPage extends StatelessWidget {
 
         double totalRevenue = calculateRevenue(orders);
         double todayRevenue = calculateTodayRevenue(orders);
+        double monthlyRevenue = calculateMonthlyRevenue(orders);
+
         int totalOrders = orders.length;
 
         return Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,8 +121,9 @@ class SalesDashboardPage extends StatelessWidget {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
+              /// ROW 1
               Row(
                 children: [
                   statCard(
@@ -107,7 +133,7 @@ class SalesDashboardPage extends StatelessWidget {
                     Colors.green,
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
 
                   statCard(
                     "Products Sold",
@@ -118,8 +144,9 @@ class SalesDashboardPage extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
 
+              /// ROW 2
               Row(
                 children: [
                   statCard(
@@ -129,12 +156,12 @@ class SalesDashboardPage extends StatelessWidget {
                     Colors.orange,
                   ),
 
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 12),
 
                   statCard(
-                    "Orders",
-                    totalOrders.toString(),
-                    Icons.receipt,
+                    "Monthly Sales",
+                    "₹${monthlyRevenue.toStringAsFixed(0)}",
+                    Icons.calendar_month,
                     Colors.purple,
                   ),
                 ],
@@ -147,30 +174,79 @@ class SalesDashboardPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
               Expanded(
                 child: ListView.builder(
                   itemCount: orders.length,
+
                   itemBuilder: (context, index) {
                     var order = orders[index];
 
                     Timestamp ts = order['createdAt'];
                     DateTime date = ts.toDate();
 
-                    return Card(
-                      child: ListTile(
-                        title: Text(order['productName']),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
 
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Price: ₹${order['price']}"),
-                            Text("Date: ${date.toString().split(" ")[0]}"),
-                          ],
-                        ),
+                      padding: const EdgeInsets.all(14),
 
-                        trailing: const Icon(Icons.arrow_forward_ios),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 6,
+                            color: Colors.black.withOpacity(.05),
+                          ),
+                        ],
+                      ),
+
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+
+                            child: const Icon(
+                              Icons.shopping_bag,
+                              color: Colors.orange,
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  order['productName'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  "₹${order['price']} • ${date.toString().split(" ")[0]}",
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                        ],
                       ),
                     );
                   },
