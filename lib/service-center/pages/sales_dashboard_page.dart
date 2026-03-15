@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class SalesDashboardPage extends StatelessWidget {
   const SalesDashboardPage({super.key});
@@ -17,17 +18,14 @@ class SalesDashboardPage extends StatelessWidget {
 
   double calculateRevenue(List docs) {
     double total = 0;
-
     for (var doc in docs) {
       total += (doc['price'] ?? 0);
     }
-
     return total;
   }
 
   double calculateTodayRevenue(List docs) {
     double total = 0;
-
     DateTime today = DateTime.now();
 
     for (var doc in docs) {
@@ -46,7 +44,6 @@ class SalesDashboardPage extends StatelessWidget {
 
   double calculateMonthlyRevenue(List docs) {
     double total = 0;
-
     DateTime today = DateTime.now();
 
     for (var doc in docs) {
@@ -72,21 +69,72 @@ class SalesDashboardPage extends StatelessWidget {
             BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
           ],
         ),
-
         child: Column(
           children: [
             Icon(icon, size: 32, color: color),
-
             const SizedBox(height: 10),
-
             Text(
               value,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 6),
-
             Text(title, style: const TextStyle(color: Colors.grey)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget salesChart(List docs) {
+    Map<int, double> dailySales = {};
+    DateTime now = DateTime.now();
+
+    for (int i = 6; i >= 0; i--) {
+      DateTime day = now.subtract(Duration(days: i));
+      dailySales[day.day] = 0;
+    }
+
+    for (var doc in docs) {
+      Timestamp ts = doc['createdAt'];
+      DateTime date = ts.toDate();
+
+      if (dailySales.containsKey(date.day)) {
+        dailySales[date.day] =
+            (dailySales[date.day] ?? 0) + (doc['price'] ?? 0);
+      }
+    }
+
+    List<FlSpot> spots = [];
+    int index = 0;
+
+    dailySales.forEach((day, value) {
+      spots.add(FlSpot(index.toDouble(), value));
+      index++;
+    });
+
+    return Container(
+      height: 220,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(.05)),
+        ],
+      ),
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(show: false),
+          titlesData: FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: Colors.orange,
+              barWidth: 4,
+              dotData: FlDotData(show: false),
+            ),
           ],
         ),
       ),
@@ -110,76 +158,82 @@ class SalesDashboardPage extends StatelessWidget {
 
         int totalOrders = orders.length;
 
-        return Padding(
-          padding: const EdgeInsets.all(20),
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Sales Dashboard",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Sales Dashboard",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
 
-              const SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-              /// ROW 1
-              Row(
-                children: [
-                  statCard(
-                    "Total Revenue",
-                    "₹${totalRevenue.toStringAsFixed(0)}",
-                    Icons.attach_money,
-                    Colors.green,
-                  ),
+                Row(
+                  children: [
+                    statCard(
+                      "Total Revenue",
+                      "₹${totalRevenue.toStringAsFixed(0)}",
+                      Icons.attach_money,
+                      Colors.green,
+                    ),
+                    const SizedBox(width: 12),
+                    statCard(
+                      "Products Sold",
+                      totalOrders.toString(),
+                      Icons.shopping_cart,
+                      Colors.blue,
+                    ),
+                  ],
+                ),
 
-                  const SizedBox(width: 12),
+                const SizedBox(height: 12),
 
-                  statCard(
-                    "Products Sold",
-                    totalOrders.toString(),
-                    Icons.shopping_cart,
-                    Colors.blue,
-                  ),
-                ],
-              ),
+                Row(
+                  children: [
+                    statCard(
+                      "Today's Sales",
+                      "₹${todayRevenue.toStringAsFixed(0)}",
+                      Icons.today,
+                      Colors.orange,
+                    ),
+                    const SizedBox(width: 12),
+                    statCard(
+                      "Monthly Sales",
+                      "₹${monthlyRevenue.toStringAsFixed(0)}",
+                      Icons.calendar_month,
+                      Colors.purple,
+                    ),
+                  ],
+                ),
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 30),
 
-              /// ROW 2
-              Row(
-                children: [
-                  statCard(
-                    "Today's Sales",
-                    "₹${todayRevenue.toStringAsFixed(0)}",
-                    Icons.today,
-                    Colors.orange,
-                  ),
+                const Text(
+                  "Sales Trend",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
 
-                  const SizedBox(width: 12),
+                const SizedBox(height: 15),
 
-                  statCard(
-                    "Monthly Sales",
-                    "₹${monthlyRevenue.toStringAsFixed(0)}",
-                    Icons.calendar_month,
-                    Colors.purple,
-                  ),
-                ],
-              ),
+                salesChart(orders),
 
-              const SizedBox(height: 30),
+                const SizedBox(height: 30),
 
-              const Text(
-                "Recent Orders",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+                const Text(
+                  "Recent Orders",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
 
-              const SizedBox(height: 15),
+                const SizedBox(height: 15),
 
-              Expanded(
-                child: ListView.builder(
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: orders.length,
-
                   itemBuilder: (context, index) {
                     var order = orders[index];
 
@@ -188,7 +242,6 @@ class SalesDashboardPage extends StatelessWidget {
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
-
                       padding: const EdgeInsets.all(14),
 
                       decoration: BoxDecoration(
@@ -211,7 +264,6 @@ class SalesDashboardPage extends StatelessWidget {
                               color: Colors.orange.withOpacity(.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
-
                             child: const Icon(
                               Icons.shopping_bag,
                               color: Colors.orange,
@@ -251,8 +303,8 @@ class SalesDashboardPage extends StatelessWidget {
                     );
                   },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
