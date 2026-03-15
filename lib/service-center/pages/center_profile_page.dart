@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,8 +54,10 @@ class CenterProfilePage extends StatelessWidget {
             title: const Text("Company Profile"),
             backgroundColor: const Color(0xFFF97316),
           ),
+
           body: Padding(
             padding: const EdgeInsets.all(20),
+
             child: ListView(
               children: [
                 /// HEADER CARD
@@ -71,44 +74,46 @@ class CenterProfilePage extends StatelessWidget {
                     ],
                   ),
 
-                  child: Row(
+                  child: Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.store,
-                          size: 35,
-                          color: Colors.orange,
+                      /// COMPANY IMAGE FROM REGISTRATION
+                      CircleAvatar(
+                        radius: 45,
+                        backgroundColor: Colors.orange.withOpacity(.15),
+
+                        backgroundImage: data['image'] != null
+                            ? MemoryImage(base64Decode(data['image']))
+                            : null,
+
+                        child: data['image'] == null
+                            ? const Icon(
+                                Icons.store,
+                                size: 40,
+                                color: Colors.orange,
+                              )
+                            : null,
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      /// COMPANY NAME
+                      Text(
+                        data['companyName'] ?? "",
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
 
-                      const SizedBox(width: 16),
+                      const SizedBox(height: 5),
 
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              data['companyName'] ?? "",
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            Text(
-                              data['district'] ?? "",
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                      /// DISTRICT
+                      Text(
+                        data['district'] ?? "",
+                        style: const TextStyle(color: Colors.grey),
                       ),
+
+                      const SizedBox(height: 10),
 
                       /// STATUS BADGE
                       Container(
@@ -148,7 +153,6 @@ class CenterProfilePage extends StatelessWidget {
                 infoTile(Icons.location_on, "Location", data['location'] ?? ""),
                 infoTile(Icons.map, "District", data['district'] ?? ""),
                 infoTile(Icons.public, "State", data['state'] ?? ""),
-
                 infoTile(
                   Icons.description,
                   "Description",
@@ -197,13 +201,10 @@ class CenterProfilePage extends StatelessWidget {
   Widget infoTile(IconData icon, String title, String value) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-
       padding: const EdgeInsets.all(14),
-
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-
         boxShadow: [
           BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(.04)),
         ],
@@ -217,6 +218,7 @@ class CenterProfilePage extends StatelessWidget {
               color: Colors.orange.withOpacity(.15),
               borderRadius: BorderRadius.circular(10),
             ),
+
             child: Icon(icon, color: Colors.orange),
           ),
 
