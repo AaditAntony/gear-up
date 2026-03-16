@@ -54,7 +54,6 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
   Future<void> pickImage(int imageNumber) async {
 
     final picker = ImagePicker();
-
     final XFile? pickedFile =
         await picker.pickImage(source: ImageSource.gallery);
 
@@ -72,7 +71,6 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
     String base64String = base64Encode(bytes);
 
     setState(() {
-
       if (imageNumber == 1) {
         image1Bytes = bytes;
         image1Base64 = base64String;
@@ -80,7 +78,6 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
         image2Bytes = bytes;
         image2Base64 = base64String;
       }
-
     });
   }
 
@@ -163,36 +160,49 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF7ED),
+
+      appBar: AppBar(
+        title: const Text("Service Center Registration"),
+        backgroundColor: const Color(0xFFF97316),
+      ),
+
       body: SingleChildScrollView(
         child: Center(
           child: Container(
-            width: 700,
+            width: 720,
             padding: const EdgeInsets.all(24),
 
             child: Column(
 
+              crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
 
                 const Text(
-                  "Service Center Registration Details",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  "Service Center Details",
+                  style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 30),
 
-                _buildField(companyNameController, "Company Name"),
-                _buildField(ownerNameController, "Owner Name"),
-                _buildField(phoneController, "Primary Phone"),
-                _buildField(alternatePhoneController, "Alternate Phone"),
-                _buildField(locationController, "Street Address"),
+                _buildField(companyNameController, "Company Name", Icons.business),
+                _buildField(ownerNameController, "Owner Name", Icons.person),
+                _buildField(phoneController, "Primary Phone", Icons.phone),
+                _buildField(alternatePhoneController, "Alternate Phone", Icons.phone_android),
+                _buildField(locationController, "Street Address", Icons.location_on),
 
-                const SizedBox(height: 15),
+                const SizedBox(height: 10),
 
                 DropdownButtonFormField<String>(
                   value: selectedDistrict,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "District",
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.map),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   items: districts.map((district) {
                     return DropdownMenuItem(
@@ -209,12 +219,19 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
 
                 const SizedBox(height: 15),
 
-                _buildField(stateController, "State"),
-                _buildField(pincodeController, "Pincode"),
-                _buildField(gstController, "GST Number (Optional)"),
-                _buildField(experienceController, "Years of Experience"),
+                _buildField(stateController, "State", Icons.public),
+                _buildField(pincodeController, "Pincode", Icons.pin_drop),
+                _buildField(gstController, "GST Number (Optional)", Icons.receipt),
+                _buildField(experienceController, "Years of Experience", Icons.work),
                 _buildField(descriptionController, "Company Description",
-                    maxLines: 3),
+                    Icons.description, maxLines: 3),
+
+                const SizedBox(height: 30),
+
+                const Text(
+                  "Upload Documents",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
 
                 const SizedBox(height: 20),
 
@@ -222,40 +239,48 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
 
-                    Column(
-                      children: [
-                        image1Bytes != null
-                            ? Image.memory(image1Bytes!, width: 120, height: 120)
-                            : const Text("Business License"),
-                        ElevatedButton(
-                          onPressed: () => pickImage(1),
-                          child: const Text("Upload License"),
-                        ),
-                      ],
+                    _imageUploadCard(
+                        "Business License",
+                        image1Bytes,
+                        () => pickImage(1)
                     ),
 
-                    Column(
-                      children: [
-                        image2Bytes != null
-                            ? Image.memory(image2Bytes!, width: 120, height: 120)
-                            : const Text("Workshop Image"),
-                        ElevatedButton(
-                          onPressed: () => pickImage(2),
-                          child: const Text("Upload Workshop"),
-                        ),
-                      ],
+                    _imageUploadCard(
+                        "Workshop Image",
+                        image2Bytes,
+                        () => pickImage(2)
                     ),
 
                   ],
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
 
-                ElevatedButton(
-                  onPressed: isLoading ? null : submitForm,
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Submit Application"),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+
+                  child: ElevatedButton.icon(
+
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF97316),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+
+                    onPressed: isLoading ? null : submitForm,
+
+                    icon: const Icon(Icons.send),
+
+                    label: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "Submit Application",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                  ),
                 ),
               ],
             ),
@@ -267,7 +292,8 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
 
   Widget _buildField(
     TextEditingController controller,
-    String label, {
+    String label,
+    IconData icon, {
     int maxLines = 1,
   }) {
 
@@ -276,11 +302,64 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(icon),
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _imageUploadCard(
+      String title,
+      Uint8List? image,
+      VoidCallback onTap,
+      ) {
+
+    return Column(
+      children: [
+
+        Container(
+          width: 140,
+          height: 140,
+
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey.shade200,
+          ),
+
+          child: image != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(image, fit: BoxFit.cover),
+                )
+              : const Icon(Icons.image, size: 50, color: Colors.grey),
+        ),
+
+        const SizedBox(height: 10),
+
+        Text(title),
+
+        const SizedBox(height: 8),
+
+        ElevatedButton.icon(
+
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFF97316),
+            foregroundColor: Colors.white,
+          ),
+
+          onPressed: onTap,
+
+          icon: const Icon(Icons.upload),
+          label: const Text("Upload"),
+        ),
+      ],
     );
   }
 }
