@@ -30,7 +30,6 @@ class _LoginPageState extends State<LoginPage> {
         isLoading = true;
       });
 
-      // Step 1: Sign in
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
             email: emailController.text.trim(),
@@ -39,7 +38,6 @@ class _LoginPageState extends State<LoginPage> {
 
       String uid = userCredential.user!.uid;
 
-      // Step 2: Get Firestore user document
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
@@ -58,7 +56,6 @@ class _LoginPageState extends State<LoginPage> {
       String role = data['role'] ?? "";
       bool isApproved = data['isApproved'] ?? false;
 
-      // ---------------- ADMIN ----------------
       if (role == "admin") {
         if (!isApproved) {
           setState(() => isLoading = false);
@@ -76,9 +73,7 @@ class _LoginPageState extends State<LoginPage> {
           context,
           MaterialPageRoute(builder: (_) => const AdminDashboard()),
         );
-      }
-      // ---------------- SERVICE CENTER ----------------
-      else if (role == "service_center") {
+      } else if (role == "service_center") {
         bool profileCompleted = data.containsKey('profileCompleted')
             ? data['profileCompleted']
             : false;
@@ -93,7 +88,6 @@ class _LoginPageState extends State<LoginPage> {
           return;
         }
 
-        // Fetch details document ONCE
         DocumentSnapshot detailsDoc = await FirebaseFirestore.instance
             .collection('service_center_details')
             .doc(uid)
@@ -144,6 +138,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         setState(() => isLoading = false);
+
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text("Invalid user role.")));
@@ -171,8 +166,6 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       setState(() => isLoading = false);
 
-      print("LOGIN ERROR: $e");
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
@@ -182,29 +175,62 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+
       body: Center(
         child: Container(
-          width: 400,
-          padding: const EdgeInsets.all(24),
+          width: 420,
+          padding: const EdgeInsets.all(30),
+
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(blurRadius: 15, color: Colors.black.withOpacity(.08)),
+            ],
           ),
+
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                "GearUp Login",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              /// LOGO
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF97316).withOpacity(.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.settings,
+                  size: 45,
+                  color: Color(0xFFF97316),
+                ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
+
+              const Text(
+                "GearUp",
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 5),
+
+              const Text(
+                "Login to your account",
+                style: TextStyle(color: Colors.grey),
+              ),
+
+              const SizedBox(height: 30),
 
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Email",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
 
@@ -213,18 +239,28 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Password",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               SizedBox(
                 width: double.infinity,
-                height: 45,
+                height: 48,
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF334155),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   onPressed: isLoading ? null : loginUser,
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
@@ -232,7 +268,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               const Divider(),
 
@@ -254,7 +290,9 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => CenterRegisterPage()),
+                    MaterialPageRoute(
+                      builder: (_) => const CenterRegisterPage(),
+                    ),
                   );
                 },
                 child: const Text("Register as Service Center"),
