@@ -14,7 +14,8 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   bool isLoading = false;
 
@@ -23,17 +24,17 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
         emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty ||
         confirmPasswordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields.")));
       return;
     }
 
     if (passwordController.text.trim() !=
         confirmPasswordController.text.trim()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Passwords do not match.")));
       return;
     }
 
@@ -42,11 +43,11 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
         isLoading = true;
       });
 
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       String uid = userCredential.user!.uid;
 
@@ -66,8 +67,8 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text("Registration successful. Waiting for admin approval.")),
+          content: Text("Registration successful. Waiting for admin approval."),
+        ),
       );
 
       Navigator.pushReplacement(
@@ -89,46 +90,64 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
         errorMessage = "Invalid email format.";
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (e) {
       setState(() {
         isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Something went wrong.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong.")));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFFF7ED),
+
       body: Center(
         child: Container(
-          width: 450,
-          padding: const EdgeInsets.all(24),
+          width: 460,
+          padding: const EdgeInsets.all(30),
+
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.08)),
+            ],
           ),
+
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Icon(
+                Icons.build_circle,
+                size: 50,
+                color: Color(0xFFF97316),
+              ),
+
+              const SizedBox(height: 10),
+
               const Text(
                 "Service Center Registration",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Company Name",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.business),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
 
@@ -136,9 +155,12 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
 
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Email",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
 
@@ -147,9 +169,12 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
               TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Password",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
 
@@ -158,33 +183,52 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
               TextField(
                 controller: confirmPasswordController,
                 obscureText: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Confirm Password",
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               SizedBox(
                 width: double.infinity,
-                height: 45,
-                child: ElevatedButton(
+                height: 48,
+
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF97316),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+
                   onPressed: isLoading ? null : registerCenter,
-                  child: isLoading
+
+                  icon: const Icon(Icons.app_registration),
+
+                  label: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Register"),
+                      : const Text(
+                          "Register",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
 
               const SizedBox(height: 15),
 
-              TextButton(
+              TextButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text("Back to Login"),
-              )
+                icon: const Icon(Icons.arrow_back),
+                label: const Text("Back to Login"),
+              ),
             ],
           ),
         ),
