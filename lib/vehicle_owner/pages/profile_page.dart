@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/vehicle_owner/pages/my_oders_page.dart';
 import '../../auth/login_page.dart';
+import 'edit_profile_page.dart'; // ✅ ADD THIS
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -22,23 +23,49 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget infoTile(String title, String value) {
+  Widget infoTile(IconData icon, String title, String value) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
-          BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(.04)),
+          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2563EB).withOpacity(.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: const Color(0xFF2563EB)),
+          ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -48,7 +75,6 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return FutureBuilder<DocumentSnapshot>(
       future: getUserData(),
-
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -68,35 +94,39 @@ class ProfilePage extends StatelessWidget {
               /// 🔵 HEADER
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 50, 16, 20),
-
+                padding: const EdgeInsets.fromLTRB(16, 60, 16, 25),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
                   ),
                 ),
-
                 child: Column(
                   children: [
                     /// AVATAR
-                    const CircleAvatar(
-                      radius: 35,
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Color(0xFF2563EB),
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const CircleAvatar(
+                        radius: 36,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          size: 42,
+                          color: Color(0xFF2563EB),
+                        ),
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
                     /// NAME
                     Text(
                       data['name'] ?? "",
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -111,6 +141,27 @@ class ProfilePage extends StatelessWidget {
                         fontSize: 13,
                       ),
                     ),
+
+                    const SizedBox(height: 15),
+
+                    /// ✏️ EDIT PROFILE BUTTON
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF2563EB),
+                        elevation: 0,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const EditProfilePage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.edit),
+                      label: const Text("Edit Profile"),
+                    ),
                   ],
                 ),
               ),
@@ -123,31 +174,41 @@ class ProfilePage extends StatelessWidget {
                     /// PROFILE INFO
                     const Text(
                       "Profile Information",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
 
                     const SizedBox(height: 15),
 
-                    infoTile("Phone", data['phone'] ?? ""),
-                    infoTile("Address", data['address'] ?? ""),
-                    infoTile("District", data['district'] ?? ""),
+                    infoTile(Icons.phone, "Phone", data['phone'] ?? ""),
+                    infoTile(
+                      Icons.location_on,
+                      "Address",
+                      data['address'] ?? "",
+                    ),
+                    infoTile(Icons.map, "District", data['district'] ?? ""),
 
                     const SizedBox(height: 25),
 
                     /// ACCOUNT
                     const Text(
                       "Account",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
                     /// ORDERS
                     Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: ListTile(
                         leading: const Icon(
@@ -171,7 +232,7 @@ class ProfilePage extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: ListTile(
                         leading: const Icon(Icons.logout, color: Colors.red),
@@ -189,4 +250,3 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
-////
