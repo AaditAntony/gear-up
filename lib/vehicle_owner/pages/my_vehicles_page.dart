@@ -71,28 +71,35 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
     mileageController.clear();
   }
 
-  void showAddVehicleDialog() {
-    showDialog(
+  /// 🔥 MODERN BOTTOM SHEET
+  void showAddVehicleSheet() {
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-
-          title: const Text(
-            "Add Vehicle",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-
-          content: SingleChildScrollView(
+          child: SingleChildScrollView(
             child: Column(
               children: [
+                const Text(
+                  "Add Vehicle",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 20),
+
                 _field(vehicleNumberController, "Vehicle Number"),
                 _field(brandController, "Brand"),
                 _field(modelController, "Model"),
-
-                const SizedBox(height: 10),
 
                 DropdownButtonFormField<String>(
                   value: fuelType,
@@ -106,32 +113,21 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                     ),
                     DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
                   ],
-                  onChanged: (value) {
-                    fuelType = value;
-                  },
+                  onChanged: (value) => fuelType = value,
                 ),
 
                 const SizedBox(height: 10),
 
-                _field(
-                  yearController,
-                  "Manufacturing Year",
-                  keyboard: TextInputType.number,
-                ),
-
+                _field(yearController, "Year", keyboard: TextInputType.number),
                 _field(
                   mileageController,
-                  "Current Mileage",
+                  "Mileage",
                   keyboard: TextInputType.number,
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    foregroundColor: Colors.white,
-                  ),
                   onPressed: pickServiceDate,
                   child: Text(
                     lastServiceDate == null
@@ -139,52 +135,48 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                         : lastServiceDate.toString().split(" ")[0],
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: addVehicle,
+                    child: const Text("Save Vehicle"),
+                  ),
+                ),
               ],
             ),
           ),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: addVehicle,
-              child: const Text("Save"),
-            ),
-          ],
         );
       },
     );
   }
 
-  Widget _field(
-    TextEditingController controller,
-    String label, {
-    TextInputType keyboard = TextInputType.text,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboard,
-        decoration: _inputDecoration(label),
-      ),
-    );
+  /// 🔥 HEALTH CALCULATION (UI ONLY)
+  int calculateHealth(Map data) {
+    int score = 100;
+
+    int year = int.parse(data['year'].toString());
+    int mileage = int.parse(data['mileage'].toString());
+
+    Timestamp ts = data['lastServiceDate'];
+    DateTime lastService = ts.toDate();
+
+    int age = DateTime.now().year - year;
+    int months = DateTime.now().difference(lastService).inDays ~/ 30;
+
+    if (age >= 5) score -= 25;
+    if (mileage >= 40000) score -= 25;
+    if (months >= 6) score -= 25;
+
+    return score.clamp(0, 100);
   }
 
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: Colors.grey.shade100,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-    );
+  Color healthColor(int score) {
+    if (score >= 80) return Colors.green;
+    if (score >= 50) return Colors.orange;
+    return Colors.red;
   }
 
   @override
@@ -197,12 +189,11 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF2563EB),
         title: const Text("My Vehicles", style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
 
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2563EB),
-        onPressed: showAddVehicleDialog,
+        onPressed: showAddVehicleSheet,
         child: const Icon(Icons.add, color: Colors.white),
       ),
 
@@ -219,15 +210,21 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
           var vehicles = snapshot.data!.docs;
 
           if (vehicles.isEmpty) {
-            return const Center(child: Text("No vehicles added"));
+            return const Center(
+              child: Text(
+                "🚗 No vehicles yet\nAdd one to get insights",
+                textAlign: TextAlign.center,
+              ),
+            );
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: vehicles.length,
-
             itemBuilder: (context, index) {
               var data = vehicles[index].data() as Map<String, dynamic>;
+              int score = calculateHealth(data);
+              Color color = healthColor(score);
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -235,7 +232,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
 
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 10,
@@ -244,47 +241,54 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                   ],
                 ),
 
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// ICON
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB).withOpacity(.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.directions_car,
-                        color: Color(0xFF2563EB),
-                      ),
-                    ),
+                    /// HEADER
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.directions_car,
+                          color: Color(0xFF2563EB),
+                        ),
 
-                    const SizedBox(width: 12),
+                        const SizedBox(width: 10),
 
-                    /// DETAILS
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
+                        Expanded(
+                          child: Text(
                             data['vehicleNumber'],
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
+                        ),
 
-                          const SizedBox(height: 4),
-
-                          Text(
-                            "${data['brand']} ${data['model']}",
-                            style: const TextStyle(color: Colors.grey),
+                        Text(
+                          "$score%",
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.bold,
                           ),
-
-                          Text(
-                            "Year: ${data['year']} • ${data['fuelType']}",
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+
+                    const SizedBox(height: 6),
+
+                    Text("${data['brand']} ${data['model']}"),
+
+                    const SizedBox(height: 10),
+
+                    /// HEALTH BAR
+                    LinearProgressIndicator(
+                      value: score / 100,
+                      color: color,
+                      backgroundColor: Colors.grey.shade200,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    /// EXTRA INFO
+                    Text("Mileage: ${data['mileage']} km"),
+                    Text("Fuel: ${data['fuelType']}"),
                   ],
                 ),
               );
@@ -292,6 +296,30 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _field(
+    TextEditingController c,
+    String label, {
+    TextInputType keyboard = TextInputType.text,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: c,
+        keyboardType: keyboard,
+        decoration: _inputDecoration(label),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.grey.shade100,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 }
