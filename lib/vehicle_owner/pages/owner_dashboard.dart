@@ -6,7 +6,6 @@ import 'package:gear_up/vehicle_owner/pages/my_vehicles_page.dart';
 import 'package:gear_up/vehicle_owner/pages/product_page.dart';
 import 'package:gear_up/vehicle_owner/pages/profile_page.dart';
 
-
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
 
@@ -15,89 +14,87 @@ class OwnerDashboard extends StatefulWidget {
 }
 
 class _OwnerDashboardState extends State<OwnerDashboard> {
-
   int selectedIndex = 0;
 
   final List<Widget> pages = const [
-
     AIRecommendationPage(),
     BrowseCentersPage(),
     MyBookingsPage(),
     MyVehiclesPage(),
     ProfilePage(),
-
   ];
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
+      backgroundColor: const Color(0xFFEFF6FF),
+
       appBar: AppBar(
-  title: const Text("GearUp"),
+        elevation: 0,
+        backgroundColor: const Color(0xFF2563EB),
 
-  actions: [
+        title: const Text(
+          "GearUp",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
 
-    IconButton(
-      icon: const Icon(Icons.shopping_cart),
-      tooltip: "Products",
-
-      onPressed: () {
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>  ProductsPage(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            tooltip: "Products",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ProductsPage()),
+              );
+            },
           ),
-        );
-
-      },
-    ),
-
-  ],
-),
+        ],
+      ),
 
       body: pages[selectedIndex],
 
-      bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black12)],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: selectedIndex,
 
-        currentIndex: selectedIndex,
+          onTap: (index) {
+            setState(() {
+              selectedIndex = index;
+            });
+          },
 
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
+          type: BottomNavigationBarType.fixed,
 
-        type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
 
-        items: const [
+          selectedItemColor: const Color(0xFF2563EB),
+          unselectedItemColor: Colors.grey,
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.smart_toy),
-            label: "AI",
-          ),
+          selectedFontSize: 12,
+          unselectedFontSize: 11,
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Centers",
-          ),
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI"),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: "Bookings",
-          ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Centers"),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: "Vehicles",
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today),
+              label: "Bookings",
+            ),
 
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.directions_car),
+              label: "Vehicles",
+            ),
 
-        ],
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          ],
+        ),
       ),
     );
   }
