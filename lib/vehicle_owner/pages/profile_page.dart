@@ -9,7 +9,6 @@ class ProfilePage extends StatelessWidget {
 
   Future<DocumentSnapshot> getUserData() async {
     String uid = FirebaseAuth.instance.currentUser!.uid;
-
     return FirebaseFirestore.instance.collection('users').doc(uid).get();
   }
 
@@ -24,8 +23,24 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget infoTile(String title, String value) {
-    return Card(
-      child: ListTile(title: Text(title), subtitle: Text(value)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(.04)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
@@ -46,64 +61,132 @@ class ProfilePage extends StatelessWidget {
         var data = snapshot.data!.data() as Map<String, dynamic>;
 
         return Scaffold(
-          appBar: AppBar(title: const Text("My Profile")),
+          backgroundColor: const Color(0xFFEFF6FF),
 
-          body: Padding(
-            padding: const EdgeInsets.all(16),
+          body: Column(
+            children: [
+              /// 🔵 HEADER
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 50, 16, 20),
 
-            child: ListView(
-              children: [
-                const Text(
-                  "Profile Information",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 20),
-
-                infoTile("Name", data['name'] ?? ""),
-                infoTile("Email", data['email'] ?? ""),
-                infoTile("Phone", data['phone'] ?? ""),
-                infoTile("Address", data['address'] ?? ""),
-                infoTile("District", data['district'] ?? ""),
-
-                const SizedBox(height: 25),
-
-                const Text(
-                  "Account",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                /// MY ORDERS
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.shopping_bag),
-                    title: const Text("My Orders"),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const MyOrdersPage()),
-                      );
-                    },
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
                   ),
                 ),
 
-                /// LOGOUT
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
-                    title: const Text("Logout"),
-                    onTap: () => logout(context),
-                  ),
+                child: Column(
+                  children: [
+                    /// AVATAR
+                    const CircleAvatar(
+                      radius: 35,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Color(0xFF2563EB),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    /// NAME
+                    Text(
+                      data['name'] ?? "",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    /// EMAIL
+                    Text(
+                      data['email'] ?? "",
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+
+              /// BODY
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    /// PROFILE INFO
+                    const Text(
+                      "Profile Information",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    infoTile("Phone", data['phone'] ?? ""),
+                    infoTile("Address", data['address'] ?? ""),
+                    infoTile("District", data['district'] ?? ""),
+
+                    const SizedBox(height: 25),
+
+                    /// ACCOUNT
+                    const Text(
+                      "Account",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    /// ORDERS
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.shopping_bag,
+                          color: Color(0xFF2563EB),
+                        ),
+                        title: const Text("My Orders"),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const MyOrdersPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    /// LOGOUT
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: const Icon(Icons.logout, color: Colors.red),
+                        title: const Text("Logout"),
+                        onTap: () => logout(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 }
+////
