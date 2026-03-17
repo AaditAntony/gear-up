@@ -13,12 +13,56 @@ class MyBookingsPage extends StatelessWidget {
         .update({'status': 'cancelled'});
   }
 
+  Color statusColor(String status) {
+    switch (status) {
+      case "pending":
+        return Colors.orange;
+      case "accepted":
+        return Colors.green;
+      case "rejected":
+        return Colors.red;
+      case "cancelled":
+        return Colors.grey;
+      case "completed":
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget statusBadge(String status) {
+    Color color = statusColor(status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 11,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("My Bookings")),
+      backgroundColor: const Color(0xFFEFF6FF),
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2563EB),
+        title: const Text("My Bookings", style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
@@ -37,96 +81,135 @@ class MyBookingsPage extends StatelessWidget {
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: bookings.length,
             itemBuilder: (context, index) {
               var booking = bookings[index];
               var data = booking.data() as Map<String, dynamic>;
-
               String status = data['status'];
 
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data['centerName'],
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
 
-                      const SizedBox(height: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 10,
+                      color: Colors.black.withOpacity(.05),
+                    ),
+                  ],
+                ),
 
-                      Text("Service: ${data['categoryName']}"),
-                      Text("Vehicle: ${data['vehicleNumber']}"),
-
-                      Text(
-                        "Date: ${data['bookingDate'].toString().split("T")[0]}",
-                      ),
-
-                      Text("Slot: ${data['bookingSlot']}"),
-
-                      const SizedBox(height: 6),
-
-                      Text(
-                        "Status: ${status.toUpperCase()}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: status == "pending"
-                              ? Colors.orange
-                              : status == "accepted"
-                              ? Colors.green
-                              : status == "rejected"
-                              ? Colors.red
-                              : status == "cancelled"
-                              ? Colors.grey
-                              : Colors.blue,
-                        ),
-                      ),
-
-                      /// RATE BUTTON
-                      if (status == "completed")
-                        ElevatedButton(
-                          onPressed: () {
-                            showRatingSheet(context, data);
-                          },
-                          child: const Text("Rate Service"),
-                        ),
-
-                      const SizedBox(height: 10),
-
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  BookingDetailPage(bookingId: booking.id),
-                            ),
-                          );
-                        },
-                        child: const Text("View Details"),
-                      ),
-
-                      if (status == "pending")
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
-                            onPressed: () {
-                              cancelBooking(booking.id);
-                            },
-                            child: const Text("Cancel Booking"),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// HEADER
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2563EB).withOpacity(.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.store,
+                            color: Color(0xFF2563EB),
                           ),
                         ),
-                    ],
-                  ),
+
+                        const SizedBox(width: 10),
+
+                        Expanded(
+                          child: Text(
+                            data['centerName'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+
+                        statusBadge(status),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    /// DETAILS
+                    Text("Service: ${data['categoryName']}"),
+                    Text("Vehicle: ${data['vehicleNumber']}"),
+                    Text(
+                      "Date: ${data['bookingDate'].toString().split("T")[0]}",
+                    ),
+                    Text("Slot: ${data['bookingSlot']}"),
+
+                    const SizedBox(height: 14),
+
+                    /// ACTION BUTTONS
+                    Row(
+                      children: [
+                        /// VIEW DETAILS
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      BookingDetailPage(bookingId: booking.id),
+                                ),
+                              );
+                            },
+                            child: const Text("Details"),
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        /// RATE BUTTON
+                        if (status == "completed")
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                              ),
+                              onPressed: () {
+                                showRatingSheet(context, data);
+                              },
+                              child: const Text("Rate"),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    /// CANCEL BUTTON
+                    if (status == "pending")
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            cancelBooking(booking.id);
+                          },
+                          child: const Text(
+                            "Cancel Booking",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               );
             },
@@ -136,7 +219,7 @@ class MyBookingsPage extends StatelessWidget {
     );
   }
 
-  /// ⭐ RATING BOTTOM SHEET
+  /// ⭐ RATING SHEET (UI IMPROVED)
   void showRatingSheet(BuildContext context, Map<String, dynamic> bookingData) {
     int rating = 5;
     TextEditingController reviewController = TextEditingController();
@@ -144,6 +227,11 @@ class MyBookingsPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
@@ -154,6 +242,7 @@ class MyBookingsPage extends StatelessWidget {
                 right: 20,
                 top: 20,
               ),
+
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -164,7 +253,6 @@ class MyBookingsPage extends StatelessWidget {
 
                   const SizedBox(height: 15),
 
-                  /// ⭐ STAR RATING
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
@@ -172,7 +260,7 @@ class MyBookingsPage extends StatelessWidget {
                         icon: Icon(
                           index < rating ? Icons.star : Icons.star_border,
                           color: Colors.amber,
-                          size: 35,
+                          size: 34,
                         ),
                         onPressed: () {
                           setState(() {
@@ -187,9 +275,13 @@ class MyBookingsPage extends StatelessWidget {
 
                   TextField(
                     controller: reviewController,
-                    decoration: const InputDecoration(
-                      labelText: "Write your review",
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: "Write your review...",
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     maxLines: 3,
                   ),
@@ -199,8 +291,11 @@ class MyBookingsPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: () async {
-                        /// SAVE RATING
                         await FirebaseFirestore.instance
                             .collection('ratings')
                             .add({
@@ -214,7 +309,6 @@ class MyBookingsPage extends StatelessWidget {
                               "createdAt": Timestamp.now(),
                             });
 
-                        /// UPDATE CENTER AVG RATING
                         var centerRef = FirebaseFirestore.instance
                             .collection('service_center_details')
                             .doc(bookingData['centerId']);
@@ -253,3 +347,4 @@ class MyBookingsPage extends StatelessWidget {
     );
   }
 }
+////
