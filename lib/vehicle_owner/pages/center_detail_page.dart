@@ -15,59 +15,98 @@ class CenterDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEFF6FF),
+
       appBar: AppBar(
-        title: Text(centerData['companyName'] ?? "Service Center"),
+        backgroundColor: const Color(0xFF2563EB),
+        title: Text(
+          centerData['companyName'] ?? "Service Center",
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // CENTER INFO
-            Padding(
-              padding: const EdgeInsets.all(16),
+            /// CENTER HEADER CARD
+            Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
+
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 10,
+                    color: Colors.black.withOpacity(.05),
+                  ),
+                ],
+              ),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  /// TITLE
                   Text(
                     centerData['companyName'] ?? "",
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  Text(centerData['location'] ?? ""),
-
-                  Text(
-                    "${centerData['district'] ?? ""}, ${centerData['state'] ?? ""}",
+                  /// LOCATION
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          "${centerData['location'] ?? ""}, ${centerData['district'] ?? ""}, ${centerData['state'] ?? ""}",
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 10),
 
-                  Text(centerData['description'] ?? ""),
+                  /// DESCRIPTION
+                  Text(
+                    centerData['description'] ?? "",
+                    style: const TextStyle(height: 1.4),
+                  ),
                 ],
               ),
             ),
 
-            const Divider(),
-
-            // SERVICES TITLE
+            /// SERVICES TITLE
             const Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 "Available Services",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
 
-            // SERVICES LIST
+            const SizedBox(height: 10),
+
+            /// SERVICES LIST
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('center_services')
                   .where('centerId', isEqualTo: centerId)
                   .snapshots(),
+
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
@@ -86,38 +125,114 @@ class CenterDetailPage extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: services.length,
+
                   itemBuilder: (context, index) {
                     var service = services[index];
 
-                    return ListTile(
-                      title: Text(service['categoryName']),
-                      subtitle: Text("₹ ${service['price']}"),
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      padding: const EdgeInsets.all(14),
 
-                      trailing: ElevatedButton(
-                        child: const Text("Book"),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => BookingPage(
-                                centerId: centerId,
-                                centerName: centerData['companyName'],
-                                categoryId: service['categoryId'],
-                                categoryName: service['categoryName'],
-                                price: (service['price'] as num).toDouble(),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 8,
+                            color: Colors.black.withOpacity(.05),
+                          ),
+                        ],
+                      ),
+
+                      child: Row(
+                        children: [
+                          /// ICON
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2563EB).withOpacity(.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.build,
+                              color: Color(0xFF2563EB),
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          /// SERVICE INFO
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  service['categoryName'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  "₹ ${service['price']}",
+                                  style: const TextStyle(
+                                    color: Color(0xFF2563EB),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          /// BOOK BUTTON
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                          );
-                        },
+
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BookingPage(
+                                    centerId: centerId,
+                                    centerName: centerData['companyName'],
+                                    categoryId: service['categoryId'],
+                                    categoryName: service['categoryName'],
+                                    price: (service['price'] as num).toDouble(),
+                                  ),
+                                ),
+                              );
+                            },
+
+                            child: const Text("Book"),
+                          ),
+                        ],
                       ),
                     );
                   },
                 );
               },
             ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 }
+////
