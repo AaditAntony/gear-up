@@ -10,7 +10,16 @@ class ProductsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Products Marketplace")),
+      backgroundColor: const Color(0xFFEFF6FF),
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2563EB),
+        title: const Text(
+          "Products Marketplace",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
@@ -28,7 +37,9 @@ class ProductsPage extends StatelessWidget {
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: products.length,
+
             itemBuilder: (context, index) {
               var product = products[index];
               var data = product.data() as Map<String, dynamic>;
@@ -39,47 +50,106 @@ class ProductsPage extends StatelessWidget {
                 image = base64Decode(data['image']);
               }
 
-              return Card(
-                margin: const EdgeInsets.all(12),
-                child: ListTile(
-                  leading: image != null
-                      ? Image.memory(
-                          image,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProductDetailPage(
+                        productId: product.id,
+                        productData: data,
+                      ),
+                    ),
+                  );
+                },
 
-                  title: Text(
-                    data['productName'],
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Center: ${data['centerName']}"),
-
-                      const SizedBox(height: 4),
-
-                      Text("Price: ₹${data['price']}"),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 10,
+                        color: Colors.black.withOpacity(.05),
+                      ),
                     ],
                   ),
 
-                  trailing: const Icon(Icons.arrow_forward_ios),
+                  child: Row(
+                    children: [
+                      /// IMAGE
+                      ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          bottomLeft: Radius.circular(16),
+                        ),
+                        child: image != null
+                            ? Image.memory(
+                                image,
+                                width: 110,
+                                height: 110,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                width: 110,
+                                height: 110,
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.image),
+                              ),
+                      ),
 
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProductDetailPage(
-                          productId: product.id,
-                          productData: data,
+                      /// DETAILS
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// PRODUCT NAME
+                              Text(
+                                data['productName'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+
+                              const SizedBox(height: 6),
+
+                              /// CENTER
+                              Text(
+                                data['centerName'],
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              /// PRICE
+                              Text(
+                                "₹${data['price']}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Color(0xFF2563EB),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    );
-                  },
+
+                      /// ARROW
+                      const Padding(
+                        padding: EdgeInsets.only(right: 10),
+                        child: Icon(Icons.arrow_forward_ios, size: 16),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -89,3 +159,4 @@ class ProductsPage extends StatelessWidget {
     );
   }
 }
+////
