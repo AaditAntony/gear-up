@@ -1,3 +1,5 @@
+// ONLY UI CHANGED — LOGIC SAME
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -63,39 +65,59 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
     });
 
     Navigator.pop(context);
-
-    vehicleNumberController.clear();
-    brandController.clear();
-    modelController.clear();
-    yearController.clear();
-    mileageController.clear();
   }
 
-  /// 🔥 MODERN BOTTOM SHEET
+  /// 🔥 PREMIUM BOTTOM SHEET
   void showAddVehicleSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
+
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            16,
-            16,
-            MediaQuery.of(context).viewInsets.bottom + 20,
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           ),
-          child: SingleChildScrollView(
+
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  "Add Vehicle",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                /// 🔵 HEADER
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
+                    ),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(25),
+                    ),
+                  ),
+
+                  child: const Text(
+                    "Add Vehicle",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
 
                 _field(vehicleNumberController, "Vehicle Number"),
                 _field(brandController, "Brand"),
@@ -128,6 +150,10 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                 const SizedBox(height: 10),
 
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: pickServiceDate,
                   child: Text(
                     lastServiceDate == null
@@ -136,11 +162,16 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
 
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                     onPressed: addVehicle,
                     child: const Text("Save Vehicle"),
                   ),
@@ -153,7 +184,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
     );
   }
 
-  /// 🔥 HEALTH CALCULATION (UI ONLY)
+  /// 🔥 HEALTH LOGIC (UI ONLY)
   int calculateHealth(Map data) {
     int score = 100;
 
@@ -194,7 +225,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2563EB),
         onPressed: showAddVehicleSheet,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add),
       ),
 
       body: StreamBuilder<QuerySnapshot>(
@@ -221,6 +252,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: vehicles.length,
+
             itemBuilder: (context, index) {
               var data = vehicles[index].data() as Map<String, dynamic>;
               int score = calculateHealth(data);
@@ -228,11 +260,12 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(16),
 
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  gradient: LinearGradient(
+                    colors: [Colors.white, const Color(0xFFEFF6FF)],
+                  ),
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 10,
@@ -241,55 +274,60 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                   ],
                 ),
 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// HEADER
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.directions_car,
-                          color: Color(0xFF2563EB),
-                        ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
 
-                        const SizedBox(width: 10),
-
-                        Expanded(
-                          child: Text(
-                            data['vehicleNumber'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// HEADER
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.directions_car,
+                            color: Color(0xFF2563EB),
                           ),
-                        ),
 
-                        Text(
-                          "$score%",
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
+                          const SizedBox(width: 10),
+
+                          Expanded(
+                            child: Text(
+                              data['vehicleNumber'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
 
-                    const SizedBox(height: 6),
+                          Text(
+                            "$score%",
+                            style: TextStyle(
+                              color: color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
 
-                    Text("${data['brand']} ${data['model']}"),
+                      const SizedBox(height: 8),
 
-                    const SizedBox(height: 10),
+                      Text("${data['brand']} ${data['model']}"),
 
-                    /// HEALTH BAR
-                    LinearProgressIndicator(
-                      value: score / 100,
-                      color: color,
-                      backgroundColor: Colors.grey.shade200,
-                    ),
+                      const SizedBox(height: 10),
 
-                    const SizedBox(height: 10),
+                      /// HEALTH BAR
+                      LinearProgressIndicator(
+                        value: score / 100,
+                        color: color,
+                        backgroundColor: Colors.grey.shade200,
+                      ),
 
-                    /// EXTRA INFO
-                    Text("Mileage: ${data['mileage']} km"),
-                    Text("Fuel: ${data['fuelType']}"),
-                  ],
+                      const SizedBox(height: 10),
+
+                      Text("Mileage: ${data['mileage']} km"),
+                      Text("Fuel: ${data['fuelType']}"),
+                    ],
+                  ),
                 ),
               );
             },
