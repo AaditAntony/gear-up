@@ -25,12 +25,9 @@ class BookingPage extends StatefulWidget {
 class _BookingPageState extends State<BookingPage> {
   DateTime? selectedDate;
   String? selectedSlot;
-
   String? selectedVehicleId;
   String? selectedVehicleNumber;
-
   String? selectedComplaint;
-
   bool isLoading = false;
 
   final List<String> slots = [
@@ -43,8 +40,6 @@ class _BookingPageState extends State<BookingPage> {
     "04:00 PM",
     "05:00 PM",
   ];
-
-  /// STRUCTURED COMPLAINT LIST
 
   final List<String> complaints = [
     "No Specific Issue",
@@ -82,7 +77,6 @@ class _BookingPageState extends State<BookingPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please complete booking details")),
       );
-
       return;
     }
 
@@ -90,10 +84,7 @@ class _BookingPageState extends State<BookingPage> {
       setState(() => isLoading = true);
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
-
       String date = selectedDate!.toIso8601String();
-
-      /// CENTER SLOT CHECK
 
       var centerCheck = await FirebaseFirestore.instance
           .collection('bookings')
@@ -104,7 +95,6 @@ class _BookingPageState extends State<BookingPage> {
 
       if (centerCheck.docs.isNotEmpty) {
         setState(() => isLoading = false);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -112,11 +102,8 @@ class _BookingPageState extends State<BookingPage> {
             ),
           ),
         );
-
         return;
       }
-
-      /// USER SLOT CHECK
 
       var userCheck = await FirebaseFirestore.instance
           .collection('bookings')
@@ -127,7 +114,6 @@ class _BookingPageState extends State<BookingPage> {
 
       if (userCheck.docs.isNotEmpty) {
         setState(() => isLoading = false);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
@@ -135,34 +121,22 @@ class _BookingPageState extends State<BookingPage> {
             ),
           ),
         );
-
         return;
       }
 
-      /// CREATE BOOKING
-
       await FirebaseFirestore.instance.collection('bookings').add({
         'userId': uid,
-
         'centerId': widget.centerId,
         'centerName': widget.centerName,
-
         'categoryId': widget.categoryId,
         'categoryName': widget.categoryName,
-
         'vehicleId': selectedVehicleId,
         'vehicleNumber': selectedVehicleNumber,
-
         'bookingDate': date,
         'bookingSlot': selectedSlot,
-
         'price': widget.price,
-
-        /// STRUCTURED COMPLAINT
         'complaint': selectedComplaint,
-
         'status': 'pending',
-
         'createdAt': Timestamp.now(),
       });
 
@@ -182,157 +156,201 @@ class _BookingPageState extends State<BookingPage> {
     }
   }
 
+  Widget sectionTitle(String text, int step) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 12,
+          backgroundColor: const Color(0xFF2563EB),
+          child: Text(
+            "$step",
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(text, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Book Service")),
+      backgroundColor: const Color(0xFFEFF6FF),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2563EB),
+        title: const Text(
+          "Book Service",
+          style: TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          /// SCROLL
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                /// SERVICE SUMMARY
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.categoryName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        "₹${widget.price}",
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
 
-          children: [
-            Text(
-              widget.categoryName,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+                const SizedBox(height: 20),
 
-            const SizedBox(height: 4),
+                /// VEHICLE
+                sectionTitle("Select Vehicle", 1),
+                const SizedBox(height: 8),
 
-            Text("Price: ₹${widget.price}"),
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('vehicles')
+                      .where('userId', isEqualTo: uid)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const CircularProgressIndicator();
+                    }
 
-            const SizedBox(height: 20),
+                    var vehicles = snapshot.data!.docs;
 
-            /// VEHICLE SELECT
-            const Text(
-              "Select Vehicle",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+                    return DropdownButtonFormField<String>(
+                      value: selectedVehicleId,
+                      hint: const Text("Choose Vehicle"),
+                      items: vehicles.map((doc) {
+                        return DropdownMenuItem(
+                          value: doc.id,
+                          child: Text(doc['vehicleNumber']),
+                          onTap: () {
+                            selectedVehicleNumber = doc['vehicleNumber'];
+                          },
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedVehicleId = value;
+                        });
+                      },
+                    );
+                  },
+                ),
 
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('vehicles')
-                  .where('userId', isEqualTo: uid)
-                  .snapshots(),
+                const SizedBox(height: 20),
 
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const CircularProgressIndicator();
-                }
+                /// ISSUE
+                sectionTitle("Select Issue", 2),
+                const SizedBox(height: 8),
 
-                var vehicles = snapshot.data!.docs;
+                DropdownButtonFormField<String>(
+                  value: selectedComplaint,
+                  hint: const Text("Choose Problem"),
+                  items: complaints.map((c) {
+                    return DropdownMenuItem(value: c, child: Text(c));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedComplaint = value;
+                    });
+                  },
+                ),
 
-                return DropdownButtonFormField<String>(
-                  value: selectedVehicleId,
+                const SizedBox(height: 20),
 
-                  hint: const Text("Choose Vehicle"),
+                /// DATE
+                sectionTitle("Select Date", 3),
+                const SizedBox(height: 8),
 
-                  items: vehicles.map((doc) {
-                    return DropdownMenuItem(
-                      value: doc.id,
-                      child: Text(doc['vehicleNumber']),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                  ),
+                  onPressed: pickDate,
+                  child: Text(
+                    selectedDate == null
+                        ? "Pick Date"
+                        : selectedDate.toString().split(" ")[0],
+                  ),
+                ),
 
-                      onTap: () {
-                        selectedVehicleNumber = doc['vehicleNumber'];
+                const SizedBox(height: 20),
+
+                /// SLOT
+                sectionTitle("Select Time Slot", 4),
+                const SizedBox(height: 10),
+
+                Wrap(
+                  spacing: 8,
+                  children: slots.map((slot) {
+                    bool isSelected = selectedSlot == slot;
+
+                    return ChoiceChip(
+                      label: Text(slot),
+
+                      backgroundColor: Colors.white,
+                      selected: isSelected,
+                      selectedColor: const Color(0xFF2563EB),
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black,
+                      ),
+                      onSelected: (_) {
+                        setState(() {
+                          selectedSlot = slot;
+                        });
                       },
                     );
                   }).toList(),
-
-                  onChanged: (value) {
-                    setState(() {
-                      selectedVehicleId = value;
-                    });
-                  },
-                );
-              },
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 20),
+          /// BUTTON
+          Container(
+            padding: const EdgeInsets.all(16),
+            width: double.infinity,
 
-            /// COMPLAINT SELECT
-            const Text(
-              "Select Issue",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 8),
-
-            DropdownButtonFormField<String>(
-              value: selectedComplaint,
-
-              hint: const Text("Choose Problem"),
-
-              items: complaints.map((c) {
-                return DropdownMenuItem(value: c, child: Text(c));
-              }).toList(),
-
-              onChanged: (value) {
-                setState(() {
-                  selectedComplaint = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            /// DATE
-            ElevatedButton(
-              onPressed: pickDate,
-              child: Text(
-                selectedDate == null
-                    ? "Select Date"
-                    : selectedDate.toString().split(" ")[0],
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
+              onPressed: isLoading ? null : createBooking,
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text("Confirm Booking"),
             ),
-
-            const SizedBox(height: 20),
-
-            /// SLOT
-            const Text(
-              "Select Time Slot",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            Wrap(
-              spacing: 10,
-
-              children: slots.map((slot) {
-                bool isSelected = selectedSlot == slot;
-
-                return ChoiceChip(
-                  label: Text(slot),
-
-                  selected: isSelected,
-
-                  onSelected: (_) {
-                    setState(() {
-                      selectedSlot = slot;
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-
-            const Spacer(),
-
-            SizedBox(
-              width: double.infinity,
-
-              child: ElevatedButton(
-                onPressed: isLoading ? null : createBooking,
-
-                child: isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text("Confirm Booking"),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
+////
