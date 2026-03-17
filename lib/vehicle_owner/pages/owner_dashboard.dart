@@ -29,18 +29,26 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF6FF),
 
+      /// APP BAR
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFF2563EB),
 
         title: const Text(
           "GearUp",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
+
+        iconTheme: const IconThemeData(color: Colors.white),
 
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart),
+            color: Colors.white,
             tooltip: "Products",
             onPressed: () {
               Navigator.push(
@@ -50,10 +58,18 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             },
           ),
         ],
+
+        /// subtle divider (pro look)
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.white.withOpacity(0.2)),
+        ),
       ),
 
+      /// BODY
       body: pages[selectedIndex],
 
+      /// BOTTOM NAVIGATION
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black12)],
@@ -79,19 +95,15 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
 
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.smart_toy), label: "AI"),
-
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Centers"),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
               label: "Bookings",
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.directions_car),
               label: "Vehicles",
             ),
-
             BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
           ],
         ),
@@ -99,3 +111,4 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
     );
   }
 }
+//
