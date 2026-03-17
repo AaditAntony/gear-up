@@ -45,7 +45,6 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
-
       return;
     }
 
@@ -77,35 +76,27 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Add Vehicle"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+
+          title: const Text(
+            "Add Vehicle",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
 
           content: SingleChildScrollView(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
-
               children: [
-                TextField(
-                  controller: vehicleNumberController,
-                  decoration: const InputDecoration(
-                    labelText: "Vehicle Number",
-                  ),
-                ),
+                _field(vehicleNumberController, "Vehicle Number"),
+                _field(brandController, "Brand"),
+                _field(modelController, "Model"),
 
-                TextField(
-                  controller: brandController,
-                  decoration: const InputDecoration(labelText: "Brand"),
-                ),
-
-                TextField(
-                  controller: modelController,
-                  decoration: const InputDecoration(labelText: "Model"),
-                ),
+                const SizedBox(height: 10),
 
                 DropdownButtonFormField<String>(
                   value: fuelType,
-
-                  hint: const Text("Fuel Type"),
-
+                  decoration: _inputDecoration("Fuel Type"),
                   items: const [
                     DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
                     DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
@@ -115,33 +106,38 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                     ),
                     DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
                   ],
-
                   onChanged: (value) {
                     fuelType = value;
                   },
                 ),
 
-                TextField(
-                  controller: yearController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Manufacturing Year",
-                  ),
-                ),
-
-                TextField(
-                  controller: mileageController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Current Mileage",
-                  ),
-                ),
-
                 const SizedBox(height: 10),
 
+                _field(
+                  yearController,
+                  "Manufacturing Year",
+                  keyboard: TextInputType.number,
+                ),
+
+                _field(
+                  mileageController,
+                  "Current Mileage",
+                  keyboard: TextInputType.number,
+                ),
+
+                const SizedBox(height: 12),
+
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                  ),
                   onPressed: pickServiceDate,
-                  child: const Text("Select Last Service Date"),
+                  child: Text(
+                    lastServiceDate == null
+                        ? "Select Last Service Date"
+                        : lastServiceDate.toString().split(" ")[0],
+                  ),
                 ),
               ],
             ),
@@ -153,10 +149,41 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               child: const Text("Cancel"),
             ),
 
-            ElevatedButton(onPressed: addVehicle, child: const Text("Save")),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: addVehicle,
+              child: const Text("Save"),
+            ),
           ],
         );
       },
+    );
+  }
+
+  Widget _field(
+    TextEditingController controller,
+    String label, {
+    TextInputType keyboard = TextInputType.text,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboard,
+        decoration: _inputDecoration(label),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.grey.shade100,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 
@@ -165,11 +192,18 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("My Vehicles")),
+      backgroundColor: const Color(0xFFEFF6FF),
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2563EB),
+        title: const Text("My Vehicles", style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
 
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF2563EB),
         onPressed: showAddVehicleDialog,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
 
       body: StreamBuilder<QuerySnapshot>(
@@ -177,7 +211,6 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
             .collection('vehicles')
             .where('userId', isEqualTo: uid)
             .snapshots(),
-
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -190,20 +223,69 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: vehicles.length,
 
             itemBuilder: (context, index) {
               var data = vehicles[index].data() as Map<String, dynamic>;
 
-              return Card(
-                margin: const EdgeInsets.all(10),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
 
-                child: ListTile(
-                  title: Text(data['vehicleNumber']),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 10,
+                      color: Colors.black.withOpacity(.05),
+                    ),
+                  ],
+                ),
 
-                  subtitle: Text(
-                    "${data['brand']} ${data['model']} • ${data['year']}",
-                  ),
+                child: Row(
+                  children: [
+                    /// ICON
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB).withOpacity(.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car,
+                        color: Color(0xFF2563EB),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    /// DETAILS
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            data['vehicleNumber'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          Text(
+                            "${data['brand']} ${data['model']}",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+
+                          Text(
+                            "Year: ${data['year']} • ${data['fuelType']}",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
