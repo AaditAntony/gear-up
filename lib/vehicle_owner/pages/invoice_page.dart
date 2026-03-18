@@ -141,7 +141,10 @@ class InvoicePage extends StatelessWidget {
                   ),
                 ),
 
-                child: const Text("Done", style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  "Done",
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
 
                 onPressed: () {
                   Navigator.popUntil(context, (route) => route.isFirst);
