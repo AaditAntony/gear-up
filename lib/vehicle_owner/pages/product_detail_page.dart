@@ -18,6 +18,7 @@ class ProductDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Uint8List? image;
+
     if (productData['image'] != null) {
       image = base64Decode(productData['image']);
     }
@@ -25,120 +26,132 @@ class ProductDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF6FF),
 
+      /// ✅ PROPER APP BAR
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2563EB),
+        title: Text(
+          productData['productName'],
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+
       body: Column(
         children: [
-          /// 🔥 HERO IMAGE SECTION
-          Stack(
-            children: [
-              image != null
-                  ? Image.memory(
-                      image,
-                      height: 280,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(height: 280, color: Colors.grey.shade300),
-
-              /// GRADIENT OVERLAY
-              Container(
-                height: 280,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(.6), Colors.transparent],
-                  ),
-                ),
-              ),
-
-              /// BACK BUTTON
-              Positioned(
-                top: 40,
-                left: 10,
-                child: CircleAvatar(
-                  backgroundColor: Colors.black.withOpacity(.4),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-              ),
-
-              /// PRODUCT INFO ON IMAGE
-              Positioned(
-                bottom: 20,
-                left: 16,
-                right: 16,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      productData['productName'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      "₹${productData['price']}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          /// 🔥 BODY
+          /// 🔥 SCROLLABLE CONTENT
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// SELLER
-                  Row(
-                    children: [
-                      const Icon(Icons.store, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(
-                        productData['centerName'],
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
+                  /// IMAGE (clean, no overlap issues)
+                  if (image != null)
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.memory(
+                          image,
+                          height: 220,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ],
+                    )
+                  else
+                    Container(
+                      margin: const EdgeInsets.all(16),
+                      height: 220,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Center(child: Icon(Icons.image, size: 50)),
+                    ),
+
+                  /// 🔥 DETAILS SECTION
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          blurRadius: 10,
+                          color: Colors.black.withOpacity(.05),
+                        ),
+                      ],
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        /// PRODUCT NAME
+                        Text(
+                          productData['productName'],
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        /// SELLER
+                        Row(
+                          children: [
+                            const Icon(Icons.store, color: Colors.grey),
+                            const SizedBox(width: 6),
+                            Text(
+                              productData['centerName'],
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        /// PRICE
+                        Text(
+                          "₹${productData['price']}",
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  /// DESCRIPTION
-                  const Text(
-                    "Description",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 10),
-
+                  /// 🔥 DESCRIPTION
                   Container(
-                    padding: const EdgeInsets.all(14),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Text(
-                      productData['description'],
-                      style: const TextStyle(fontSize: 14),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Description",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(productData['description']),
+                      ],
                     ),
                   ),
 
@@ -148,7 +161,7 @@ class ProductDetailPage extends StatelessWidget {
             ),
           ),
 
-          /// 🔥 PREMIUM BUY BUTTON
+          /// 🔥 FIXED BUTTON
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -160,20 +173,17 @@ class ProductDetailPage extends StatelessWidget {
 
             child: SizedBox(
               width: double.infinity,
-              height: 55,
+              height: 50,
 
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
 
-                child: const Text(
-                  "Buy Now",
-                  style: TextStyle(fontSize: 17, color: Colors.white),
-                ),
+                child: const Text("Buy Now", style: TextStyle(fontSize: 16,color: Colors.white)),
 
                 onPressed: () async {
                   String uid = FirebaseAuth.instance.currentUser!.uid;

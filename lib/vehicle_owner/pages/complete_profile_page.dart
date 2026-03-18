@@ -23,7 +23,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
   String? selectedFuelType;
   String? selectedDistrict;
-
   DateTime? lastServiceDate;
 
   bool isLoading = false;
@@ -53,9 +52,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     );
 
     if (picked != null) {
-      setState(() {
-        lastServiceDate = picked;
-      });
+      setState(() => lastServiceDate = picked);
     }
   }
 
@@ -82,7 +79,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
 
-      /// SAVE USER PROFILE
       await FirebaseFirestore.instance.collection('users').doc(uid).update({
         'name': nameController.text.trim(),
         'phone': phoneController.text.trim(),
@@ -91,7 +87,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         'profileCompleted': true,
       });
 
-      /// SAVE VEHICLE
       await FirebaseFirestore.instance.collection('vehicles').add({
         'userId': uid,
         'vehicleNumber': vehicleNumberController.text.trim(),
@@ -119,169 +114,177 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     }
   }
 
+  InputDecoration inputStyle(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  Widget sectionCard({required String title, required List<Widget> children}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+        ],
+      ),
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 15),
+
+          ...children,
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Complete Profile")),
+      backgroundColor: const Color(0xFFEFF6FF),
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2563EB),
+        title: const Text(
+          "Complete Profile",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
 
         child: Column(
           children: [
-            const Text(
-              "Personal Details",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            /// PERSONAL
+            sectionCard(
+              title: "Personal Details",
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: inputStyle("Full Name"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: phoneController,
+                  decoration: inputStyle("Phone"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: addressController,
+                  decoration: inputStyle("Address"),
+                ),
+                const SizedBox(height: 10),
 
-            const SizedBox(height: 15),
-
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Full Name",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: "Phone",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: addressController,
-              decoration: const InputDecoration(
-                labelText: "Address",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            DropdownButtonFormField<String>(
-              value: selectedDistrict,
-
-              decoration: const InputDecoration(
-                labelText: "District",
-                border: OutlineInputBorder(),
-              ),
-
-              items: districts.map((district) {
-                return DropdownMenuItem(value: district, child: Text(district));
-              }).toList(),
-
-              onChanged: (value) {
-                setState(() {
-                  selectedDistrict = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 25),
-
-            const Text(
-              "Vehicle Details",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 15),
-
-            TextField(
-              controller: vehicleNumberController,
-              decoration: const InputDecoration(
-                labelText: "Vehicle Number",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: brandController,
-              decoration: const InputDecoration(
-                labelText: "Brand",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: modelController,
-              decoration: const InputDecoration(
-                labelText: "Model",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            DropdownButtonFormField<String>(
-              value: selectedFuelType,
-
-              decoration: const InputDecoration(
-                labelText: "Fuel Type",
-                border: OutlineInputBorder(),
-              ),
-
-              items: const [
-                DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
-                DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
-                DropdownMenuItem(value: "Electric", child: Text("Electric")),
-                DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
+                DropdownButtonFormField<String>(
+                  value: selectedDistrict,
+                  decoration: inputStyle("District"),
+                  items: districts
+                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedDistrict = v),
+                ),
               ],
-
-              onChanged: (value) {
-                setState(() {
-                  selectedFuelType = value;
-                });
-              },
             ),
 
-            const SizedBox(height: 10),
+            /// VEHICLE
+            sectionCard(
+              title: "Vehicle Details",
+              children: [
+                TextField(
+                  controller: vehicleNumberController,
+                  decoration: inputStyle("Vehicle Number"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: brandController,
+                  decoration: inputStyle("Brand"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: modelController,
+                  decoration: inputStyle("Model"),
+                ),
+                const SizedBox(height: 10),
 
-            TextField(
-              controller: yearController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Manufacturing Year",
-                border: OutlineInputBorder(),
+                DropdownButtonFormField<String>(
+                  value: selectedFuelType,
+                  decoration: inputStyle("Fuel Type"),
+                  items: const [
+                    DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
+                    DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
+                    DropdownMenuItem(
+                      value: "Electric",
+                      child: Text("Electric"),
+                    ),
+                    DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
+                  ],
+                  onChanged: (v) => setState(() => selectedFuelType = v),
+                ),
+
+                const SizedBox(height: 10),
+                TextField(
+                  controller: yearController,
+                  keyboardType: TextInputType.number,
+                  decoration: inputStyle("Year"),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: mileageController,
+                  keyboardType: TextInputType.number,
+                  decoration: inputStyle("Mileage"),
+                ),
+
+                const SizedBox(height: 10),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade200,
+                    foregroundColor: Colors.black,
+                  ),
+                  onPressed: pickServiceDate,
+                  child: Text(
+                    lastServiceDate == null
+                        ? "Select Last Service Date"
+                        : lastServiceDate.toString().split(" ")[0],
+                  ),
+                ),
+              ],
+            ),
+
+            /// SUBMIT
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: isLoading ? null : submitProfile,
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Save Profile"),
               ),
-            ),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: mileageController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Current Mileage",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            ElevatedButton(
-              onPressed: pickServiceDate,
-              child: const Text("Select Last Service Date"),
-            ),
-
-            const SizedBox(height: 25),
-
-            ElevatedButton(
-              onPressed: submitProfile,
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Save Profile"),
             ),
           ],
         ),
