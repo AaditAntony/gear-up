@@ -29,7 +29,6 @@ class ProductDetailPage extends StatelessWidget {
       /// ✅ PROPER APP BAR
       appBar: AppBar(
         backgroundColor: const Color(0xFF2563EB),
-
         title: Text(
           productData['productName'],
           style: const TextStyle(color: Colors.white),
@@ -184,10 +183,7 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                 ),
 
-                child: const Text(
-                  "Buy Now",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
+                child: const Text("Buy Now", style: TextStyle(fontSize: 16,color: Colors.white)),
 
                 onPressed: () async {
                   String uid = FirebaseAuth.instance.currentUser!.uid;
