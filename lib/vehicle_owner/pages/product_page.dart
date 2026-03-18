@@ -14,10 +14,8 @@ class ProductsPage extends StatelessWidget {
 
       appBar: AppBar(
         backgroundColor: const Color(0xFF2563EB),
-        title: const Text(
-          "Products Marketplace",
-          style: TextStyle(color: Colors.white),
-        ),
+        elevation: 0,
+        title: const Text("Marketplace", style: TextStyle(color: Colors.white)),
       ),
 
       body: StreamBuilder<QuerySnapshot>(
@@ -36,9 +34,15 @@ class ProductsPage extends StatelessWidget {
             return const Center(child: Text("No products available"));
           }
 
-          return ListView.builder(
+          return GridView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: products.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, // 🔥 GRID VIEW (major upgrade)
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 0.75,
+            ),
 
             itemBuilder: (context, index) {
               var product = products[index];
@@ -50,7 +54,9 @@ class ProductsPage extends StatelessWidget {
                 image = base64Decode(data['image']);
               }
 
-              return GestureDetector(
+              return InkWell(
+                borderRadius: BorderRadius.circular(16),
+
                 onTap: () {
                   Navigator.push(
                     context,
@@ -64,7 +70,6 @@ class ProductsPage extends StatelessWidget {
                 },
 
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -76,77 +81,74 @@ class ProductsPage extends StatelessWidget {
                     ],
                   ),
 
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// IMAGE
+                      /// 🔥 IMAGE
                       ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          bottomLeft: Radius.circular(16),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
                         ),
                         child: image != null
                             ? Image.memory(
                                 image,
-                                width: 110,
-                                height: 110,
+                                height: 130,
+                                width: double.infinity,
                                 fit: BoxFit.cover,
                               )
                             : Container(
-                                width: 110,
-                                height: 110,
+                                height: 130,
                                 color: Colors.grey.shade200,
-                                child: const Icon(Icons.image),
+                                child: const Center(
+                                  child: Icon(Icons.image, size: 40),
+                                ),
                               ),
                       ),
 
-                      /// DETAILS
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
+                      /// 🔥 DETAILS
+                      Padding(
+                        padding: const EdgeInsets.all(10),
 
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              /// PRODUCT NAME
-                              Text(
-                                data['productName'],
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            /// PRODUCT NAME
+                            Text(
+                              data['productName'],
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
+                            ),
 
-                              const SizedBox(height: 6),
+                            const SizedBox(height: 6),
 
-                              /// CENTER
-                              Text(
-                                data['centerName'],
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 13,
-                                ),
+                            /// SELLER
+                            Text(
+                              data['centerName'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
                               ),
+                            ),
 
-                              const SizedBox(height: 10),
+                            const SizedBox(height: 10),
 
-                              /// PRICE
-                              Text(
-                                "₹${data['price']}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: Color(0xFF2563EB),
-                                ),
+                            /// PRICE
+                            Text(
+                              "₹${data['price']}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Color(0xFF2563EB),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ),
-
-                      /// ARROW
-                      const Padding(
-                        padding: EdgeInsets.only(right: 10),
-                        child: Icon(Icons.arrow_forward_ios, size: 16),
                       ),
                     ],
                   ),
@@ -159,4 +161,3 @@ class ProductsPage extends StatelessWidget {
     );
   }
 }
-////
