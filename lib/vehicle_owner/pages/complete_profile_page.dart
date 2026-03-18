@@ -283,7 +283,10 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                 onPressed: isLoading ? null : submitProfile,
                 child: isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Save Profile"),
+                    : const Text(
+                        "Save Profile",
+                        style: TextStyle(color: Colors.white),
+                      ),
               ),
             ),
           ],

@@ -40,6 +40,7 @@ dependencies:
   image_picker: ^1.2.1
   flutter_flow_chart: ^4.1.1
   fl_chart: ^1.2.0
+  razorpay_flutter: ^1.4.1
 
 dev_dependencies:
   flutter_test:
