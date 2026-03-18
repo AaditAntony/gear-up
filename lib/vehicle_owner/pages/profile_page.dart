@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/vehicle_owner/auth/owner_login_page.dart';
 import 'package:gear_up/vehicle_owner/pages/my_oders_page.dart';
 import '../../auth/login_page.dart';
-import 'edit_profile_page.dart'; 
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -18,7 +19,7 @@ class ProfilePage extends StatelessWidget {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginPage()),
+      MaterialPageRoute(builder: (_) => const OwnerLoginPage()),
       (route) => false,
     );
   }
