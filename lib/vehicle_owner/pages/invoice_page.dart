@@ -16,161 +16,200 @@ class InvoicePage extends StatelessWidget {
       backgroundColor: const Color(0xFFEFF6FF),
 
       appBar: AppBar(
+        elevation: 0,
         backgroundColor: const Color(0xFF2563EB),
         title: const Text("Invoice", style: TextStyle(color: Colors.white)),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-
-          children: [
-            /// ✅ SUCCESS ICON
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 60,
+      body: Column(
+        children: [
+          /// 🔵 TOP HEADER (MORE PREMIUM)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 30),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
               ),
             ),
+            child: Column(
+              children: [
+                /// ICON
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Colors.white,
+                    size: 50,
+                  ),
+                ),
 
-            const SizedBox(height: 15),
+                const SizedBox(height: 10),
 
-            /// SUCCESS TEXT
-            const Text(
-              "Payment Successful",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
+                /// SUCCESS TEXT
+                const Text(
+                  "Payment Successful",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                const Text(
+                  "Your order has been confirmed",
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 25),
+          /// 🔥 BODY
+          Expanded(
+            child: Container(
+              transform: Matrix4.translationValues(0, -20, 0),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
 
-            /// 🔥 INVOICE CARD
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
+                child: Column(
+                  children: [
+                    /// 📄 INVOICE CARD
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withOpacity(.05),
-                  ),
-                ],
-              ),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// ORDER ID
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Order ID",
-                        style: TextStyle(color: Colors.grey),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 12,
+                            color: Colors.black.withOpacity(.05),
+                          ),
+                        ],
                       ),
-                      Text(
-                        orderId,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          /// TITLE
+                          const Text(
+                            "Order Summary",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          /// ORDER ID
+                          _row("Order ID", orderId),
+
+                          const Divider(height: 25),
+
+                          /// PRODUCT SECTION
+                          const Text(
+                            "Product Details",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _row("Product", orderData['productName']),
+                          _row("Seller", orderData['centerName']),
+
+                          const Divider(height: 25),
+
+                          /// PRICE BREAKDOWN (ADDED UX)
+                          _row("Subtotal", "₹${orderData['price']}"),
+                          _row("Tax", "₹0"),
+                          _row("Delivery", "₹0"),
+
+                          const SizedBox(height: 10),
+
+                          /// TOTAL
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "Total Amount",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                "₹${orderData['price']}",
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2563EB),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
 
-                  const Divider(height: 25),
+                    const Spacer(),
 
-                  /// PRODUCT DETAILS
-                  const Text(
-                    "Product Details",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                    /// 🔥 DONE BUTTON (IMPROVED)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
 
-                  const SizedBox(height: 10),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 3,
+                          backgroundColor: const Color(0xFF2563EB),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
 
-                  _row("Product", orderData['productName']),
-                  _row("Seller", orderData['centerName']),
+                        onPressed: () {
+                          Navigator.popUntil(context, (route) => route.isFirst);
+                        },
 
-                  const SizedBox(height: 20),
-
-                  /// PRICE SECTION
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Total Amount",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        "₹${orderData['price']}",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2563EB),
+                        child: const Text(
+                          "Back to Home",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
-
-            const Spacer(),
-
-            /// 🔥 DONE BUTTON
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-
-                child: const Text(
-                  "Done",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-
-                onPressed: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  /// 🔹 REUSABLE ROW
+  /// 🔹 ROW UI (ENHANCED)
   Widget _row(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
 
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(color: Colors.grey)),
+
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -178,4 +217,3 @@ class InvoicePage extends StatelessWidget {
     );
   }
 }
-////
