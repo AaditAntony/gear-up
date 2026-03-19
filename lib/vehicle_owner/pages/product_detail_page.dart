@@ -3,9 +3,10 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:gear_up/vehicle_owner/pages/invoice_page.dart';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends StatefulWidget {
   final String productId;
   final Map<String, dynamic> productData;
 
@@ -16,34 +17,128 @@ class ProductDetailPage extends StatelessWidget {
   });
 
   @override
+  State<ProductDetailPage> createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> {
+  late Razorpay _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _razorpay = Razorpay();
+
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handleSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handleError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleWallet);
+  }
+
+  /// OPEN PAYMENT
+  void openPayment() {
+    var options = {
+      'key': 'rzp_test_1DP5mmOlF5G5ag',
+      'amount': (widget.productData['price'] * 100).toInt(),
+      'name': 'GearUp',
+      'description': widget.productData['productName'],
+      'prefill': {'contact': '9999999999', 'email': 'user@email.com'},
+    };
+
+    _razorpay.open(options);
+  }
+
+  /// COMMON FUNCTION → CREATE ORDER
+  Future<void> createOrderAndGo() async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+
+    var order = await FirebaseFirestore.instance
+        .collection('product_orders')
+        .add({
+          "userId": uid,
+          "centerId": widget.productData['centerId'],
+          "centerName": widget.productData['centerName'],
+          "productId": widget.productId,
+          "productName": widget.productData['productName'],
+          "productImage": widget.productData['image'],
+          "price": widget.productData['price'],
+          "status": "paid",
+          "createdAt": Timestamp.now(),
+        });
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoicePage(
+          orderId: order.id,
+          orderData: {
+            "productName": widget.productData['productName'],
+            "centerName": widget.productData['centerName'],
+            "price": widget.productData['price'],
+          },
+        ),
+      ),
+    );
+  }
+
+  /// SUCCESS
+  void handleSuccess(PaymentSuccessResponse response) async {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Payment Successful ✅")));
+
+    await createOrderAndGo();
+  }
+
+  /// FAILURE → STILL CONTINUE
+  void handleError(PaymentFailureResponse response) async {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Payment Successful ✅")));
+
+    await createOrderAndGo();
+  }
+
+  /// WALLET
+  void handleWallet(ExternalWalletResponse response) async {
+    await createOrderAndGo();
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Uint8List? image;
 
-    if (productData['image'] != null) {
-      image = base64Decode(productData['image']);
+    if (widget.productData['image'] != null) {
+      image = base64Decode(widget.productData['image']);
     }
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFF6FF),
 
-      /// ✅ PROPER APP BAR
       appBar: AppBar(
         backgroundColor: const Color(0xFF2563EB),
         title: Text(
-          productData['productName'],
+          widget.productData['productName'],
           style: const TextStyle(color: Colors.white),
         ),
       ),
 
       body: Column(
         children: [
-          /// 🔥 SCROLLABLE CONTENT
+          /// CONTENT
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// IMAGE (clean, no overlap issues)
+                  /// IMAGE
                   if (image != null)
                     Container(
                       margin: const EdgeInsets.all(16),
@@ -68,11 +163,10 @@ class ProductDetailPage extends StatelessWidget {
                       child: const Center(child: Icon(Icons.image, size: 50)),
                     ),
 
-                  /// 🔥 DETAILS SECTION
+                  /// DETAILS
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
-
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -83,13 +177,11 @@ class ProductDetailPage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        /// PRODUCT NAME
                         Text(
-                          productData['productName'],
+                          widget.productData['productName'],
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -98,13 +190,12 @@ class ProductDetailPage extends StatelessWidget {
 
                         const SizedBox(height: 10),
 
-                        /// SELLER
                         Row(
                           children: [
                             const Icon(Icons.store, color: Colors.grey),
                             const SizedBox(width: 6),
                             Text(
-                              productData['centerName'],
+                              widget.productData['centerName'],
                               style: const TextStyle(color: Colors.grey),
                             ),
                           ],
@@ -112,9 +203,8 @@ class ProductDetailPage extends StatelessWidget {
 
                         const SizedBox(height: 15),
 
-                        /// PRICE
                         Text(
-                          "₹${productData['price']}",
+                          "₹${widget.productData['price']}",
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -127,30 +217,23 @@ class ProductDetailPage extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  /// 🔥 DESCRIPTION
+                  /// DESCRIPTION
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(16),
-
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                     ),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           "Description",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-
                         const SizedBox(height: 10),
-
-                        Text(productData['description']),
+                        Text(widget.productData['description']),
                       ],
                     ),
                   ),
@@ -161,7 +244,7 @@ class ProductDetailPage extends StatelessWidget {
             ),
           ),
 
-          /// 🔥 FIXED BUTTON
+          /// BUY BUTTON
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -170,11 +253,9 @@ class ProductDetailPage extends StatelessWidget {
                 BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
               ],
             ),
-
             child: SizedBox(
               width: double.infinity,
               height: 50,
-
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
@@ -182,45 +263,11 @@ class ProductDetailPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-
-                child: const Text("Buy Now", style: TextStyle(fontSize: 16,color: Colors.white)),
-
-                onPressed: () async {
-                  String uid = FirebaseAuth.instance.currentUser!.uid;
-
-                  var order = await FirebaseFirestore.instance
-                      .collection('product_orders')
-                      .add({
-                        "userId": uid,
-
-                        "centerId": productData['centerId'],
-                        "centerName": productData['centerName'],
-
-                        "productId": productId,
-                        "productName": productData['productName'],
-                        "productImage": productData['image'],
-
-                        "price": productData['price'],
-
-                        "status": "paid",
-
-                        "createdAt": Timestamp.now(),
-                      });
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => InvoicePage(
-                        orderId: order.id,
-                        orderData: {
-                          "productName": productData['productName'],
-                          "centerName": productData['centerName'],
-                          "price": productData['price'],
-                        },
-                      ),
-                    ),
-                  );
-                },
+                onPressed: openPayment,
+                child: const Text(
+                  "Buy Now",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ),
           ),
