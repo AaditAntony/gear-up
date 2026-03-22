@@ -24,6 +24,7 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
   final TextEditingController gstController = TextEditingController();
   final TextEditingController experienceController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController googleMapLinkController = TextEditingController();
 
   String? selectedDistrict;
 
@@ -125,6 +126,7 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
         'gstNumber': gstController.text.trim(),
         'experienceYears': experienceController.text.trim(),
         'description': descriptionController.text.trim(),
+        'googleMapLink': googleMapLinkController.text.trim(),
         'image1': image1Base64,
         'image2': image2Base64,
         'status': 'pending',
@@ -193,6 +195,7 @@ class _ServiceCenterFormPageState extends State<ServiceCenterFormPage> {
                 _buildField(phoneController, "Primary Phone", Icons.phone),
                 _buildField(alternatePhoneController, "Alternate Phone", Icons.phone_android),
                 _buildField(locationController, "Street Address", Icons.location_on),
+                _buildField(googleMapLinkController, "Google Maps URL (Optional)", Icons.add_location_alt),
 
                 const SizedBox(height: 10),
 

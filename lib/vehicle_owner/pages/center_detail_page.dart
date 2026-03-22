@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/vehicle_owner/pages/booking_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CenterDetailPage extends StatelessWidget {
   final String centerId;
@@ -85,6 +86,38 @@ class CenterDetailPage extends StatelessWidget {
                     centerData['description'] ?? "",
                     style: const TextStyle(height: 1.4),
                   ),
+
+                  if (centerData['googleMapLink'] != null && centerData['googleMapLink'].toString().trim().isNotEmpty) ...[
+                    const SizedBox(height: 15),
+                    InkWell(
+                      onTap: () async {
+                        final url = Uri.parse(centerData['googleMapLink']);
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        } else {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Could not open map link')),
+                            );
+                          }
+                        }
+                      },
+                      child: Row(
+                        children: const [
+                          Icon(Icons.map, size: 18, color: Color(0xFF2563EB)),
+                          SizedBox(width: 8),
+                          Text(
+                            "View on Google Maps",
+                            style: TextStyle(
+                              color: Color(0xFF2563EB),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

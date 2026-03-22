@@ -74,10 +74,11 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
   int calculateHealth(Map data) {
     int score = 100;
 
-    int year = int.parse(data['year'].toString());
-    int mileage = int.parse(data['mileage'].toString());
+    int year = int.tryParse(data['year']?.toString() ?? '0') ?? 0;
+    int mileage = int.tryParse(data['mileage']?.toString() ?? '0') ?? 0;
 
-    DateTime lastService = (data['lastServiceDate'] as Timestamp).toDate();
+    Timestamp? ts = data['lastServiceDate'] as Timestamp?;
+    DateTime lastService = ts?.toDate() ?? DateTime.now();
 
     int age = DateTime.now().year - year;
     int months = DateTime.now().difference(lastService).inDays ~/ 30;
@@ -89,7 +90,8 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
     return score.clamp(0, 100);
   }
 
-  int monthsSinceService(Timestamp ts) {
+  int monthsSinceService(dynamic ts) {
+    if (ts == null || ts is! Timestamp) return 0;
     return DateTime.now().difference(ts.toDate()).inDays ~/ 30;
   }
 

@@ -63,11 +63,11 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
     for (var doc in vehicleSnap.docs) {
       var data = doc.data();
 
-      int year = int.parse(data['year'].toString());
-      int mileage = int.parse(data['mileage'].toString());
+      int year = int.tryParse(data['year']?.toString() ?? '0') ?? 0;
+      int mileage = int.tryParse(data['mileage']?.toString() ?? '0') ?? 0;
 
-      Timestamp serviceTimestamp = data['lastServiceDate'];
-      DateTime lastService = serviceTimestamp.toDate();
+      Timestamp? serviceTimestamp = data['lastServiceDate'] as Timestamp?;
+      DateTime lastService = serviceTimestamp?.toDate() ?? DateTime.now();
 
       int age = DateTime.now().year - year;
 
