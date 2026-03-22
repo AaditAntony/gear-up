@@ -17,6 +17,7 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
   final TextEditingController locationController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController workingHoursController = TextEditingController();
+  final TextEditingController googleMapLinkController = TextEditingController();
 
   String? selectedDistrict;
 
@@ -54,6 +55,7 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
 
       phoneController.text = data['phone'] ?? "";
       locationController.text = data['location'] ?? "";
+      googleMapLinkController.text = data['googleMapLink'] ?? "";
       descriptionController.text = data['description'] ?? "";
       workingHoursController.text = data['workingHours'] ?? "";
 
@@ -94,6 +96,7 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
         .update({
           "phone": phoneController.text.trim(),
           "location": locationController.text.trim(),
+          "googleMapLink": googleMapLinkController.text.trim(),
           "description": descriptionController.text.trim(),
           "workingHours": workingHoursController.text.trim(),
           "district": selectedDistrict,
@@ -186,6 +189,20 @@ class _EditCenterProfilePageState extends State<EditCenterProfilePage> {
               decoration: InputDecoration(
                 labelText: "Location",
                 prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            /// GOOGLE MAPS LINK
+            TextField(
+              controller: googleMapLinkController,
+              decoration: InputDecoration(
+                labelText: "Google Maps URL (Optional)",
+                prefixIcon: const Icon(Icons.add_location_alt),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
