@@ -9,6 +9,9 @@ import 'package:gear_up/admin/pages/view_bookings_page.dart';
 
 import 'widgets/admin_sidebar.dart';
 import 'pages/approve_service_centers_page.dart';
+import 'pages/approved_centers_page.dart';
+import 'pages/rejected_centers_page.dart';
+import 'pages/blocked_centers_page.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -56,6 +59,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         return const ProductSalesPage();
       case 5:
         return const ViewBookingsPage();
+      case 6:
+        return const ApprovedCentersPage();
+      case 7:
+        return const RejectedCentersPage();
+      case 8:
+        return const BlockedCentersPage();
       default:
         return const Scaffold(body: AdminHomePage());
     }
