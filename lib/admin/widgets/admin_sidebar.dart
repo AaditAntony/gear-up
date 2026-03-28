@@ -92,6 +92,24 @@ class AdminSidebar extends StatelessWidget {
           ),
 
           buildMenuItem(
+            icon: Icons.check_circle_outline,
+            title: "Approved Centers",
+            index: 6,
+          ),
+
+          buildMenuItem(
+            icon: Icons.highlight_off,
+            title: "Rejected Centers",
+            index: 7,
+          ),
+
+          buildMenuItem(
+            icon: Icons.block,
+            title: "Blocked Centers",
+            index: 8,
+          ),
+
+          buildMenuItem(
             icon: Icons.build,
             title: "Service Categories",
             index: 3,
