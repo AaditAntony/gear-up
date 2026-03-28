@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gear_up/service-center/pages/add_product_page.dart';
 import 'package:gear_up/service-center/pages/center_profile_page.dart';
 import 'package:gear_up/service-center/pages/sales_dashboard_page.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 
 import 'widgets/service_center_sidebar.dart';
 import 'pages/center_home_page.dart';
@@ -40,17 +41,17 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
   String getPageTitle() {
     switch (selectedIndex) {
       case 0:
-        return "Dashboard";
+        return "Dashboard Overview";
       case 1:
-        return "Add Services";
+        return "Service Management";
       case 2:
-        return "My Bookings";
+        return "Live Bookings";
       case 3:
-        return "Add Products";
+        return "Product Inventory";
       case 4:
-        return "Sales Board";
+        return "Performance Metrics";
       case 5:
-        return "Profile";
+        return "Center Profile";
       default:
         return "Dashboard";
     }
@@ -59,7 +60,7 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: ServiceTheme.background,
 
       body: Row(
         children: [
@@ -80,29 +81,22 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
 
                 /// TOP HEADER
                 Container(
-                  height: 70,
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  decoration: const BoxDecoration(
+                  height: 80,
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
-                      bottom: BorderSide(color: Color(0xFFE5E7EB)),
+                      bottom: BorderSide(color: Colors.grey.withOpacity(0.1)),
                     ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.settings,
-                        color: Color(0xFFF97316),
-                        size: 28,
-                      ),
-
-                      const SizedBox(width: 12),
-
                       Text(
                         getPageTitle(),
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
+                          color: ServiceTheme.textPrimary,
                         ),
                       ),
 
@@ -110,26 +104,28 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
 
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
+                          horizontal: 16,
+                          vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF97316),
-                          borderRadius: BorderRadius.circular(20),
+                          color: ServiceTheme.accent.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: ServiceTheme.accent.withOpacity(0.1)),
                         ),
                         child: const Row(
                           children: [
                             Icon(
-                              Icons.build,
-                              color: Colors.white,
-                              size: 16,
+                              Icons.verified,
+                              color: ServiceTheme.accent,
+                              size: 18,
                             ),
-                            SizedBox(width: 6),
+                            SizedBox(width: 8),
                             Text(
-                              "Service Center",
+                              "Verified Center",
                               style: TextStyle(
-                                color: Colors.white,
+                                color: ServiceTheme.accent,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
                             ),
                           ],
@@ -142,19 +138,24 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
                 /// PAGE CONTENT
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(32),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: const Color(0xFFF1F5F9), // Slate 100
+                          width: 1,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 10,
-                            color: Colors.black.withOpacity(.05),
+                            blurRadius: 30,
+                            color: Colors.black.withOpacity(0.04),
+                            offset: const Offset(0, 10),
                           )
                         ],
                       ),
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(24),
                       child: getSelectedPage(),
                     ),
                   ),

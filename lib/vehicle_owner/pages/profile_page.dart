@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/vehicle_owner/auth/owner_login_page.dart';
 import 'package:gear_up/vehicle_owner/pages/my_oders_page.dart';
-import '../../auth/login_page.dart';
 import 'edit_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {

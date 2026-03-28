@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 import '../../auth/login_page.dart';
 import '../service_center_form_page.dart';
 
@@ -9,80 +10,62 @@ class RejectedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
-
+      backgroundColor: ServiceTheme.background,
       body: Center(
         child: Container(
-          width: 500,
-          padding: const EdgeInsets.all(30),
-
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                blurRadius: 12,
-                color: Colors.black.withOpacity(.08),
-              ),
-            ],
-          ),
-
+          width: 440,
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(48),
+          decoration: ServiceTheme.cardDecoration,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               /// ICON
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(.15),
+                  color: ServiceTheme.error.withOpacity(.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.cancel,
-                  size: 60,
-                  color: Colors.red,
+                  Icons.assignment_late_rounded,
+                  size: 64,
+                  color: ServiceTheme.error,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
               /// TITLE
               const Text(
-                "Application Rejected",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                "Feedback Required",
+                style: ServiceTheme.heading1,
+                textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
               /// MESSAGE
               const Text(
-                "Your submitted documents were not valid or incomplete.\n\n"
-                "Please review your details and resubmit your application.",
+                "Your recent workshop application was not approved by our compliance department.\n\n"
+                "Common reasons include blurred documentation or missing business permits. Please correct your details and resubmit.",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 14, color: ServiceTheme.textSecondary, height: 1.6, fontWeight: FontWeight.w500),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 48),
 
               /// RESUBMIT BUTTON
               SizedBox(
                 width: double.infinity,
-                height: 50,
-
+                height: 56,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
+                    backgroundColor: ServiceTheme.accent,
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
 
@@ -95,38 +78,37 @@ class RejectedPage extends StatelessWidget {
                     );
                   },
 
-                  icon: const Icon(Icons.refresh),
-
+                  icon: const Icon(Icons.description_rounded, size: 20),
                   label: const Text(
-                    "Resubmit Application",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    "Correct & Resubmit",
+                    style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
               /// LOGOUT BUTTON
               TextButton.icon(
                 onPressed: () async {
                   await FirebaseAuth.instance.signOut();
 
+                  if (!context.mounted) return;
+
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const LoginPage(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const LoginPage()),
                     (route) => false,
                   );
                 },
 
-                icon: const Icon(Icons.logout, color: Colors.red),
-
+                icon: const Icon(Icons.logout_rounded, color: ServiceTheme.error, size: 18),
                 label: const Text(
-                  "Logout",
+                  "Sign Out",
                   style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
+                    color: ServiceTheme.error,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
                   ),
                 ),
               ),

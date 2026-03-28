@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 
 class CenterBookingDetailPage extends StatefulWidget {
   final String bookingId;
@@ -69,22 +70,22 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
   Color getStatusColor(String status) {
     switch (status) {
       case "completed":
-        return Colors.green;
+        return ServiceTheme.success;
       case "in_progress":
-        return Colors.orange;
+        return ServiceTheme.warning;
       default:
-        return Colors.grey;
+        return ServiceTheme.textSecondary;
     }
   }
 
   IconData getStatusIcon(String status) {
     switch (status) {
       case "completed":
-        return Icons.check;
+        return Icons.verified_rounded;
       case "in_progress":
-        return Icons.build;
+        return Icons.auto_fix_high_rounded;
       default:
-        return Icons.hourglass_empty;
+        return Icons.schedule_rounded;
     }
   }
 
@@ -94,38 +95,25 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(.15),
-        borderRadius: BorderRadius.circular(6),
+        color: color.withOpacity(.12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         status.toUpperCase(),
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5),
       ),
-    );
-  }
-
-  Widget infoRow(IconData icon, String title, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: const Color(0xFFF97316)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            "$title: $value",
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-        ),
-      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
+      backgroundColor: ServiceTheme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF97316),
-        title: const Text("Booking Details"),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text("Service Management", style: TextStyle(color: ServiceTheme.textPrimary, fontWeight: FontWeight.bold)),
+        iconTheme: const IconThemeData(color: ServiceTheme.textPrimary),
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
@@ -141,275 +129,277 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
           List updates = data["serviceUpdates"] ?? [];
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                /// ACTION BUTTONS TOP
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ServiceTheme.accent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => updateBookingStatus("in_progress"),
+                        icon: const Icon(Icons.play_circle_fill_rounded),
+                        label: const Text("START SERVICE", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ServiceTheme.success,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => updateBookingStatus("completed"),
+                        icon: const Icon(Icons.check_circle_rounded),
+                        label: const Text("MARK DONE", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
                 /// BOOKING INFO
                 Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 12,
-                        color: Colors.black.withOpacity(.05),
-                      ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.all(24),
+                  decoration: ServiceTheme.cardDecoration,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Booking Information",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      const Text("WORK ORDER DETAILS", style: ServiceTheme.label),
+                      const SizedBox(height: 20),
+                      
+                      _detailRow(Icons.category_rounded, "Service Category", data['categoryName']),
+                      const Divider(height: 32),
+                      _detailRow(Icons.directions_car_rounded, "Vehicle Primary", data['vehicleNumber']),
+                      const Divider(height: 32),
+                      _detailRow(Icons.report_gmailerrorred_rounded, "Owner Complaint", data['complaint'] ?? "General inspection requested"),
+                      
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ServiceTheme.background,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      infoRow(Icons.build, "Service", data['categoryName']),
-                      const SizedBox(height: 8),
-
-                      infoRow(
-                        Icons.directions_car,
-                        "Vehicle",
-                        data['vehicleNumber'],
-                      ),
-                      const SizedBox(height: 8),
-
-                      infoRow(
-                        Icons.report_problem,
-                        "Complaint",
-                        data['complaint'] ?? "None",
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Row(
-                        children: [
-                          const Icon(Icons.info, color: Colors.orange),
-                          const SizedBox(width: 8),
-                          const Text("Status: "),
-                          statusBadge(data['status']),
-                        ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text("CURRENT ORDER STATUS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ServiceTheme.textSecondary)),
+                            statusBadge(data['status']),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
 
                 /// SERVICE TIMELINE
-                const Text(
-                  "Service Progress",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 15),
+                const Text("ACTIVITY LOG & TIMELINE", style: ServiceTheme.label),
+                const SizedBox(height: 20),
 
                 Column(
                   children: List.generate(updates.length, (index) {
                     var update = updates[index];
-
                     Color statusColor = getStatusColor(update["status"]);
                     IconData icon = getStatusIcon(update["status"]);
 
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        /// TIMELINE
-                        Column(
-                          children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(icon, color: Colors.white, size: 16),
-                            ),
-
-                            if (index != updates.length - 1)
+                    return IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          /// TIMELINE
+                          Column(
+                            children: [
                               Container(
-                                width: 2,
-                                height: 70,
-                                color: Colors.grey.shade300,
-                              ),
-                          ],
-                        ),
-
-                        const SizedBox(width: 15),
-
-                        /// UPDATE CARD
-                        Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      update["title"],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-
-                                    statusBadge(update["status"]),
-                                  ],
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: statusColor.withOpacity(0.12),
+                                  shape: BoxShape.circle,
                                 ),
+                                child: Icon(icon, color: statusColor, size: 18),
+                              ),
+                              if (index != updates.length - 1)
+                                Expanded(
+                                  child: Container(
+                                    width: 2,
+                                    margin: const EdgeInsets.symmetric(vertical: 4),
+                                    color: ServiceTheme.border.withOpacity(0.5),
+                                  ),
+                                ),
+                            ],
+                          ),
 
-                                const SizedBox(height: 6),
+                          const SizedBox(width: 20),
 
-                                Text(update["description"]),
-                              ],
+                          /// UPDATE CONTENT
+                          Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 24),
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        update["title"],
+                                        style: const TextStyle(fontWeight: FontWeight.w900, color: ServiceTheme.textPrimary, fontSize: 16),
+                                      ),
+                                      statusBadge(update["status"]),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    update["description"],
+                                    style: const TextStyle(color: ServiceTheme.textSecondary, height: 1.5, fontSize: 14),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   }),
                 ),
 
-                const SizedBox(height: 25),
+                if (updates.isEmpty)
+                   Center(
+                     child: Padding(
+                       padding: const EdgeInsets.all(32),
+                       child: Column(
+                         children: [
+                           Icon(Icons.history_rounded, size: 48, color: ServiceTheme.border.withOpacity(0.5)),
+                           const SizedBox(height: 12),
+                           const Text("No progress log entries yet.", style: ServiceTheme.body),
+                         ],
+                       ),
+                     ),
+                   ),
 
-                /// ADD UPDATE
+                const SizedBox(height: 40),
+
+                /// ADD UPDATE FORM
                 Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 12,
-                        color: Colors.black.withOpacity(.05),
-                      ),
-                    ],
-                  ),
-
+                  padding: const EdgeInsets.all(24),
+                  decoration: ServiceTheme.cardDecoration,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Add Service Update",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
+                      const Text("LOG NEW ACTIVITY", style: ServiceTheme.label),
+                      const SizedBox(height: 24),
 
                       TextField(
                         controller: titleController,
-                        decoration: const InputDecoration(
-                          labelText: "Title",
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: "Update Title (e.g. Parts Disassembled)",
+                          filled: true,
+                          fillColor: ServiceTheme.background,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
                       TextField(
                         controller: descriptionController,
-                        decoration: const InputDecoration(
-                          labelText: "Description",
-                          border: OutlineInputBorder(),
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          hintText: "Technical details or inspection findings...",
+                          filled: true,
+                          fillColor: ServiceTheme.background,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                      DropdownButtonFormField(
+                      DropdownButtonFormField<String>(
                         value: status,
+                        dropdownColor: Colors.white,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: ServiceTheme.background,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
                         items: const [
-                          DropdownMenuItem(
-                            value: "pending",
-                            child: Text("Pending"),
-                          ),
-                          DropdownMenuItem(
-                            value: "in_progress",
-                            child: Text("In Progress"),
-                          ),
-                          DropdownMenuItem(
-                            value: "completed",
-                            child: Text("Completed"),
-                          ),
+                          DropdownMenuItem(value: "pending", child: Text("Status: Pending Task", style: TextStyle(fontSize: 14))),
+                          DropdownMenuItem(value: "in_progress", child: Text("Status: Work in Progress", style: TextStyle(fontSize: 14))),
+                          DropdownMenuItem(value: "completed", child: Text("Status: Phase Completed", style: TextStyle(fontSize: 14))),
                         ],
-                        onChanged: (value) {
-                          setState(() {
-                            status = value!;
-                          });
-                        },
+                        onChanged: (value) => setState(() => status = value!),
                       ),
 
-                      const SizedBox(height: 15),
+                      const SizedBox(height: 24),
 
-                      Align(
-                        alignment: Alignment.centerRight,
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF97316),
+                            backgroundColor: ServiceTheme.accent,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
                           onPressed: addUpdate,
-                          icon: const Icon(Icons.add),
-                          label: const Text("Add Update"),
+                          icon: const Icon(Icons.add_task_rounded),
+                          label: const Text("PUBLISH LOG ENTRY", style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                /// ACTION BUTTONS
-                Row(
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                      ),
-                      onPressed: () {
-                        updateBookingStatus("in_progress");
-                      },
-                      child: const Text("Start Service"),
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                      ),
-                      onPressed: () {
-                        updateBookingStatus("completed");
-                      },
-                      child: const Text("Mark Completed"),
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 48),
               ],
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: ServiceTheme.accent.withOpacity(0.05), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: ServiceTheme.accent, size: 20),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label.toUpperCase(), style: const TextStyle(fontSize: 11, color: ServiceTheme.textSecondary, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              const SizedBox(height: 4),
+              Text(value, style: const TextStyle(fontWeight: FontWeight.w800, color: ServiceTheme.textPrimary, fontSize: 15)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

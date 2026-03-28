@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 import 'center_booking_detail_page.dart';
 
 class MyBookingsPage extends StatelessWidget {
@@ -16,17 +17,17 @@ class MyBookingsPage extends StatelessWidget {
   Color statusColor(String status) {
     switch (status) {
       case "pending":
-        return Colors.orange;
+        return ServiceTheme.warning;
       case "accepted":
-        return Colors.green;
+        return ServiceTheme.info;
       case "completed":
-        return Colors.blue;
+        return ServiceTheme.success;
       case "rejected":
-        return Colors.red;
+        return ServiceTheme.error;
       case "in_progress":
-        return Colors.purple;
+        return Colors.purpleAccent;
       default:
-        return Colors.grey;
+        return ServiceTheme.textSecondary;
     }
   }
 
@@ -34,17 +35,18 @@ class MyBookingsPage extends StatelessWidget {
     Color color = statusColor(status);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(.15),
-        borderRadius: BorderRadius.circular(20),
+        color: color.withOpacity(.12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         status.toUpperCase(),
         style: TextStyle(
           color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
+          fontWeight: FontWeight.w800,
+          fontSize: 10,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -55,8 +57,7 @@ class MyBookingsPage extends StatelessWidget {
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
     return Container(
-      color: const Color(0xFFFFF7ED),
-
+      color: Colors.white,
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
@@ -69,211 +70,204 @@ class MyBookingsPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text("No bookings yet", style: TextStyle(fontSize: 16)),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.calendar_today_outlined, size: 64, color: ServiceTheme.border.withOpacity(0.5)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "No bookings scheduled", 
+                    style: TextStyle(fontSize: 16, color: ServiceTheme.textSecondary, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
             );
           }
 
           var bookings = snapshot.data!.docs;
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+          return ListView.builder(
+            padding: const EdgeInsets.all(0),
+            itemCount: bookings.length,
+            itemBuilder: (context, index) {
+              var booking = bookings[index];
+              var data = booking.data() as Map<String, dynamic>;
+              String status = data['status'];
 
-              child: Column(
-                children: [
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: bookings.length,
-
-                    itemBuilder: (context, index) {
-                      var booking = bookings[index];
-                      var data = booking.data() as Map<String, dynamic>;
-
-                      String status = data['status'];
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 20),
-                        padding: const EdgeInsets.all(18),
-
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 10,
-                              color: Colors.black.withOpacity(.05),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+                  boxShadow: ServiceTheme.softShadow,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// HEADER BAR
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        color: ServiceTheme.background.withOpacity(0.5),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: ServiceTheme.accent.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.car_repair_rounded, color: ServiceTheme.accent, size: 20),
                             ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                data['categoryName'],
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  color: ServiceTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                            statusBadge(status),
                           ],
                         ),
-
+                      ),
+                      
+                      Padding(
+                        padding: const EdgeInsets.all(20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            /// HEADER
+                            /// GRID INFO
                             Row(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange.withOpacity(.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-
-                                  child: const Icon(
-                                    Icons.directions_car,
-                                    color: Colors.orange,
-                                  ),
-                                ),
-
-                                const SizedBox(width: 12),
-
                                 Expanded(
-                                  child: Text(
-                                    data['categoryName'],
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("VEHICLE NUMBER", style: ServiceTheme.label),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        data['vehicleNumber'],
+                                        style: const TextStyle(fontWeight: FontWeight.bold, color: ServiceTheme.textPrimary),
+                                      ),
+                                    ],
                                   ),
                                 ),
-
-                                statusBadge(status),
+                                Container(width: 1, height: 30, color: ServiceTheme.border.withOpacity(0.5)),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text("SCHEDULED FOR", style: ServiceTheme.label),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "${data['bookingDate'].toString().split("T")[0]} · ${data['bookingSlot']}",
+                                        style: const TextStyle(fontWeight: FontWeight.bold, color: ServiceTheme.textPrimary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
 
-                            const SizedBox(height: 18),
+                            const SizedBox(height: 20),
+                            const Divider(height: 1),
+                            const SizedBox(height: 20),
 
-                            /// DETAILS
-                            Container(
-                              padding: const EdgeInsets.all(12),
-
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withOpacity(.05),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.directions_car,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text("Vehicle: ${data['vehicleNumber']}"),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 6),
-
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_today,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        "Date: ${data['bookingDate'].toString().split("T")[0]}",
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 6),
-
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.access_time, size: 16),
-                                      const SizedBox(width: 6),
-                                      Text("Slot: ${data['bookingSlot']}"),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 12),
-
+                            const Text("CUSTOMER COMPLAINT", style: ServiceTheme.label),
+                            const SizedBox(height: 6),
                             Text(
-                              "Complaint: ${data['complaint'] ?? "No complaint"}",
-                              style: const TextStyle(color: Colors.grey),
+                              data['complaint'] ?? "General servicing and inspection required.",
+                              style: const TextStyle(color: ServiceTheme.textSecondary, height: 1.4),
                             ),
 
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
 
-                            /// ACCEPT / REJECT
-                            if (status == "pending")
-                              Row(
-                                children: [
-                                  ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.green,
-                                      foregroundColor: Colors.white,
+                            /// ACTIONS
+                            Row(
+                              children: [
+                                if (status == "pending") ...[
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: ServiceTheme.success,
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      onPressed: () => updateStatus(booking.id, "accepted"),
+                                      child: const Text("Accept Request", style: TextStyle(fontWeight: FontWeight.bold)),
                                     ),
-                                    onPressed: () {
-                                      updateStatus(booking.id, "accepted");
-                                    },
-                                    icon: const Icon(Icons.check),
-                                    label: const Text("Accept"),
                                   ),
-
-                                  const SizedBox(width: 10),
-
-                                  ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                      foregroundColor: Colors.white,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(color: ServiceTheme.error),
+                                        foregroundColor: ServiceTheme.error,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                      onPressed: () => updateStatus(booking.id, "rejected"),
+                                      child: const Text("Reject", style: TextStyle(fontWeight: FontWeight.bold)),
                                     ),
-                                    onPressed: () {
-                                      updateStatus(booking.id, "rejected");
-                                    },
-                                    icon: const Icon(Icons.close),
-                                    label: const Text("Reject"),
                                   ),
-                                ],
-                              ),
-
-                            const SizedBox(height: 12),
-
-                            /// VIEW DETAILS
-                            Align(
-                              alignment: Alignment.centerRight,
-
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFF97316),
-                                  foregroundColor: Colors.white,
-                                ),
-
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => CenterBookingDetailPage(
-                                        bookingId: booking.id,
-                                        bookingData: data,
+                                ] else
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => CenterBookingDetailPage(
+                                              bookingId: booking.id,
+                                              bookingData: data,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        decoration: BoxDecoration(
+                                          color: ServiceTheme.accent.withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: ServiceTheme.accent.withOpacity(0.1)),
+                                        ),
+                                        child: const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.visibility_rounded, color: ServiceTheme.accent, size: 18),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              "View Full Details",
+                                              style: TextStyle(
+                                                color: ServiceTheme.accent,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  );
-                                },
-
-                                icon: const Icon(Icons.visibility),
-                                label: const Text("View Details"),
-                              ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       ),

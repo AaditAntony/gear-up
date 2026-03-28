@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 
 class AddServicesPage extends StatefulWidget {
   const AddServicesPage({super.key});
@@ -66,228 +67,257 @@ class _AddServicesPageState extends State<AddServicesPage> {
   Widget build(BuildContext context) {
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// PAGE TITLE
-        const Text(
-          "Service Manager",
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(
-          "Add and manage services offered by your workshop",
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-
-        const SizedBox(height: 25),
-
-        /// ADD SERVICE CARD
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
-            ],
-          ),
-
+        /// LEFT SIDE - ADD FORM
+        Expanded(
+          flex: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.build, color: Colors.orange),
-                  SizedBox(width: 10),
-                  Text(
-                    "Add New Service",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                   Icon(Icons.add_task_rounded, color: ServiceTheme.accent, size: 28),
+                   SizedBox(width: 12),
+                   Text("New Service", style: ServiceTheme.heading1),
                 ],
               ),
+              const SizedBox(height: 8),
+              const Text(
+                "Expand your workshop offerings by adding new service categories.", 
+                style: ServiceTheme.body,
+              ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
-              /// CATEGORY DROPDOWN
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('service_categories')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const CircularProgressIndicator();
-                  }
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: ServiceTheme.cardDecoration,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("SELECT CATEGORY", style: ServiceTheme.label),
+                    const SizedBox(height: 12),
+                    
+                    /// CATEGORY DROPDOWN
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('service_categories')
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const LinearProgressIndicator();
+                        }
 
-                  var categories = snapshot.data!.docs;
+                        var categories = snapshot.data!.docs;
 
-                  return DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: "Select Category",
-                      prefixIcon: const Icon(Icons.miscellaneous_services),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        return DropdownButtonFormField<String>(
+                          decoration: InputDecoration(
+                            hintText: "Choose a service type",
+                            filled: true,
+                            fillColor: ServiceTheme.background,
+                            prefixIcon: const Icon(Icons.category_outlined, size: 20),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          value: selectedCategoryId,
+                          items: categories.map((doc) {
+                            return DropdownMenuItem<String>(
+                              value: doc.id,
+                              child: Text(doc['name']),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            var selectedDoc = categories.firstWhere(
+                              (doc) => doc.id == value,
+                            );
+
+                            setState(() {
+                              selectedCategoryId = value;
+                              selectedCategoryName = selectedDoc['name'];
+                            });
+                          },
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+                    const Text("SERVICE PRICING (INR)", style: ServiceTheme.label),
+                    const SizedBox(height: 12),
+
+                    /// PRICE FIELD
+                    TextField(
+                      controller: priceController,
+                      decoration: InputDecoration(
+                        hintText: "e.g. 1500",
+                        filled: true,
+                        fillColor: ServiceTheme.background,
+                        prefixIcon: const Icon(Icons.currency_rupee_rounded, size: 20),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    /// ADD BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ServiceTheme.accent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: addService,
+                        icon: const Icon(Icons.add_circle_outline_rounded),
+                        label: const Text("Register Service", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
                     ),
-                    value: selectedCategoryId,
-                    items: categories.map((doc) {
-                      return DropdownMenuItem<String>(
-                        value: doc.id,
-                        child: Text(doc['name']),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      var selectedDoc = categories.firstWhere(
-                        (doc) => doc.id == value,
-                      );
-
-                      setState(() {
-                        selectedCategoryId = value;
-                        selectedCategoryName = selectedDoc['name'];
-                      });
-                    },
-                  );
-                },
-              ),
-
-              const SizedBox(height: 15),
-
-              /// PRICE FIELD
-              TextField(
-                controller: priceController,
-                decoration: InputDecoration(
-                  labelText: "Your Price",
-                  prefixIcon: const Icon(Icons.currency_rupee),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  ],
                 ),
-                keyboardType: TextInputType.number,
-              ),
-
-              const SizedBox(height: 18),
-
-              /// ADD BUTTON
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF97316),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 12,
-                  ),
-                ),
-                onPressed: addService,
-                icon: const Icon(Icons.add),
-                label: const Text("Add Service"),
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 30),
+        const SizedBox(width: 40),
 
-        /// MY SERVICES TITLE
-        const Row(
-          children: [
-            Icon(Icons.home_repair_service, color: Colors.orange),
-            SizedBox(width: 8),
-            Text(
-              "My Services",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 15),
-
-        /// SERVICE LIST
+        /// RIGHT SIDE - MY SERVICES LIST
         Expanded(
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('center_services')
-                .where('centerId', isEqualTo: centerId)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                   Icon(Icons.inventory_2_outlined, color: ServiceTheme.accent, size: 28),
+                   SizedBox(width: 12),
+                   Text("Services Inventory", style: ServiceTheme.heading1),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Your current active services for customers.", 
+                style: ServiceTheme.body,
+              ),
 
-              var services = snapshot.data!.docs;
+              const SizedBox(height: 32),
 
-              if (services.isEmpty) {
-                return const Center(child: Text("No services added yet."));
-              }
+              /// SERVICE LIST
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('center_services')
+                      .where('centerId', isEqualTo: centerId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-              return ListView.builder(
-                itemCount: services.length,
-                itemBuilder: (context, index) {
-                  var service = services[index];
+                    var services = snapshot.data!.docs;
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 8,
-                          color: Colors.black.withOpacity(.05),
+                    if (services.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.layers_clear_outlined, size: 64, color: ServiceTheme.border.withOpacity(0.5)),
+                            const SizedBox(height: 16),
+                            const Text("You haven't added any services yet.", style: ServiceTheme.body),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    }
 
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
+                    return ListView.builder(
+                      itemCount: services.length,
+                      itemBuilder: (context, index) {
+                        var service = services[index];
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(.1),
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+                            boxShadow: ServiceTheme.softShadow,
                           ),
-                          child: const Icon(Icons.build, color: Colors.orange),
-                        ),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
+                              Container(
+                                height: 44,
+                                width: 44,
+                                decoration: BoxDecoration(
+                                  color: ServiceTheme.accent.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.settings_suggest_rounded, color: ServiceTheme.accent, size: 20),
+                              ),
+
+                              const SizedBox(width: 16),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      service['categoryName'],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                        color: ServiceTheme.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      "Operational Service",
+                                      style: TextStyle(
+                                        color: ServiceTheme.textSecondary.withOpacity(0.7),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
                               Text(
-                                service['categoryName'],
+                                "₹${service['price']}",
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  color: ServiceTheme.accent,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 16,
                                 ),
                               ),
 
-                              const SizedBox(height: 4),
+                              const SizedBox(width: 16),
+                              Container(width: 1, height: 24, color: ServiceTheme.border.withOpacity(0.5)),
+                              const SizedBox(width: 8),
 
-                              Text(
-                                "Price: ₹${service['price']}",
-                                style: const TextStyle(
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, color: ServiceTheme.error, size: 20),
+                                onPressed: () => deleteService(service.id),
                               ),
                             ],
                           ),
-                        ),
-
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => deleteService(service.id),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ],

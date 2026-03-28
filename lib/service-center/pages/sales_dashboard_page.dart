@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 
 class SalesDashboardPage extends StatelessWidget {
   const SalesDashboardPage({super.key});
@@ -61,24 +62,44 @@ class SalesDashboardPage extends StatelessWidget {
   Widget statCard(String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
-          ],
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+          boxShadow: ServiceTheme.softShadow,
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 20),
             Text(
               value,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 26, 
+                fontWeight: FontWeight.w900,
+                color: ServiceTheme.textPrimary,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 6),
-            Text(title, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 12, 
+                color: ServiceTheme.textSecondary,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.2,
+              ),
+            ),
           ],
         ),
       ),
@@ -113,27 +134,52 @@ class SalesDashboardPage extends StatelessWidget {
     });
 
     return Container(
-      height: 220,
-      padding: const EdgeInsets.all(16),
+      height: 240,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(blurRadius: 8, color: Colors.black.withOpacity(.05)),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+        boxShadow: ServiceTheme.softShadow,
       ),
       child: LineChart(
         LineChartData(
-          gridData: FlGridData(show: false),
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: ServiceTheme.border.withOpacity(0.3),
+              strokeWidth: 1,
+            ),
+          ),
           titlesData: FlTitlesData(show: false),
           borderData: FlBorderData(show: false),
           lineBarsData: [
             LineChartBarData(
               spots: spots,
               isCurved: true,
-              color: Colors.orange,
-              barWidth: 4,
-              dotData: FlDotData(show: false),
+              barWidth: 5,
+              color: ServiceTheme.info,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 4,
+                  color: Colors.white,
+                  strokeWidth: 3,
+                  strokeColor: ServiceTheme.info,
+                ),
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    ServiceTheme.info.withOpacity(0.2),
+                    ServiceTheme.info.withOpacity(0.0),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
             ),
           ],
         ),
@@ -159,152 +205,159 @@ class SalesDashboardPage extends StatelessWidget {
         int totalOrders = orders.length;
 
         return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                   Icon(Icons.query_stats_rounded, color: ServiceTheme.accent, size: 28),
+                   SizedBox(width: 12),
+                   Text("Financial Overview", style: ServiceTheme.heading1),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Detailed breakdown of your parts & product sales performance.", 
+                style: ServiceTheme.body,
+              ),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Sales Dashboard",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
+              const SizedBox(height: 32),
 
-                const SizedBox(height: 25),
+              Row(
+                children: [
+                  statCard(
+                    "Total Collected",
+                    "₹${totalRevenue.toStringAsFixed(0)}",
+                    Icons.account_balance_wallet_rounded,
+                    ServiceTheme.success,
+                  ),
+                  const SizedBox(width: 16),
+                  statCard(
+                    "Orders Fulfilled",
+                    totalOrders.toString(),
+                    Icons.local_shipping_rounded,
+                    ServiceTheme.info,
+                  ),
+                ],
+              ),
 
-                Row(
-                  children: [
-                    statCard(
-                      "Total Revenue",
-                      "₹${totalRevenue.toStringAsFixed(0)}",
-                      Icons.attach_money,
-                      Colors.green,
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  statCard(
+                    "Today's Revenue",
+                    "₹${todayRevenue.toStringAsFixed(0)}",
+                    Icons.today_rounded,
+                    ServiceTheme.warning,
+                  ),
+                  const SizedBox(width: 16),
+                  statCard(
+                    "Monthly Goal",
+                    "₹${monthlyRevenue.toStringAsFixed(0)}",
+                    Icons.insights_rounded,
+                    Colors.purpleAccent,
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              const Text("Sales Velocity", style: ServiceTheme.heading2),
+              const SizedBox(height: 16),
+              salesChart(orders),
+
+              const SizedBox(height: 40),
+
+              const Text("Transaction History", style: ServiceTheme.heading2),
+              const SizedBox(height: 16),
+
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: orders.length,
+                itemBuilder: (context, index) {
+                  var order = orders[index];
+
+                  Timestamp ts = order['createdAt'];
+                  DateTime date = ts.toDate();
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    statCard(
-                      "Products Sold",
-                      totalOrders.toString(),
-                      Icons.shopping_cart,
-                      Colors.blue,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    statCard(
-                      "Today's Sales",
-                      "₹${todayRevenue.toStringAsFixed(0)}",
-                      Icons.today,
-                      Colors.orange,
-                    ),
-                    const SizedBox(width: 12),
-                    statCard(
-                      "Monthly Sales",
-                      "₹${monthlyRevenue.toStringAsFixed(0)}",
-                      Icons.calendar_month,
-                      Colors.purple,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-
-                const Text(
-                  "Sales Trend",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 15),
-
-                salesChart(orders),
-
-                const SizedBox(height: 30),
-
-                const Text(
-                  "Recent Orders",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 15),
-
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: orders.length,
-                  itemBuilder: (context, index) {
-                    var order = orders[index];
-
-                    Timestamp ts = order['createdAt'];
-                    DateTime date = ts.toDate();
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
-
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 6,
-                            color: Colors.black.withOpacity(.05),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: ServiceTheme.accent.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        ],
-                      ),
-
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(.15),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.shopping_bag,
-                              color: Colors.orange,
-                            ),
+                          child: const Icon(
+                            Icons.receipt_long_rounded,
+                            color: ServiceTheme.accent,
+                            size: 20,
                           ),
+                        ),
 
-                          const SizedBox(width: 12),
+                        const SizedBox(width: 16),
 
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  order['productName'],
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                order['productName'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: ServiceTheme.textPrimary,
+                                  fontSize: 15,
                                 ),
-
-                                const SizedBox(height: 4),
-
-                                Text(
-                                  "₹${order['price']} • ${date.toString().split(" ")[0]}",
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                "${date.toString().split(" ")[0]} · Electronic Receipt",
+                                style: const TextStyle(color: ServiceTheme.textSecondary, fontSize: 11, fontWeight: FontWeight.w500),
+                              ),
+                            ],
                           ),
+                        ),
 
-                          const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                            color: Colors.grey,
+                        Text(
+                          "₹${order['price']}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: ServiceTheme.success,
+                            fontSize: 15,
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+                        ),
+                        
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: ServiceTheme.border,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         );
       },
