@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'admin_dashboard.dart';
 
 class AdminRegisterPage extends StatefulWidget {
   const AdminRegisterPage({super.key});
@@ -44,8 +43,6 @@ class _AdminRegisterPageState extends State<AdminRegisterPage> {
       setState(() {
         isLoading = true;
       });
-
-      String? currentAdminEmail = FirebaseAuth.instance.currentUser?.email;
 
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(

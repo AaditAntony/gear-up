@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 import '../../auth/login_page.dart';
 
 class VerificationPendingPage extends StatelessWidget {
@@ -8,76 +9,69 @@ class VerificationPendingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
-
+      backgroundColor: ServiceTheme.background,
       body: Center(
         child: Container(
-          width: 500,
-          padding: const EdgeInsets.all(35),
-
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(blurRadius: 12, color: Colors.black.withOpacity(.08)),
-            ],
-          ),
-
+          width: 440,
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(48),
+          decoration: ServiceTheme.cardDecoration,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               /// ICON BADGE
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(.15),
+                  color: ServiceTheme.info.withOpacity(.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  Icons.hourglass_top,
-                  size: 55,
-                  color: Colors.orange,
+                  Icons.verified_user_rounded,
+                  size: 64,
+                  color: ServiceTheme.info,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
 
               /// TITLE
               const Text(
-                "Application Under Verification",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                "In Review",
+                style: ServiceTheme.heading1,
                 textAlign: TextAlign.center,
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
               /// DESCRIPTION
               const Text(
-                "Your company registration is currently under review.\n\n"
-                "Verification may take 7–10 business days.\n\n"
-                "You will gain access to your dashboard once approved.",
+                "Your workshop enrollment is currently being verified by our compliance team.\n\n"
+                "Standard verification takes 2–3 business days. We will notify you once your terminal is active.",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, color: Colors.grey, height: 1.6),
+                style: TextStyle(fontSize: 14, color: ServiceTheme.textSecondary, height: 1.6, fontWeight: FontWeight.w500),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 48),
 
               /// LOGOUT BUTTON
               SizedBox(
                 width: double.infinity,
-                height: 48,
-
+                height: 56,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
+                    backgroundColor: ServiceTheme.accent,
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
 
                   onPressed: () async {
                     await FirebaseAuth.instance.signOut();
+
+                    if (!context.mounted) return;
 
                     Navigator.pushAndRemoveUntil(
                       context,
@@ -86,13 +80,18 @@ class VerificationPendingPage extends StatelessWidget {
                     );
                   },
 
-                  icon: const Icon(Icons.logout),
-
+                  icon: const Icon(Icons.logout_rounded, size: 20),
                   label: const Text(
-                    "Logout",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    "Switch Account",
+                    style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
                   ),
                 ),
+              ),
+              
+              const SizedBox(height: 16),
+              const Text(
+                "Need help? Contact support@gearup.com",
+                style: TextStyle(fontSize: 11, color: ServiceTheme.textSecondary, fontWeight: FontWeight.w600),
               ),
             ],
           ),

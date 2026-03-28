@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({super.key});
@@ -107,185 +108,166 @@ class _AddProductPageState extends State<AddProductPage> {
     String centerId = FirebaseAuth.instance.currentUser!.uid;
 
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// HEADER
+          const Row(
+            children: [
+               Icon(Icons.add_shopping_cart_rounded, color: ServiceTheme.accent, size: 28),
+               SizedBox(width: 12),
+               Text("Inventory Manager", style: ServiceTheme.heading1),
+            ],
+          ),
+          const SizedBox(height: 8),
           const Text(
-            "Product Manager",
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+            "Showcase and sell your spare parts, accessories, and maintenance products.", 
+            style: ServiceTheme.body,
           ),
 
-          const SizedBox(height: 6),
-
-          Text(
-            "Add and manage your spare parts & accessories",
-            style: TextStyle(color: Colors.grey[600]),
-          ),
-
-          const SizedBox(height: 25),
+          const SizedBox(height: 32),
 
           /// ADD PRODUCT CARD
           Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
-              ],
-            ),
-
+            padding: const EdgeInsets.all(32),
+            decoration: ServiceTheme.cardDecoration,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.add_box, color: Colors.orange),
-                    SizedBox(width: 10),
-                    Text(
-                      "Add New Product",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    /// IMAGE PICKER
+                    Column(
+                      children: [
+                        const Text("PRODUCT IMAGE", style: ServiceTheme.label),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: pickImage,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            width: 160,
+                            height: 160,
+                            decoration: BoxDecoration(
+                              color: ServiceTheme.background,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: imageBytes != null ? ServiceTheme.accent.withOpacity(0.3) : ServiceTheme.border,
+                                width: 2,
+                                style: imageBytes != null ? BorderStyle.solid : BorderStyle.none,
+                              ),
+                            ),
+                            child: imageBytes != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(18),
+                                    child: Image.memory(imageBytes!, fit: BoxFit.cover),
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.add_a_photo_rounded, size: 32, color: ServiceTheme.textSecondary.withOpacity(0.5)),
+                                      const SizedBox(height: 8),
+                                      const Text("Upload Photo", style: TextStyle(fontSize: 12, color: ServiceTheme.textSecondary, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(width: 32),
+
+                    /// PRODUCT DETAILS FIELDS
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("IDENTIFICATION", style: ServiceTheme.label),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: nameController,
+                            decoration: InputDecoration(
+                              hintText: "Product Name (e.g. Engine Oil 5W-30)",
+                              filled: true,
+                              fillColor: ServiceTheme.background,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text("MARKET VALUE", style: ServiceTheme.label),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: priceController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: "Price in INR",
+                              prefixIcon: const Icon(Icons.currency_rupee_rounded, size: 18),
+                              filled: true,
+                              fillColor: ServiceTheme.background,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 20),
-
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: "Product Name",
-                    prefixIcon: const Icon(Icons.inventory),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
+                const SizedBox(height: 24),
+                const Text("SHORT DESCRIPTION", style: ServiceTheme.label),
+                const SizedBox(height: 12),
                 TextField(
                   controller: descriptionController,
-                  maxLines: 3,
+                  maxLines: 2,
                   decoration: InputDecoration(
-                    labelText: "Description",
-                    prefixIcon: const Icon(Icons.description),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    hintText: "Briefly describe the product's features and compatibility...",
+                    filled: true,
+                    fillColor: ServiceTheme.background,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                   ),
                 ),
 
-                const SizedBox(height: 15),
+                const SizedBox(height: 32),
 
-                TextField(
-                  controller: priceController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: "Price",
-                    prefixIcon: const Icon(Icons.currency_rupee),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Row(
-                  children: [
-                    /// IMAGE PREVIEW
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: imageBytes != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.memory(
-                                imageBytes!,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.image_outlined,
-                              size: 40,
-                              color: Colors.orange,
-                            ),
-                    ),
-
-                    const SizedBox(width: 20),
-
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF97316),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 12,
-                        ),
-                      ),
-                      onPressed: pickImage,
-                      icon: const Icon(Icons.upload),
-                      label: const Text("Upload Image"),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                /// SMALLER BUTTON
-                Align(
-                  alignment: Alignment.centerLeft,
+                /// ADD BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF97316),
+                      backgroundColor: ServiceTheme.accent,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: isLoading ? null : addProduct,
-                    icon: const Icon(Icons.add),
-                    label: isLoading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text("Add Product"),
+                    icon: isLoading 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Icon(Icons.publish_rounded),
+                    label: Text(
+                      isLoading ? "Publishing..." : "Publish to Storefront", 
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 48),
 
-          /// PRODUCTS TITLE
+          /// PRODUCTS LISTING
           const Row(
             children: [
-              Icon(Icons.store, color: Colors.orange),
-              SizedBox(width: 8),
-              Text(
-                "My Products",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
+               Icon(Icons.inventory_rounded, color: ServiceTheme.accent, size: 28),
+               SizedBox(width: 12),
+               Text("Active Product Listing", style: ServiceTheme.heading1),
             ],
           ),
+          const SizedBox(height: 8),
+          const Text("Manage your current store catalog.", style: ServiceTheme.body),
 
-          const SizedBox(height: 15),
+          const SizedBox(height: 32),
 
           /// PRODUCT LIST
           StreamBuilder<QuerySnapshot>(
@@ -301,9 +283,15 @@ class _AddProductPageState extends State<AddProductPage> {
               var products = snapshot.data!.docs;
 
               if (products.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text("No products added yet"),
+                return Center(
+                  child: Column(
+                    children: [
+                       const SizedBox(height: 40),
+                       Icon(Icons.shopping_basket_outlined, size: 64, color: ServiceTheme.border.withOpacity(0.5)),
+                       const SizedBox(height: 16),
+                       const Text("No products cataloged yet.", style: ServiceTheme.body),
+                    ],
+                  ),
                 );
               }
 
@@ -313,71 +301,92 @@ class _AddProductPageState extends State<AddProductPage> {
                 itemCount: products.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  mainAxisSpacing: 15,
-                  crossAxisSpacing: 15,
-                  childAspectRatio: 1.1,
+                  mainAxisSpacing: 24,
+                  crossAxisSpacing: 24,
+                  childAspectRatio: 0.85,
                 ),
                 itemBuilder: (context, index) {
                   var product = products[index];
                   var data = product.data() as Map<String, dynamic>;
 
                   Uint8List? image;
-
                   if (data['image'] != null) {
                     image = base64Decode(data['image']);
                   }
 
                   return Container(
-                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 8,
-                          color: Colors.black.withOpacity(.05),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: ServiceTheme.border.withOpacity(0.5)),
+                      boxShadow: ServiceTheme.softShadow,
                     ),
-
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: image != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.memory(
-                                    image,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: image != null
+                                    ? ClipRRect(
+                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                        child: Image.memory(image, fit: BoxFit.cover),
+                                      )
+                                    : Container(
+                                        decoration: BoxDecoration(
+                                          color: ServiceTheme.background,
+                                          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                        ),
+                                        child: const Icon(Icons.image_not_supported_outlined, color: ServiceTheme.border),
+                                      ),
+                              ),
+                              Positioned(
+                                top: 12,
+                                right: 12,
+                                child: InkWell(
+                                  onTap: () async {
+                                    await FirebaseFirestore.instance
+                                        .collection('products')
+                                        .doc(product.id)
+                                        .delete();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.5),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 18),
                                   ),
-                                )
-                              : const Icon(Icons.image),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          data['productName'],
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-
-                        Text(
-                          "₹ ${data['price']}",
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            await FirebaseFirestore.instance
-                                .collection('products')
-                                .doc(product.id)
-                                .delete();
-                          },
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                data['productName'],
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: ServiceTheme.textPrimary),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "₹${data['price']}",
+                                style: const TextStyle(
+                                  color: ServiceTheme.accent,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -386,6 +395,7 @@ class _AddProductPageState extends State<AddProductPage> {
               );
             },
           ),
+          const SizedBox(height: 40),
         ],
       ),
     );
