@@ -1,42 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/vehicle_owner/pages/center_detail_page.dart';
-import 'package:gear_up/vehicle_owner/pages/service_center_search_page.dart';
 
-class BrowseCentersPage extends StatelessWidget {
-  const BrowseCentersPage({super.key});
+class ServiceCenterSearchPage extends StatefulWidget {
+  const ServiceCenterSearchPage({super.key});
+
+  @override
+  State<ServiceCenterSearchPage> createState() => _ServiceCenterSearchPageState();
+}
+
+class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFEFF6FF),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF2563EB),
-        title: const Text(
-          "Service Centers",
-          style: TextStyle(color: Colors.white),
-        ),
         iconTheme: const IconThemeData(color: Colors.white),
+        title: TextField(
+          controller: _searchController,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: "Search Service Center...",
+            hintStyle: TextStyle(color: Colors.white70),
+            border: InputBorder.none,
+          ),
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value.trim();
+            });
+          },
+        ),
+        actions: [
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.clear, color: Colors.white),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = "";
+                });
+              },
+            ),
+        ],
       ),
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF2563EB),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ServiceCenterSearchPage()),
-          );
-        },
-        child: const Icon(Icons.search, color: Colors.white),
-      ),
-
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('service_center_details')
             .where('status', isEqualTo: 'approved')
             .snapshots(),
-
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -51,12 +73,25 @@ class BrowseCentersPage extends StatelessWidget {
             );
           }
 
-          var centers = snapshot.data!.docs;
+          // Filter data locally for case-insensitive search
+          var centers = snapshot.data!.docs.where((doc) {
+            var data = doc.data() as Map<String, dynamic>;
+            var companyName = (data['companyName'] ?? "").toString().toLowerCase();
+            return companyName.contains(_searchQuery.toLowerCase());
+          }).toList();
+
+          if (centers.isEmpty) {
+            return const Center(
+              child: Text(
+                "No service centers found matching your search.",
+                style: TextStyle(fontSize: 16),
+              ),
+            );
+          }
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: centers.length,
-
             itemBuilder: (context, index) {
               var doc = centers[index];
               var data = doc.data() as Map<String, dynamic>;
@@ -66,7 +101,6 @@ class BrowseCentersPage extends StatelessWidget {
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
-
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -77,10 +111,8 @@ class BrowseCentersPage extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-
                   onTap: () {
                     Navigator.push(
                       context,
@@ -92,10 +124,8 @@ class BrowseCentersPage extends StatelessWidget {
                       ),
                     );
                   },
-
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -113,9 +143,7 @@ class BrowseCentersPage extends StatelessWidget {
                                 color: Color(0xFF2563EB),
                               ),
                             ),
-
                             const SizedBox(width: 12),
-
                             Expanded(
                               child: Text(
                                 data['companyName'] ?? "Service Center",
@@ -125,7 +153,6 @@ class BrowseCentersPage extends StatelessWidget {
                                 ),
                               ),
                             ),
-
                             const Icon(
                               Icons.arrow_forward_ios,
                               size: 16,
@@ -133,9 +160,7 @@ class BrowseCentersPage extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 10),
-
                         /// RATING
                         Row(
                           children: [
@@ -144,27 +169,21 @@ class BrowseCentersPage extends StatelessWidget {
                               color: Colors.amber,
                               size: 18,
                             ),
-
                             const SizedBox(width: 4),
-
                             Text(
                               rating.toStringAsFixed(1),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-
                             const SizedBox(width: 6),
-
                             Text(
                               "($totalRatings reviews)",
                               style: const TextStyle(color: Colors.grey),
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 10),
-
                         /// LOCATION
                         Row(
                           children: [
@@ -182,9 +201,7 @@ class BrowseCentersPage extends StatelessWidget {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 10),
-
                         /// DESCRIPTION
                         Text(
                           data['description'] ?? "",
@@ -204,4 +221,3 @@ class BrowseCentersPage extends StatelessWidget {
     );
   }
 }
-////
