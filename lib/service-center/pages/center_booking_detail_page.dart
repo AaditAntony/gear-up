@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:gear_up/service-center/widgets/service_theme.dart';
+import 'package:gear_up/services/notification_service.dart';
 
 class CenterBookingDetailPage extends StatefulWidget {
   final String bookingId;
@@ -46,6 +47,14 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
           ]),
         });
 
+    // Notify user
+    await NotificationService.sendNotification(
+      userId: widget.bookingData['userId'],
+      title: "Service update: ${titleController.text.trim()}",
+      message: descriptionController.text.trim(),
+      bookingId: widget.bookingId,
+    );
+
     titleController.clear();
     descriptionController.clear();
   }
@@ -55,6 +64,24 @@ class _CenterBookingDetailPageState extends State<CenterBookingDetailPage> {
         .collection('bookings')
         .doc(widget.bookingId)
         .update({"status": newStatus});
+
+    // Notify user
+    String title = "Booking Status Updated";
+    String message = "Your vehicle booking is now $newStatus.";
+    if (newStatus == "in_progress") {
+      title = "Service Started";
+      message = "The service center has started working on your vehicle.";
+    } else if (newStatus == "completed") {
+      title = "Service Completed";
+      message = "Your vehicle service is finished and ready for pickup.";
+    }
+
+    await NotificationService.sendNotification(
+      userId: widget.bookingData['userId'],
+      title: title,
+      message: message,
+      bookingId: widget.bookingId,
+    );
 
     if (!mounted) return;
 
