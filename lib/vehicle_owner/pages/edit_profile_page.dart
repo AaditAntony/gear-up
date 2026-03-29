@@ -82,84 +82,117 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(backgroundColor: Color(0xFFF8FAFC), body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         title: const Text(
           "Edit Profile",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
+        ),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
         ),
       ),
-
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-
+        padding: const EdgeInsets.all(24),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
             /// HEADER ICON
-            const CircleAvatar(
-              radius: 35,
-              backgroundColor: Color(0xFF2563EB),
-              child: Icon(Icons.edit, color: Colors.white, size: 30),
-            ),
-
-            const SizedBox(height: 20),
-
-            /// FORM CARD
             Container(
-              padding: const EdgeInsets.all(16),
-
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withOpacity(.05),
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
+              child: const Icon(Icons.person_outline_rounded, color: Color(0xFF3B82F6), size: 40),
+            ),
 
+            const SizedBox(height: 32),
+
+            /// FORM CARD
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                border: Border.all(color: const Color(0xFFF1F5F9)),
+              ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildField(nameController, "Name"),
-                  _buildField(phoneController, "Phone"),
-                  _buildField(addressController, "Address"),
-
-                  const SizedBox(height: 10),
-
+                  _buildLabel("FULL NAME"),
+                  _buildField(nameController, "Enter your name", Icons.person_rounded),
+                  const SizedBox(height: 20),
+                  _buildLabel("PHONE NUMBER"),
+                  _buildField(phoneController, "Enter phone number", Icons.phone_rounded),
+                  const SizedBox(height: 20),
+                  _buildLabel("ADDRESS"),
+                  _buildField(addressController, "Enter your address", Icons.location_on_rounded),
+                  const SizedBox(height: 20),
+                  _buildLabel("DISTRICT"),
                   DropdownButtonFormField<String>(
                     value: selectedDistrict,
-                    decoration: _inputDecoration("District"),
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
+                    decoration: _inputDecoration("Select District", Icons.map_rounded),
                     items: districts.map((d) {
-                      return DropdownMenuItem(value: d, child: Text(d));
+                      return DropdownMenuItem(
+                        value: d,
+                        child: Text(d, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                      );
                     }).toList(),
                     onChanged: (value) {
                       setState(() => selectedDistrict = value);
                     },
                   ),
-
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 32),
 
                   /// SAVE BUTTON
                   SizedBox(
                     width: double.infinity,
-                    height: 45,
-
+                    height: 56,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        backgroundColor: const Color(0xFF1E293B),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: updateProfile,
-                      child: const Text("Save Changes"),
+                      child: const Text(
+                        "Save Profile Changes",
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 0.5),
+                      ),
                     ),
                   ),
                 ],
@@ -171,20 +204,49 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
   }
 
-  Widget _buildField(TextEditingController controller, String label) {
+  Widget _buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
-        controller: controller,
-        decoration: _inputDecoration(label),
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF94A3B8),
+          letterSpacing: 1.0,
+        ),
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
+  Widget _buildField(TextEditingController controller, String hint, IconData icon) {
+    return TextField(
+      controller: controller,
+      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1E293B)),
+      decoration: _inputDecoration(hint, icon),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint, IconData icon) {
     return InputDecoration(
-      labelText: label,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      hintText: hint,
+      prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 20),
+      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontSize: 14),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      contentPadding: const EdgeInsets.all(18),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
+      ),
     );
   }
 }

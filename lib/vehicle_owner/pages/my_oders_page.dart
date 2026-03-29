@@ -12,13 +12,32 @@ class MyOrdersPage extends StatelessWidget {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
-        title: const Text("My Orders", style: TextStyle(color: Colors.white)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: const Text(
+          "My Orders",
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
+        ),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE2E8F0),
+          ),
+        ),
       ),
-
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('product_orders')
@@ -26,152 +45,160 @@ class MyOrdersPage extends StatelessWidget {
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20),
+                    ]),
+                    child: const Icon(Icons.shopping_bag_outlined, size: 64, color: Color(0xFFCBD5E1)),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "No orders found",
+                    style: TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            );
           }
 
           var orders = snapshot.data!.docs;
 
-          if (orders.isEmpty) {
-            return const Center(child: Text("No product orders yet."));
-          }
-
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
+            physics: const BouncingScrollPhysics(),
             itemCount: orders.length,
-
             itemBuilder: (context, index) {
               var order = orders[index];
               var data = order.data() as Map<String, dynamic>;
-
-              /// 📅 DATE FORMAT
               DateTime date = (data['createdAt'] as Timestamp).toDate();
-
               String formattedDate = "${date.day}/${date.month}/${date.year}";
 
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => InvoicePage(
-                        orderId: order.id,
-                        orderData: {
-                          "productName": data['productName'],
-                          "centerName": data['centerName'],
-                          "price": data['price'],
-                        },
-                      ),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                  );
-                },
-
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 10,
-                        color: Colors.black.withOpacity(.05),
+                  ],
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(24),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => InvoicePage(
+                          orderId: order.id,
+                          orderData: {
+                            "productName": data['productName'],
+                            "centerName": data['centerName'],
+                            "price": data['price'],
+                          },
+                        ),
                       ),
-                    ],
-                  ),
-
+                    );
+                  },
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
-
+                    padding: const EdgeInsets.all(16),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         /// IMAGE
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: data['productImage'] != null
-                              ? Image.memory(
-                                  base64Decode(data['productImage']),
-                                  width: 80,
-                                  height: 80,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  width: 80,
-                                  height: 80,
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(Icons.shopping_bag),
-                                ),
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: const Color(0xFFF1F5F9),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: data['productImage'] != null
+                                ? Image.memory(
+                                    base64Decode(data['productImage']),
+                                    fit: BoxFit.cover,
+                                  )
+                                : const Icon(Icons.shopping_bag_rounded, color: Color(0xFF94A3B8), size: 32),
+                          ),
                         ),
 
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 20),
 
                         /// DETAILS
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              /// NAME
                               Text(
-                                data['productName'],
+                                data['productName'] ?? "Product",
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16,
+                                  color: Color(0xFF1E293B),
+                                  letterSpacing: -0.5,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-
-                              const SizedBox(height: 6),
-
-                              /// SELLER
+                              const SizedBox(height: 4),
                               Text(
                                 "Sold by ${data['centerName']}",
                                 style: const TextStyle(
-                                  color: Colors.grey,
+                                  color: Color(0xFF94A3B8),
                                   fontSize: 13,
+                                  fontWeight: FontWeight.w500,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-
-                              const SizedBox(height: 6),
-
-                              /// DATE
                               Text(
                                 "Date: $formattedDate",
                                 style: const TextStyle(
-                                  color: Colors.grey,
+                                  color: Color(0xFF94A3B8),
                                   fontSize: 12,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-
-                              const SizedBox(height: 10),
-
-                              /// PRICE + STATUS
+                              const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     "₹${data['price']}",
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF2563EB),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 15,
+                                      color: Color(0xFF3B82F6),
                                     ),
                                   ),
-
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.green.withOpacity(.1),
-                                      borderRadius: BorderRadius.circular(20),
+                                      color: const Color(0xFF10B981).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Text(
                                       "PAID",
                                       style: TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                        color: Color(0xFF10B981),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 10,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                   ),
@@ -180,9 +207,6 @@ class MyOrdersPage extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        /// ARROW
-                        const Icon(Icons.arrow_forward_ios, size: 16),
                       ],
                     ),
                   ),
@@ -194,4 +218,5 @@ class MyOrdersPage extends StatelessWidget {
       ),
     );
   }
-}////
+}
+////

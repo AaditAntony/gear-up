@@ -178,152 +178,222 @@ class _BookingPageState extends State<BookingPage> {
     String uid = FirebaseAuth.instance.currentUser!.uid;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         title: const Text(
-          "Book Service",
-          style: TextStyle(color: Colors.white),
+          "Schedule Service",
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE2E8F0),
+          ),
+        ),
       ),
-
       body: Column(
         children: [
-          /// SCROLL
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+              physics: const BouncingScrollPhysics(),
               children: [
-                /// SERVICE SUMMARY
+                /// SERVICE SUMMARY CARD
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB),
-                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1E293B).withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        widget.categoryName,
-                        style: const TextStyle(
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.build_circle_rounded,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          size: 32,
                         ),
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        "₹${widget.price}",
-                        style: const TextStyle(color: Colors.white70),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.categoryName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Estimated Price: ₹${widget.price}",
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.6),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 32),
 
-                /// VEHICLE
-                sectionTitle("Select Vehicle", 1),
-                const SizedBox(height: 8),
-
+                /// FORM SECTIONS
+                _inputHeader("Choose Your Vehicle", 1),
+                const SizedBox(height: 12),
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection('vehicles')
                       .where('userId', isEqualTo: uid)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const CircularProgressIndicator();
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      );
                     }
 
-                    var vehicles = snapshot.data!.docs;
+                    var vehicles = snapshot.data?.docs ?? [];
 
                     return DropdownButtonFormField<String>(
                       value: selectedVehicleId,
-                      hint: const Text("Choose Vehicle"),
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      decoration: _inputDecoration(Icons.directions_car_rounded, "Select vehicle from garage"),
                       items: vehicles.map((doc) {
                         return DropdownMenuItem(
                           value: doc.id,
+                          onTap: () => selectedVehicleNumber = doc['vehicleNumber'],
                           child: Text(doc['vehicleNumber']),
-                          onTap: () {
-                            selectedVehicleNumber = doc['vehicleNumber'];
-                          },
                         );
                       }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedVehicleId = value;
-                        });
-                      },
+                      onChanged: (value) => setState(() => selectedVehicleId = value),
                     );
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                /// ISSUE
-                sectionTitle("Select Issue", 2),
-                const SizedBox(height: 8),
-
+                _inputHeader("Reporting Issue", 2),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedComplaint,
-                  hint: const Text("Choose Problem"),
+                  style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                  decoration: _inputDecoration(Icons.report_problem_rounded, "What's wrong with the vehicle?"),
                   items: complaints.map((c) {
                     return DropdownMenuItem(value: c, child: Text(c));
                   }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedComplaint = value;
-                    });
-                  },
+                  onChanged: (value) => setState(() => selectedComplaint = value),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                /// DATE
-                sectionTitle("Select Date", 3),
-                const SizedBox(height: 8),
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                  ),
-                  onPressed: pickDate,
-                  child: Text(
-                    selectedDate == null
-                        ? "Pick Date"
-                        : selectedDate.toString().split(" ")[0],
+                _inputHeader("Schedule Date", 3),
+                const SizedBox(height: 12),
+                InkWell(
+                  onTap: pickDate,
+                  child: Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today_rounded, color: Color(0xFF64748B), size: 18),
+                        const SizedBox(width: 12),
+                        Text(
+                          selectedDate == null ? "Pick a preferred date" : selectedDate.toString().split(" ")[0],
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: selectedDate == null ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
+                          ),
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF64748B)),
+                      ],
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                /// SLOT
-                sectionTitle("Select Time Slot", 4),
-                const SizedBox(height: 10),
-
+                _inputHeader("Availability Slot", 4),
+                const SizedBox(height: 16),
                 Wrap(
-                  spacing: 8,
+                  spacing: 12,
+                  runSpacing: 12,
                   children: slots.map((slot) {
                     bool isSelected = selectedSlot == slot;
-
-                    return ChoiceChip(
-                      label: Text(slot),
-
-                      backgroundColor: Colors.white,
-                      selected: isSelected,
-                      selectedColor: const Color(0xFF2563EB),
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
+                    return InkWell(
+                      onTap: () => setState(() => selectedSlot = slot),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+                            width: 1.5,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: Text(
+                          slot,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : const Color(0xFF475569),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
-                      onSelected: (_) {
-                        setState(() {
-                          selectedSlot = slot;
-                        });
-                      },
                     );
                   }).toList(),
                 ),
@@ -331,24 +401,91 @@ class _BookingPageState extends State<BookingPage> {
             ),
           ),
 
-          /// BUTTON
+          /// BOTTOM ACTION
           Container(
-            padding: const EdgeInsets.all(16),
-            width: double.infinity,
-
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1E293B),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: isLoading ? null : createBooking,
+                child: isLoading
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                    : const Text(
+                        "Confirm Service Booking",
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 0.5),
+                      ),
               ),
-              onPressed: isLoading ? null : createBooking,
-              child: isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Confirm Booking"),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _inputHeader(String text, int step) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3B82F6).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            "$step",
+            style: const TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w900, fontSize: 11),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          text.toUpperCase(),
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF475569),
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration _inputDecoration(IconData icon, String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontSize: 14),
+      prefixIcon: Icon(icon, color: const Color(0xFF64748B), size: 18),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.all(18),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
       ),
     );
   }
