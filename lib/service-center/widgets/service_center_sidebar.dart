@@ -155,6 +155,7 @@ class ServiceCenterSidebar extends StatelessWidget {
           buildMenuItem(icon: Icons.shopping_bag_rounded, title: "Inventory", index: 3),
           buildMenuItem(icon: Icons.analytics_rounded, title: "Reports", index: 4),
           buildMenuItem(icon: Icons.account_circle_rounded, title: "Management", index: 5),
+          buildMenuItem(icon: Icons.search_rounded, title: "Vehicle Search", index: 6),
 
           const Spacer(),
 
