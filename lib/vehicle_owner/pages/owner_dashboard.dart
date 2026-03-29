@@ -5,6 +5,9 @@ import 'package:gear_up/vehicle_owner/pages/my_bookings_page.dart';
 import 'package:gear_up/vehicle_owner/pages/my_vehicles_page.dart';
 import 'package:gear_up/vehicle_owner/pages/product_page.dart';
 import 'package:gear_up/vehicle_owner/pages/profile_page.dart';
+import 'package:gear_up/services/notification_service.dart';
+import 'package:gear_up/vehicle_owner/pages/notifications_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -46,8 +49,57 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         iconTheme: const IconThemeData(color: Colors.white),
 
         actions: [
+          StreamBuilder<int>(
+            stream: NotificationService.getUnreadCount(
+              FirebaseAuth.instance.currentUser!.uid,
+            ),
+            builder: (context, snapshot) {
+              int unreadCount = snapshot.data ?? 0;
+
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none_rounded),
+                    color: Colors.white,
+                    tooltip: "Notifications",
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => NotificationsPage()),
+                      );
+                    },
+                  ),
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          unreadCount > 9 ? "9+" : "$unreadCount",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
-            icon: const Icon(Icons.shopping_cart),
+            icon: const Icon(Icons.shopping_cart_outlined),
             color: Colors.white,
             tooltip: "Products",
             onPressed: () {

@@ -2,16 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gear_up/service-center/widgets/service_theme.dart';
+import 'package:gear_up/services/notification_service.dart';
 import 'center_booking_detail_page.dart';
 
 class MyBookingsPage extends StatelessWidget {
   const MyBookingsPage({super.key});
 
   Future<void> updateStatus(String bookingId, String status) async {
+    // Get booking data to find user ID
+    var bookingDoc = await FirebaseFirestore.instance
+        .collection('bookings')
+        .doc(bookingId)
+        .get();
+
+    if (!bookingDoc.exists) return;
+    var data = bookingDoc.data()!;
+    String userId = data['userId'];
+
     await FirebaseFirestore.instance
         .collection('bookings')
         .doc(bookingId)
         .update({'status': status});
+
+    // Notify user
+    String title = "Booking Status Updated";
+    String message = "Your vehicle booking status is now $status.";
+    if (status == "accepted") {
+      title = "Booking Approved";
+      message = "The service center has accepted your car's service request.";
+    } else if (status == "rejected") {
+      title = "Booking Rejected";
+      message = "Sorry, your service request has been rejected by the center.";
+    }
+
+    await NotificationService.sendNotification(
+      userId: userId,
+      title: title,
+      message: message,
+      bookingId: bookingId,
+    );
   }
 
   Color statusColor(String status) {
