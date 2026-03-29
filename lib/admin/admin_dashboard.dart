@@ -98,62 +98,97 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Expanded(
             child: Column(
               children: [
-                /// TOP HEADER BAR
+                /// TOP HEADER BAR (Modernized)
                 Container(
-                  height: 70,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  decoration: const BoxDecoration(
+                  height: 80,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFE2E8F0)),
-                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.02),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Admin Dashboard",
-                        style: TextStyle(
-                          color: Color(0xFF1E293B),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B).withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.settings_suggest_rounded,
+                              color: Color(0xFF1E293B),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          const Text(
+                            "Control Center",
+                            style: TextStyle(
+                              color: Color(0xFF1E293B),
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
                       ),
 
                       Row(
                         children: [
+                          /// ADMIN BADGE
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: 16,
+                              vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B).withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(8),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF1E293B), Color(0xFF334155)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF1E293B).withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: Row(
                               children: [
                                 const Icon(
-                                  Icons.admin_panel_settings,
-                                  color: Color(0xFF1E293B),
-                                  size: 20,
+                                  Icons.shield_rounded,
+                                  color: Color(0xFF3B82F6),
+                                  size: 16,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Text(
-                                  isSuperAdmin ? "Super Admin" : "Admin",
+                                  isSuperAdmin ? "SUPER ADMIN" : "ADMINISTRATOR",
                                   style: const TextStyle(
-                                    color: Color(0xFF1E293B),
-                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 11,
+                                    letterSpacing: 1.0,
                                   ),
                                 ),
                               ],
                             ),
                           ),
 
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 24),
 
+                          /// LOGOUT BUTTON
                           IconButton(
-                            icon: const Icon(Icons.logout),
+                            icon: const Icon(Icons.power_settings_new_rounded),
                             color: Colors.redAccent,
                             onPressed: () async {
                               await FirebaseAuth.instance.signOut();

@@ -44,10 +44,10 @@ class ProfilePage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.1),
+              color: const Color(0xFF2563EB).withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: const Color(0xFF3B82F6), size: 22),
+            child: Icon(icon, color: const Color(0xFF2563EB), size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -69,7 +69,7 @@ class ProfilePage extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
-                    color: Color(0xFF1E293B),
+                    color: Color(0xFF2563EB),
                   ),
                 ),
               ],
@@ -105,7 +105,7 @@ class ProfilePage extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
                 ),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(32),
@@ -133,7 +133,7 @@ class ProfilePage extends StatelessWidget {
                         child: Icon(
                           Icons.person_rounded,
                           size: 48,
-                          color: const Color(0xFF1E293B).withOpacity(0.8),
+                          color: const Color(0xFF2563EB).withOpacity(0.8),
                         ),
                       ),
                     ),
@@ -262,7 +262,7 @@ class ProfilePage extends StatelessWidget {
           width: 4,
           height: 16,
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6),
+            color: const Color(0xFF2563EB),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -287,7 +287,7 @@ class ProfilePage extends StatelessWidget {
     required VoidCallback onTap,
     bool isDestructive = false,
   }) {
-    Color primaryColor = isDestructive ? Colors.redAccent : const Color(0xFF1E293B);
+    Color primaryColor = isDestructive ? Colors.redAccent : const Color(0xFF2563EB);
 
     return Container(
       decoration: BoxDecoration(

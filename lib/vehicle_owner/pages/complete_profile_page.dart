@@ -139,7 +139,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                 width: 4,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF2563EB),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -149,7 +149,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF1E293B),
+                  color: Color(0xFF2563EB),
                   letterSpacing: 0.5,
                 ),
               ),
@@ -173,7 +173,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         title: const Text(
           "Complete Your Profile",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -300,10 +300,10 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
-                      foregroundColor: const Color(0xFF1E293B),
+                      foregroundColor: const Color(0xFF2563EB),
                     ),
                     onPressed: pickServiceDate,
-                    icon: const Icon(Icons.event_rounded, color: Color(0xFF3B82F6), size: 20),
+                    icon: const Icon(Icons.event_rounded, color: Color(0xFF2563EB), size: 20),
                     label: Text(
                       lastServiceDate == null
                           ? "Select Date"
@@ -321,7 +321,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
               height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E293B),
+                  backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -375,7 +375,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
       ),
     );
   }

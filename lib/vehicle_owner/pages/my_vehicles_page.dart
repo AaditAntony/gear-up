@@ -124,7 +124,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                         width: 4,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF2563EB),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -134,7 +134,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: Color(0xFF2563EB),
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -153,11 +153,11 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
+                  color: const Color(0xFF2563EB),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF1E293B).withOpacity(0.2),
+                      color: const Color(0xFF2563EB).withOpacity(0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -198,7 +198,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E293B),
+                          backgroundColor: const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -252,12 +252,12 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                  color: const Color(0xFF2563EB).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Icon(
                                   Icons.directions_car_rounded,
-                                  color: Color(0xFF3B82F6),
+                                  color: Color(0xFF2563EB),
                                   size: 28,
                                 ),
                               ),
@@ -271,7 +271,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF1E293B),
+                                        color: Color(0xFF2563EB),
                                         letterSpacing: -0.3,
                                       ),
                                     ),
@@ -441,7 +441,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: isWarning ? Colors.redAccent : const Color(0xFF1E293B),
+                color: isWarning ? Colors.redAccent : const Color(0xFF2563EB),
               ),
             ),
           ],
@@ -487,7 +487,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
+            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
           ),
         ),
       ),
@@ -527,7 +527,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF0F172A),
+                            color: Color(0xFF2563EB),
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -581,6 +581,10 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
                           ),
                         ),
                         items: const [
@@ -658,7 +662,7 @@ class _MyVehiclesPageState extends State<MyVehiclesPage> {
                       height: 56,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E293B),
+                          backgroundColor: const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

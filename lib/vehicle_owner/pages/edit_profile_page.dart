@@ -94,7 +94,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         title: const Text(
           "Edit Profile",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -102,7 +102,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -128,7 +128,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.person_outline_rounded, color: Color(0xFF3B82F6), size: 40),
+              child: const Icon(Icons.person_outline_rounded, color: Color(0xFF2563EB), size: 40),
             ),
 
             const SizedBox(height: 32),
@@ -183,7 +183,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     height: 56,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E293B),
+                        backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -245,7 +245,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
       ),
     );
   }

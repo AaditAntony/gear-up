@@ -20,7 +20,7 @@ class MyOrdersPage extends StatelessWidget {
         title: const Text(
           "My Orders",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -28,7 +28,7 @@ class MyOrdersPage extends StatelessWidget {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -149,7 +149,7 @@ class MyOrdersPage extends StatelessWidget {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 16,
-                                  color: Color(0xFF1E293B),
+                                  color: Color(0xFF2563EB),
                                   letterSpacing: -0.5,
                                 ),
                                 maxLines: 1,
@@ -183,7 +183,7 @@ class MyOrdersPage extends StatelessWidget {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 15,
-                                      color: Color(0xFF3B82F6),
+                                      color: Color(0xFF2563EB),
                                     ),
                                   ),
                                   Container(

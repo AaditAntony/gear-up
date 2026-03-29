@@ -185,10 +185,10 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF2563EB).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.directions_car_rounded, color: Color(0xFF3B82F6), size: 24),
+                  child: const Icon(Icons.directions_car_rounded, color: Color(0xFF2563EB), size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -200,7 +200,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF1E293B),
+                          color: Color(0xFF2563EB),
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -298,11 +298,11 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.store_rounded, color: Color(0xFF3B82F6), size: 20),
+                        child: const Icon(Icons.store_rounded, color: Color(0xFF2563EB), size: 20),
                       ),
                       title: Text(
                         center['companyName'],
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF1E293B)),
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF2563EB)),
                       ),
                       subtitle: Row(
                         children: [
@@ -351,7 +351,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w900,
-            color: isScore ? const Color(0xFF3B82F6) : const Color(0xFF1E293B),
+            color: isScore ? const Color(0xFF2563EB) : const Color(0xFF2563EB),
           ),
         ),
       ],
@@ -369,7 +369,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         title: const Text(
           "AI Vehicle Assistant",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -377,7 +377,7 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -394,12 +394,12 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                     decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
                       BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20),
                     ]),
-                    child: const CircularProgressIndicator(color: Color(0xFF3B82F6), strokeWidth: 5),
+                    child: const CircularProgressIndicator(color: Color(0xFF2563EB), strokeWidth: 5),
                   ),
                   const SizedBox(height: 32),
                   const Text(
                     "AI Analysis in Progress...",
-                    style: TextStyle(color: Color(0xFF1E293B), fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                    style: TextStyle(color: Color(0xFF2563EB), fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -417,10 +417,10 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: const Color(0xFF2563EB),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
-                      BoxShadow(color: const Color(0xFF1E293B).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                      BoxShadow(color: const Color(0xFF2563EB).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
                     ],
                   ),
                   child: Row(

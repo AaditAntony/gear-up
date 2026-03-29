@@ -186,7 +186,7 @@ class _BookingPageState extends State<BookingPage> {
         title: const Text(
           "Schedule Service",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -194,7 +194,7 @@ class _BookingPageState extends State<BookingPage> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -218,12 +218,12 @@ class _BookingPageState extends State<BookingPage> {
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                      colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
                     ),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF1E293B).withOpacity(0.2),
+                        color: const Color(0xFF2563EB).withOpacity(0.2),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -295,7 +295,7 @@ class _BookingPageState extends State<BookingPage> {
 
                     return DropdownButtonFormField<String>(
                       value: selectedVehicleId,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
                       decoration: _inputDecoration(Icons.directions_car_rounded, "Select vehicle from garage"),
                       items: vehicles.map((doc) {
                         return DropdownMenuItem(
@@ -315,7 +315,7 @@ class _BookingPageState extends State<BookingPage> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedComplaint,
-                  style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                  style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
                   decoration: _inputDecoration(Icons.report_problem_rounded, "What's wrong with the vehicle?"),
                   items: complaints.map((c) {
                     return DropdownMenuItem(value: c, child: Text(c));
@@ -344,7 +344,7 @@ class _BookingPageState extends State<BookingPage> {
                           selectedDate == null ? "Pick a preferred date" : selectedDate.toString().split(" ")[0],
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: selectedDate == null ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
+                            color: selectedDate == null ? const Color(0xFF94A3B8) : const Color(0xFF2563EB),
                           ),
                         ),
                         const Spacer(),
@@ -369,16 +369,16 @@ class _BookingPageState extends State<BookingPage> {
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
+                          color: isSelected ? const Color(0xFF2563EB) : Colors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE2E8F0),
+                            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
                             width: 1.5,
                           ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFF3B82F6).withOpacity(0.3),
+                                    color: const Color(0xFF2563EB).withOpacity(0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   )
@@ -419,7 +419,7 @@ class _BookingPageState extends State<BookingPage> {
               height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E293B),
+                  backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -445,12 +445,12 @@ class _BookingPageState extends State<BookingPage> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6).withOpacity(0.1),
+            color: const Color(0xFF2563EB).withOpacity(0.1),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             "$step",
-            style: const TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w900, fontSize: 11),
+            style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w900, fontSize: 11),
           ),
         ),
         const SizedBox(width: 10),
@@ -485,7 +485,7 @@ class _BookingPageState extends State<BookingPage> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
       ),
     );
   }

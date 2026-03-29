@@ -125,7 +125,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         title: const Text(
           "Product Details",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -133,7 +133,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -195,7 +195,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     style: const TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1E293B),
+                                      color: Color(0xFF2563EB),
                                       letterSpacing: -0.8,
                                     ),
                                   ),
@@ -205,10 +205,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       Container(
                                         padding: const EdgeInsets.all(6),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                          color: const Color(0xFF2563EB).withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: const Icon(Icons.store_rounded, size: 14, color: Color(0xFF3B82F6)),
+                                        child: const Icon(Icons.store_rounded, size: 14, color: Color(0xFF2563EB)),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
@@ -250,7 +250,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 style: const TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w900,
-                                  color: Color(0xFF3B82F6),
+                                  color: Color(0xFF2563EB),
                                   letterSpacing: -0.5,
                                 ),
                               ),
@@ -263,7 +263,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF1E293B),
+                            color: Color(0xFF2563EB),
                             letterSpacing: -0.3,
                           ),
                         ),
@@ -304,7 +304,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E293B),
+                  backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

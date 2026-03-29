@@ -92,7 +92,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    colors: [Color(0xFF2563EB), Color(0xFF1E40AF)],
                   ),
                 ),
                 child: Center(
@@ -153,7 +153,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
+                                color: const Color(0xFF2563EB),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Icon(Icons.settings_suggest_rounded, color: Colors.white, size: 32),
@@ -166,7 +166,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1E293B),
+                                color: Color(0xFF2563EB),
                                 letterSpacing: -1.0,
                               ),
                             ),
@@ -179,7 +179,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF1E293B),
+                            color: Color(0xFF2563EB),
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -219,7 +219,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
                           height: 56,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1E293B),
+                              backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -257,7 +257,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
                               },
                               child: const Text(
                                 "Create Account",
-                                style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.w800),
+                                style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w800),
                               ),
                             ),
                           ],
@@ -307,7 +307,7 @@ class _OwnerLoginPageState extends State<OwnerLoginPage> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF1E293B), width: 1.5),
+        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
       ),
     );
   }

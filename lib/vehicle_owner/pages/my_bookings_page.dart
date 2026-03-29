@@ -69,7 +69,7 @@ class MyBookingsPage extends StatelessWidget {
                     width: 4,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF2563EB),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -79,7 +79,7 @@ class MyBookingsPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: Color(0xFF2563EB),
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -162,12 +162,12 @@ class MyBookingsPage extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                  color: const Color(0xFF2563EB).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: const Icon(
                                   Icons.store_rounded,
-                                  color: Color(0xFF3B82F6),
+                                  color: Color(0xFF2563EB),
                                   size: 24,
                                 ),
                               ),
@@ -181,7 +181,7 @@ class MyBookingsPage extends StatelessWidget {
                                       style: const TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF1E293B),
+                                        color: Color(0xFF2563EB),
                                         letterSpacing: -0.3,
                                       ),
                                     ),
@@ -228,7 +228,7 @@ class MyBookingsPage extends StatelessWidget {
                               Expanded(
                                 child: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF1E293B),
+                                    backgroundColor: const Color(0xFF2563EB),
                                     foregroundColor: Colors.white,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(vertical: 14),

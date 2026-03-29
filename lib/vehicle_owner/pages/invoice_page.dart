@@ -21,7 +21,7 @@ class InvoicePage extends StatelessWidget {
         title: const Text(
           "Payment Invoice",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -29,7 +29,7 @@ class InvoicePage extends StatelessWidget {
         ),
         leading: IconButton(
           onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
-          icon: const Icon(Icons.close_rounded, color: Color(0xFF0F172A), size: 24),
+          icon: const Icon(Icons.close_rounded, color: Color(0xFF2563EB), size: 24),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -67,7 +67,7 @@ class InvoicePage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF1E293B),
+                      color: Color(0xFF2563EB),
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -153,7 +153,7 @@ class InvoicePage extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
-                            color: Color(0xFF1E293B),
+                            color: Color(0xFF2563EB),
                           ),
                         ),
                         Text(
@@ -161,7 +161,7 @@ class InvoicePage extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
-                            color: Color(0xFF3B82F6),
+                            color: Color(0xFF2563EB),
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -180,7 +180,7 @@ class InvoicePage extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E293B),
+                    backgroundColor: const Color(0xFF2563EB),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -216,7 +216,7 @@ class InvoicePage extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontSize: 14),
+              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF2563EB), fontSize: 14),
             ),
           ),
         ],

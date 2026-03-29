@@ -11,7 +11,7 @@ class BrowseCentersPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: const Color(0xFF2563EB),
         onPressed: () {
           Navigator.push(
             context,
@@ -36,7 +36,7 @@ class BrowseCentersPage extends StatelessWidget {
                       width: 4,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF2563EB),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -46,7 +46,7 @@ class BrowseCentersPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
+                        color: Color(0xFF2563EB),
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -150,12 +150,12 @@ class BrowseCentersPage extends StatelessWidget {
                                       Container(
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                          color: const Color(0xFF2563EB).withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(16),
                                         ),
                                         child: const Icon(
                                           Icons.business_rounded,
-                                          color: Color(0xFF3B82F6),
+                                          color: Color(0xFF2563EB),
                                           size: 28,
                                         ),
                                       ),
@@ -169,7 +169,7 @@ class BrowseCentersPage extends StatelessWidget {
                                               style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w800,
-                                                color: Color(0xFF1E293B),
+                                                color: Color(0xFF2563EB),
                                                 letterSpacing: -0.3,
                                               ),
                                             ),
@@ -203,7 +203,7 @@ class BrowseCentersPage extends StatelessWidget {
                                   /// LOCATION
                                   Row(
                                     children: [
-                                      const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF3B82F6)),
+                                      const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF2563EB)),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(

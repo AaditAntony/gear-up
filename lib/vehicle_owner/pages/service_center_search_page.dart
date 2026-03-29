@@ -28,7 +28,7 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
         backgroundColor: Colors.white,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         title: Container(
           height: 48,
@@ -39,7 +39,7 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
           child: TextField(
             controller: _searchController,
             autofocus: true,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
             decoration: InputDecoration(
               hintText: "Search for centers...",
               hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
@@ -132,10 +132,10 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                color: const Color(0xFF2563EB).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: const Icon(Icons.business_rounded, color: Color(0xFF3B82F6), size: 24),
+                              child: const Icon(Icons.business_rounded, color: Color(0xFF2563EB), size: 24),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -147,7 +147,7 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w900,
-                                      color: Color(0xFF1E293B),
+                                      color: Color(0xFF2563EB),
                                       letterSpacing: -0.5,
                                     ),
                                   ),

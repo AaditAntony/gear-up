@@ -42,7 +42,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
+              color: const Color(0xFF2563EB),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -55,7 +55,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             const Text(
               "GearUp",
               style: TextStyle(
-                color: Color(0xFF0F172A),
+                color: Color(0xFF2563EB),
                 fontWeight: FontWeight.w900,
                 fontSize: 22,
                 letterSpacing: -0.5,
@@ -170,7 +170,7 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
               type: BottomNavigationBarType.fixed,
               backgroundColor: Colors.transparent,
               elevation: 0,
-              selectedItemColor: const Color(0xFF3B82F6),
+              selectedItemColor: const Color(0xFF2563EB),
               unselectedItemColor: const Color(0xFF94A3B8),
               selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
               unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),

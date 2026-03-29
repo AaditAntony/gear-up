@@ -24,7 +24,7 @@ class CenterDetailPage extends StatelessWidget {
         title: Text(
           centerData['companyName'] ?? "Service Center",
           style: const TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -32,7 +32,7 @@ class CenterDetailPage extends StatelessWidget {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -71,12 +71,12 @@ class CenterDetailPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6).withOpacity(0.1),
+                          color: const Color(0xFF2563EB).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(
                           Icons.business_rounded,
-                          color: Color(0xFF3B82F6),
+                          color: Color(0xFF2563EB),
                           size: 28,
                         ),
                       ),
@@ -90,7 +90,7 @@ class CenterDetailPage extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF1E293B),
+                                color: Color(0xFF2563EB),
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -129,7 +129,7 @@ class CenterDetailPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E293B),
+                      color: Color(0xFF2563EB),
                       letterSpacing: 0.2,
                     ),
                   ),
@@ -162,8 +162,8 @@ class CenterDetailPage extends StatelessWidget {
                           }
                         },
                         style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6).withOpacity(0.05),
-                          foregroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF2563EB).withOpacity(0.05),
+                          foregroundColor: const Color(0xFF2563EB),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
@@ -188,7 +188,7 @@ class CenterDetailPage extends StatelessWidget {
                     width: 4,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
+                      color: const Color(0xFF2563EB),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -198,7 +198,7 @@ class CenterDetailPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E293B),
+                      color: Color(0xFF2563EB),
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -281,14 +281,14 @@ class CenterDetailPage extends StatelessWidget {
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 15,
-                                    color: Color(0xFF1E293B),
+                                    color: Color(0xFF2563EB),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   "₹ ${sData['price']}",
                                   style: const TextStyle(
-                                    color: Color(0xFF3B82F6),
+                                    color: Color(0xFF2563EB),
                                     fontWeight: FontWeight.w900,
                                     fontSize: 16,
                                   ),
@@ -298,7 +298,7 @@ class CenterDetailPage extends StatelessWidget {
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1E293B),
+                              backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

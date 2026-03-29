@@ -36,7 +36,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         title: const Text(
           "Notifications",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF2563EB),
             fontWeight: FontWeight.w900,
             fontSize: 18,
             letterSpacing: -0.5,
@@ -44,7 +44,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -121,7 +121,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     ),
                   ],
                   border: Border.all(
-                    color: isRead ? const Color(0xFFF1F5F9) : const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: isRead ? const Color(0xFFF1F5F9) : const Color(0xFF2563EB).withOpacity(0.1),
                     width: isRead ? 1 : 1.5,
                   ),
                 ),
@@ -132,12 +132,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isRead ? const Color(0xFFF8FAFC) : const Color(0xFF3B82F6).withOpacity(0.1),
+                          color: isRead ? const Color(0xFFF8FAFC) : const Color(0xFF2563EB).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           _getIcon(data['title']),
-                          color: isRead ? const Color(0xFF94A3B8) : const Color(0xFF3B82F6),
+                          color: isRead ? const Color(0xFF94A3B8) : const Color(0xFF2563EB),
                           size: 24,
                         ),
                       ),
@@ -149,7 +149,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             width: 10,
                             height: 10,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6),
+                              color: const Color(0xFF2563EB),
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
@@ -162,7 +162,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     style: TextStyle(
                       fontWeight: isRead ? FontWeight.w700 : FontWeight.w900,
                       fontSize: 15,
-                      color: isRead ? const Color(0xFF475569) : const Color(0xFF1E293B),
+                      color: isRead ? const Color(0xFF475569) : const Color(0xFF2563EB),
                       letterSpacing: -0.3,
                     ),
                   ),
