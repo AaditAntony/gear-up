@@ -114,159 +114,205 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   @override
   Widget build(BuildContext context) {
     Uint8List? image;
-
-    if (widget.productData['image'] != null) {
-      image = base64Decode(widget.productData['image']);
-    }
+    if (widget.productData['image'] != null) image = base64Decode(widget.productData['image']);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
-        title: Text(
-          widget.productData['productName'],
-          style: const TextStyle(color: Colors.white),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: const Text(
+          "Product Details",
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
+        ),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE2E8F0),
+          ),
         ),
       ),
-
       body: Column(
         children: [
-          /// CONTENT
           Expanded(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// IMAGE
-                  if (image != null)
-                    Container(
-                      margin: const EdgeInsets.all(16),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.memory(
-                          image,
-                          height: 220,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    )
-                  else
-                    Container(
-                      margin: const EdgeInsets.all(16),
-                      height: 220,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Center(child: Icon(Icons.image, size: 50)),
-                    ),
-
-                  /// DETAILS
+                  /// IMAGE SECTION
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(16),
+                    width: double.infinity,
+                    height: 300,
+                    margin: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(32),
                       boxShadow: [
                         BoxShadow(
-                          blurRadius: 10,
-                          color: Colors.black.withOpacity(.05),
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
                       ],
+                      border: Border.all(color: const Color(0xFFF1F5F9)),
                     ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: image != null
+                          ? Image.memory(image, fit: BoxFit.cover)
+                          : const Center(child: Icon(Icons.image_outlined, color: Color(0xFFCBD5E1), size: 60)),
+                    ),
+                  ),
+
+                  /// PRODUCT INFO
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.productData['productName'],
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.store, color: Colors.grey),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.productData['centerName'],
-                              style: const TextStyle(color: Colors.grey),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.productData['productName'] ?? "Product Name",
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF2563EB),
+                                      letterSpacing: -0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF2563EB).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: const Icon(Icons.store_rounded, size: 14, color: Color(0xFF2563EB)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        widget.productData['centerName'] ?? "GearUp Seller",
+                                        style: const TextStyle(
+                                          color: Color(0xFF64748B),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-
-                        const SizedBox(height: 15),
-
-                        Text(
-                          "₹${widget.productData['price']}",
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2563EB),
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9).withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            children: [
+                              const Text(
+                                "Price",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF94A3B8),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                "₹${widget.productData['price']}",
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF2563EB),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// DESCRIPTION
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                        const SizedBox(height: 32),
                         const Text(
                           "Description",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF2563EB),
+                            letterSpacing: -0.3,
+                          ),
                         ),
-                        const SizedBox(height: 10),
-                        Text(widget.productData['description']),
+                        const SizedBox(height: 12),
+                        Text(
+                          widget.productData['description'] ?? "No description available for this product.",
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 15,
+                            height: 1.6,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 100),
                 ],
               ),
             ),
           ),
 
-          /// BUY BUTTON
+          /// BUY NOW BUTTON
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, -5),
+                ),
               ],
             ),
             child: SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: openPayment,
                 child: const Text(
                   "Buy Now",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 0.5),
                 ),
               ),
             ),

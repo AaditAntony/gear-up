@@ -152,189 +152,298 @@ class _AIRecommendationPageState extends State<AIRecommendationPage> {
 
   Widget buildVehicle(Map<String, dynamic> vehicle) {
     Color color;
-
     if (vehicle['health'] == "Good") {
-      color = Colors.green;
+      color = const Color(0xFF10B981);
     } else if (vehicle['health'] == "Moderate") {
-      color = Colors.orange;
+      color = const Color(0xFFF59E0B);
     } else {
-      color = Colors.red;
+      color = const Color(0xFFEF4444);
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
+        border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// HEADER
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB).withOpacity(.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.directions_car,
-                  color: Color(0xFF2563EB),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Expanded(
-                child: Text(
-                  vehicle['vehicleNumber'],
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2563EB).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  child: const Icon(Icons.directions_car_rounded, color: Color(0xFF2563EB), size: 24),
                 ),
-              ),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  vehicle['health'],
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(
-            "${vehicle['brand']} ${vehicle['model']}",
-            style: const TextStyle(color: Colors.grey),
-          ),
-
-          const SizedBox(height: 10),
-
-          Text("Age: ${vehicle['age']} years"),
-          Text("Mileage: ${vehicle['mileage']} km"),
-          Text("Score: ${vehicle['score']}/100"),
-
-          const SizedBox(height: 15),
-
-          /// SERVICES
-          const Text(
-            "Recommended Services",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-
-          const SizedBox(height: 8),
-
-          Wrap(
-            spacing: 8,
-            children: vehicle['recommendations']
-                .map<Widget>(
-                  (service) => Chip(
-                    label: Text(service),
-                    backgroundColor: const Color(0xFF2563EB).withOpacity(.1),
-                  ),
-                )
-                .toList(),
-          ),
-
-          const SizedBox(height: 15),
-
-          /// CENTERS
-          if (vehicle['centers'].isNotEmpty) ...[
-            const Text(
-              "Top Service Centers",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            const SizedBox(height: 8),
-
-            ...vehicle['centers'].take(3).map<Widget>((center) {
-              double rating = (center['avgRating'] ?? 0).toDouble();
-
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.store, color: Color(0xFF2563EB)),
-                title: Text(center['companyName']),
-                subtitle: Text("Rating ${rating.toStringAsFixed(1)}"),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CenterDetailPage(
-                        centerId: center['uid'],
-                        centerData: Map<String, dynamic>.from(center),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        vehicle['vehicleNumber'],
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF2563EB),
+                          letterSpacing: -0.5,
+                        ),
                       ),
+                      Text(
+                        "${vehicle['brand']} ${vehicle['model']}",
+                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.2)),
+                  ),
+                  child: Text(
+                    vehicle['health'].toUpperCase(),
+                    style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// STATS
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _statItem("Age", "${vehicle['age']} Yrs"),
+                    _statItem("Mileage", "${vehicle['mileage']} Km"),
+                    _statItem("Score", "${vehicle['score']}/100", isScore: true),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                /// RECOMMENDATIONS
+                const Text(
+                  "RECOMMENDED SERVICES",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF94A3B8),
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: vehicle['recommendations']
+                      .map<Widget>(
+                        (service) => Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            service,
+                            style: const TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w700, fontSize: 12),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+
+                const SizedBox(height: 24),
+
+                /// CENTERS
+                if (vehicle['centers'].isNotEmpty) ...[
+                  const Text(
+                    "TOP SERVICE CENTERS",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF94A3B8),
+                      letterSpacing: 1.0,
                     ),
-                  );
-                },
-              );
-            }).toList(),
-          ],
+                  ),
+                  const SizedBox(height: 8),
+                  ...vehicle['centers'].take(3).map<Widget>((center) {
+                    double rating = (center['avgRating'] ?? 0).toDouble();
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.store_rounded, color: Color(0xFF2563EB), size: 20),
+                      ),
+                      title: Text(
+                        center['companyName'],
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF2563EB)),
+                      ),
+                      subtitle: Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: Colors.amber, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            rating.toStringAsFixed(1),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFFCBD5E1)),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CenterDetailPage(
+                              centerId: center['uid'],
+                              centerData: Map<String, dynamic>.from(center),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _statItem(String label, String value, {bool isScore = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF94A3B8), letterSpacing: 0.5),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            color: isScore ? const Color(0xFF2563EB) : const Color(0xFF2563EB),
+          ),
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         title: const Text(
           "AI Vehicle Assistant",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
+        ),
       ),
-
       body: isThinking
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 20),
-                  Text("AI is analyzing your vehicles..."),
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20),
+                    ]),
+                    child: const CircularProgressIndicator(color: Color(0xFF2563EB), strokeWidth: 5),
+                  ),
+                  const SizedBox(height: 32),
+                  const Text(
+                    "AI Analysis in Progress...",
+                    style: TextStyle(color: Color(0xFF2563EB), fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Reviewing your vehicle records",
+                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
             )
           : ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
+              physics: const BouncingScrollPhysics(),
               children: [
                 /// AI TEXT BOX
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB).withOpacity(.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFF2563EB),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(color: const Color(0xFF2563EB).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 5)),
+                    ],
                   ),
-                  child: Text(aiText),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.auto_awesome_rounded, color: Color(0xFF60A5FA), size: 20),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          aiText,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            height: 1.6,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 32),
 
                 ...vehicles.map(buildVehicle),
               ],

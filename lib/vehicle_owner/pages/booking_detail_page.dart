@@ -46,208 +46,310 @@ class BookingDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         title: const Text(
-          "Booking Details",
-          style: TextStyle(color: Colors.white),
+          "Booking Timeline",
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE2E8F0),
+          ),
+        ),
       ),
-
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('bookings')
-            .doc(bookingId)
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('bookings').doc(bookingId).snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("Booking not found."));
           }
 
           var data = snapshot.data!.data() as Map<String, dynamic>;
           List updates = data["serviceUpdates"] ?? [];
+          String status = data['status'] ?? "pending";
 
-          return Column(
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+            physics: const BouncingScrollPhysics(),
             children: [
-              /// SCROLLABLE CONTENT
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
+              /// STATUS HEADER CARD
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
+                ),
+                child: Column(
                   children: [
-                    /// HEADER CARD
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 10,
-                            color: Colors.black.withOpacity(.05),
-                          ),
-                        ],
-                      ),
-
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          /// TITLE + STATUS
-                          Row(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  data['centerName'],
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              Text(
+                                data['centerName'] ?? "Service Center",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF2563EB),
+                                  letterSpacing: -0.5,
                                 ),
                               ),
-
-                              statusBadge(data['status']),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Booking ID: #${bookingId.substring(0, 8).toUpperCase()}",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
                             ],
                           ),
-
-                          const SizedBox(height: 10),
-
-                          Text("Service: ${data['categoryName']}"),
-                          Text("Vehicle: ${data['vehicleNumber']}"),
-
-                          const SizedBox(height: 6),
-
-                          Text(
-                            "Date: ${data['bookingDate'].toString().split("T")[0]}",
-                          ),
-                          Text("Slot: ${data['bookingSlot']}"),
-
-                          const SizedBox(height: 10),
-
-                          Text(
-                            "Complaint: ${data['complaint'] ?? "No complaint"}",
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
+                        ),
+                        statusBadge(status),
+                      ],
                     ),
-
-                    const SizedBox(height: 20),
-
-                    /// SECTION TITLE
-                    const Text(
-                      "Service Progress",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    /// TIMELINE
-                    updates.isEmpty
-                        ? Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(child: Text("No updates yet")),
-                          )
-                        : Column(
-                            children: List.generate(updates.length, (index) {
-                              var update = updates[index];
-
-                              Color color = statusColor(
-                                update["status"] ?? "pending",
-                              );
-
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  /// DOT + LINE
-                                  Column(
-                                    children: [
-                                      Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: color,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-
-                                      if (index != updates.length - 1)
-                                        Container(
-                                          width: 2,
-                                          height: 50,
-                                          color: Colors.grey.shade300,
-                                        ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(width: 12),
-
-                                  /// CONTENT
-                                  Expanded(
-                                    child: Container(
-                                      margin: const EdgeInsets.only(bottom: 16),
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            blurRadius: 6,
-                                            color: Colors.black.withOpacity(
-                                              .04,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            update["title"],
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-
-                                          const SizedBox(height: 4),
-
-                                          Text(update["description"]),
-
-                                          const SizedBox(height: 6),
-
-                                          Text(
-                                            update["status"]
-                                                .toString()
-                                                .toUpperCase(),
-                                            style: TextStyle(
-                                              color: color,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ),
+                    const SizedBox(height: 24),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    const SizedBox(height: 24),
+                    _detailRow(Icons.build_circle_rounded, "Service Type", data['categoryName'] ?? "General"),
+                    const SizedBox(height: 12),
+                    _detailRow(Icons.directions_car_rounded, "Vehicle", data['vehicleNumber'] ?? "N/A"),
+                    const SizedBox(height: 12),
+                    _detailRow(Icons.calendar_today_rounded, "Date & Time",
+                        "${data['bookingDate'].toString().split("T")[0]} • ${data['bookingSlot']}"),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 32),
+
+              /// SECTION TITLE
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2563EB),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    "Service Progress",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2563EB),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              /// TIMELINE
+              updates.isEmpty
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(vertical: 60),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFF1F5F9)),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.query_builder_rounded, size: 40, color: const Color(0xFFCBD5E1)),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Waiting for updates from center...",
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      children: List.generate(updates.length, (index) {
+                        var update = updates[index];
+                        String uStatus = update["status"] ?? "pending";
+                        Color color = statusColor(uStatus);
+                        bool isLast = index == updates.length - 1;
+
+                        return IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              /// DOT + LINE
+                              Column(
+                                children: [
+                                  Container(
+                                    width: 16,
+                                    height: 16,
+                                    decoration: BoxDecoration(
+                                      color: color.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: color, width: 3),
+                                    ),
+                                  ),
+                                  if (!isLast)
+                                    Expanded(
+                                      child: Container(
+                                        width: 2,
+                                        color: const Color(0xFFE2E8F0),
+                                      ),
+                                    ),
+                                ],
+                              ),
+
+                              const SizedBox(width: 20),
+
+                              /// CONTENT
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.02),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              update["title"] ?? "Update",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 15,
+                                                color: Color(0xFF2563EB),
+                                                letterSpacing: -0.3,
+                                              ),
+                                            ),
+                                            Text(
+                                              uStatus.toUpperCase(),
+                                              style: TextStyle(
+                                                color: color,
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 10,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          update["description"] ?? "",
+                                          style: const TextStyle(
+                                            color: Color(0xFF64748B),
+                                            fontSize: 13,
+                                            height: 1.5,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ),
+
+              if (data['complaint'] != null && data['complaint'].isNotEmpty) ...[
+                const SizedBox(height: 24),
+                const Text(
+                  "Reported Complaint",
+                  style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF2563EB), fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Text(
+                    data['complaint'],
+                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.5),
+                  ),
+                ),
+              ],
             ],
           );
         },
       ),
+    );
+  }
+
+  Widget _detailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
+        const SizedBox(width: 12),
+        Text(
+          "$label:",
+          style: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w600, fontSize: 13),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w700, fontSize: 13),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
     );
   }
 }

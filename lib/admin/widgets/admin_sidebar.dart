@@ -22,32 +22,50 @@ class AdminSidebar extends StatelessWidget {
     bool isSelected = selectedIndex == index;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF334155) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ).copyWith(
-          border: isSelected ? Border.all(color: Colors.white.withOpacity(0.1)) : null,
-        ),
-        child: ListTile(
-          dense: true,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          leading: Icon(
-            icon,
-            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-            size: 20,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: InkWell(
+        onTap: () => onItemSelected(index),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF3B82F6).withOpacity(0.15) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: isSelected
+                ? Border.all(color: const Color(0xFF3B82F6).withOpacity(0.3), width: 1)
+                : Border.all(color: Colors.transparent, width: 1),
           ),
-          title: Text(
-            title,
-            style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              fontSize: 14,
-            ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF94A3B8),
+                size: 20,
+              ),
+              const SizedBox(width: 16),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  fontSize: 14,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              if (isSelected) ...[
+                const Spacer(),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF3B82F6),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+            ],
           ),
-          onTap: () => onItemSelected(index),
         ),
       ),
     );
@@ -56,14 +74,14 @@ class AdminSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 280,
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E293B),
+      width: 300,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A), // Slightly darker navy for depth
         boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 15,
-            offset: Offset(4, 0),
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 30,
+            offset: const Offset(10, 0),
           ),
         ],
       ),
@@ -71,50 +89,61 @@ class AdminSidebar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// TOP LOGO / TITLE
-          const SizedBox(height: 50),
+          const SizedBox(height: 60),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.2)),
                   ),
                   child: const Icon(
-                    Icons.admin_panel_settings,
-                    color: Colors.white,
-                    size: 24,
+                    Icons.settings_suggest_rounded, // GEAR ICON
+                    color: Color(0xFF3B82F6),
+                    size: 28,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(height: 20),
                 const Text(
                   "GEAR UP",
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 1.2,
+                    letterSpacing: -1.0,
                     color: Colors.white,
+                  ),
+                ),
+                Text(
+                  "ADMIN PORTAL",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.0,
+                    color: const Color(0xFF3B82F6).withOpacity(0.8),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 60),
 
           /// SECTION LABEL
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
             child: Text(
-              "MAIN MENU",
+              "MANAGEMENT",
               style: TextStyle(
                 color: Color(0xFF475569),
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.1,
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2.0,
               ),
             ),
           ),
@@ -122,56 +151,57 @@ class AdminSidebar extends StatelessWidget {
           /// MENU ITEMS
           Expanded(
             child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  buildMenuItem(icon: Icons.dashboard_outlined, title: "Dashboard", index: 0),
+                  buildMenuItem(icon: Icons.grid_view_rounded, title: "Statistics", index: 0),
 
                   if (isSuperAdmin)
                     buildMenuItem(
-                      icon: Icons.verified_user_outlined,
+                      icon: Icons.verified_user_rounded,
                       title: "Approve Admins",
                       index: 1,
                     ),
 
                   buildMenuItem(
-                    icon: Icons.approval_outlined,
-                    title: "Approve Centers",
+                    icon: Icons.pending_actions_rounded,
+                    title: "Pending Centers",
                     index: 2,
                   ),
 
                   buildMenuItem(
-                    icon: Icons.check_circle_outline,
+                    icon: Icons.check_circle_rounded,
                     title: "Approved Centers",
                     index: 6,
                   ),
 
                   buildMenuItem(
-                    icon: Icons.highlight_off,
+                    icon: Icons.cancel_rounded,
                     title: "Rejected Centers",
                     index: 7,
                   ),
 
                   buildMenuItem(
-                    icon: Icons.block_outlined,
+                    icon: Icons.block_rounded,
                     title: "Blocked Centers",
                     index: 8,
                   ),
 
                   buildMenuItem(
-                    icon: Icons.build_circle_outlined,
+                    icon: Icons.category_rounded,
                     title: "Service Categories",
                     index: 3,
                   ),
 
                   buildMenuItem(
-                    icon: Icons.shopping_cart_outlined,
+                    icon: Icons.shopping_bag_rounded,
                     title: "Product Sales",
                     index: 4,
                   ),
 
                   buildMenuItem(
-                    icon: Icons.calendar_today_outlined,
-                    title: "View Bookings",
+                    icon: Icons.calendar_month_rounded,
+                    title: "All Bookings",
                     index: 5,
                   ),
                 ],
@@ -181,38 +211,38 @@ class AdminSidebar extends StatelessWidget {
 
           /// LOGOUT BUTTON
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.redAccent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.redAccent.withOpacity(0.1)),
               ),
               child: ListTile(
-                dense: true,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-                title: const Text(
-                  "Logout Session",
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
                 onTap: () async {
                   await FirebaseAuth.instance.signOut();
-
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (_) => const LoginPage()),
                     (route) => false,
                   );
                 },
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                leading: const Icon(Icons.power_settings_new_rounded, color: Colors.redAccent, size: 20),
+                title: const Text(
+                  "Sign Out",
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
         ],
       ),
     );

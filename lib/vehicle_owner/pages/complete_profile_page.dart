@@ -114,41 +114,48 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     }
   }
 
-  InputDecoration inputStyle(String label) {
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-    );
-  }
-
   Widget sectionCard({required String title, required List<Widget> children}) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.05)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
+        border: Border.all(color: const Color(0xFFF1F5F9)),
       ),
-
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2563EB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF2563EB),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
-
-          const SizedBox(height: 15),
-
+          const SizedBox(height: 24),
           ...children,
         ],
       ),
@@ -158,46 +165,59 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
+         elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         title: const Text(
-          "Complete Profile",
-          style: TextStyle(color: Colors.white),
+          "Complete Your Profile",
+          style: TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
         ),
       ),
-
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-
+        padding: const EdgeInsets.all(24),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
             /// PERSONAL
             sectionCard(
               title: "Personal Details",
               children: [
+                _buildLabel("FULL NAME"),
                 TextField(
                   controller: nameController,
-                  decoration: inputStyle("Full Name"),
+                  decoration: _inputDecoration("Enter your name", Icons.person_rounded),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
+                _buildLabel("PHONE NUMBER"),
                 TextField(
                   controller: phoneController,
-                  decoration: inputStyle("Phone"),
+                  decoration: _inputDecoration("Enter phone number", Icons.phone_rounded),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
+                _buildLabel("ADDRESS"),
                 TextField(
                   controller: addressController,
-                  decoration: inputStyle("Address"),
+                  decoration: _inputDecoration("Enter your address", Icons.location_on_rounded),
                 ),
-                const SizedBox(height: 10),
-
+                const SizedBox(height: 20),
+                _buildLabel("DISTRICT"),
                 DropdownButtonFormField<String>(
                   value: selectedDistrict,
-                  decoration: inputStyle("District"),
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
+                  decoration: _inputDecoration("Select District", Icons.map_rounded),
                   items: districts
-                      .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                      .map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14))))
                       .toList(),
                   onChanged: (v) => setState(() => selectedDistrict = v),
                 ),
@@ -208,62 +228,88 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             sectionCard(
               title: "Vehicle Details",
               children: [
+                _buildLabel("VEHICLE NUMBER"),
                 TextField(
                   controller: vehicleNumberController,
-                  decoration: inputStyle("Vehicle Number"),
+                  decoration: _inputDecoration("e.g. KL 01 AB 1234", Icons.numbers_rounded),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
+                _buildLabel("BRAND"),
                 TextField(
                   controller: brandController,
-                  decoration: inputStyle("Brand"),
+                  decoration: _inputDecoration("e.g. Honda", Icons.directions_car_rounded),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
+                _buildLabel("MODEL"),
                 TextField(
                   controller: modelController,
-                  decoration: inputStyle("Model"),
+                  decoration: _inputDecoration("e.g. Activa", Icons.model_training_rounded),
                 ),
-                const SizedBox(height: 10),
-
+                const SizedBox(height: 20),
+                _buildLabel("FUEL TYPE"),
                 DropdownButtonFormField<String>(
                   value: selectedFuelType,
-                  decoration: inputStyle("Fuel Type"),
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
+                  decoration: _inputDecoration("Select Fuel Type", Icons.local_gas_station_rounded),
                   items: const [
-                    DropdownMenuItem(value: "Petrol", child: Text("Petrol")),
-                    DropdownMenuItem(value: "Diesel", child: Text("Diesel")),
-                    DropdownMenuItem(
-                      value: "Electric",
-                      child: Text("Electric"),
-                    ),
-                    DropdownMenuItem(value: "Hybrid", child: Text("Hybrid")),
+                    DropdownMenuItem(value: "Petrol", child: Text("Petrol", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+                    DropdownMenuItem(value: "Diesel", child: Text("Diesel", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+                    DropdownMenuItem(value: "Electric", child: Text("Electric", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
+                    DropdownMenuItem(value: "Hybrid", child: Text("Hybrid", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14))),
                   ],
                   onChanged: (v) => setState(() => selectedFuelType = v),
                 ),
-
-                const SizedBox(height: 10),
-                TextField(
-                  controller: yearController,
-                  keyboardType: TextInputType.number,
-                  decoration: inputStyle("Year"),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel("YEAR"),
+                          TextField(
+                            controller: yearController,
+                            keyboardType: TextInputType.number,
+                            decoration: _inputDecoration("Year", Icons.calendar_month_rounded),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildLabel("MILEAGE"),
+                          TextField(
+                            controller: mileageController,
+                            keyboardType: TextInputType.number,
+                            decoration: _inputDecoration("Km", Icons.speed_rounded),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: mileageController,
-                  keyboardType: TextInputType.number,
-                  decoration: inputStyle("Mileage"),
-                ),
-
-                const SizedBox(height: 10),
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.black,
-                  ),
-                  onPressed: pickServiceDate,
-                  child: Text(
-                    lastServiceDate == null
-                        ? "Select Last Service Date"
-                        : lastServiceDate.toString().split(" ")[0],
+                const SizedBox(height: 24),
+                _buildLabel("LAST SERVICE DATE"),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                      foregroundColor: const Color(0xFF2563EB),
+                    ),
+                    onPressed: pickServiceDate,
+                    icon: const Icon(Icons.event_rounded, color: Color(0xFF2563EB), size: 20),
+                    label: Text(
+                      lastServiceDate == null
+                          ? "Select Date"
+                          : lastServiceDate.toString().split(" ")[0],
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
                   ),
                 ),
               ],
@@ -272,25 +318,64 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             /// SUBMIT
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 onPressed: isLoading ? null : submitProfile,
                 child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
                     : const Text(
-                        "Save Profile",
-                        style: TextStyle(color: Colors.white),
+                        "Complete Setup",
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 0.5),
                       ),
               ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF94A3B8),
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint, IconData icon) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon, color: const Color(0xFF94A3B8), size: 20),
+      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontSize: 14),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.all(18),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
       ),
     );
   }

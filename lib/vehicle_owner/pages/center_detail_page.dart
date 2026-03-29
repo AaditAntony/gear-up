@@ -16,105 +16,162 @@ class CenterDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         title: Text(
           centerData['companyName'] ?? "Service Center",
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: Color(0xFF2563EB),
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE2E8F0),
+          ),
+        ),
       ),
-
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// CENTER HEADER CARD
             Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(18),
-
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    blurRadius: 10,
-                    color: Colors.black.withOpacity(.05),
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
                 ],
+                border: Border.all(color: const Color(0xFFE2E8F0).withOpacity(0.5)),
               ),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// TITLE
-                  Text(
-                    centerData['companyName'] ?? "",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// LOCATION
                   Row(
                     children: [
-                      const Icon(
-                        Icons.location_on,
-                        size: 16,
-                        color: Colors.grey,
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.business_rounded,
+                          color: Color(0xFF2563EB),
+                          size: 28,
+                        ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 16),
                       Expanded(
-                        child: Text(
-                          "${centerData['location'] ?? ""}, ${centerData['district'] ?? ""}, ${centerData['state'] ?? ""}",
-                          style: const TextStyle(color: Colors.grey),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              centerData['companyName'] ?? "",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF2563EB),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    "${centerData['location'] ?? ""}, ${centerData['district'] ?? ""}",
+                                    style: const TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 24),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  const SizedBox(height: 24),
 
                   /// DESCRIPTION
+                  const Text(
+                    "About This Center",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2563EB),
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text(
-                    centerData['description'] ?? "",
-                    style: const TextStyle(height: 1.4),
+                    centerData['description'] ?? "No description available.",
+                    style: const TextStyle(
+                      color: Color(0xFF475569),
+                      fontSize: 14,
+                      height: 1.6,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
 
                   if (centerData['googleMapLink'] != null && centerData['googleMapLink'].toString().trim().isNotEmpty) ...[
-                    const SizedBox(height: 15),
-                    InkWell(
-                      onTap: () async {
-                        final url = Uri.parse(centerData['googleMapLink']);
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(url, mode: LaunchMode.externalApplication);
-                        } else {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Could not open map link')),
-                            );
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          final url = Uri.parse(centerData['googleMapLink']);
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Could not open map link')),
+                              );
+                            }
                           }
-                        }
-                      },
-                      child: Row(
-                        children: const [
-                          Icon(Icons.map, size: 18, color: Color(0xFF2563EB)),
-                          SizedBox(width: 8),
-                          Text(
-                            "View on Google Maps",
-                            style: TextStyle(
-                              color: Color(0xFF2563EB),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ],
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB).withOpacity(0.05),
+                          foregroundColor: const Color(0xFF2563EB),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        icon: const Icon(Icons.map_rounded, size: 20),
+                        label: const Text(
+                          "View on Google Maps",
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                        ),
                       ),
                     ),
                   ],
@@ -122,16 +179,34 @@ class CenterDetailPage extends StatelessWidget {
               ),
             ),
 
-            /// SERVICES TITLE
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                "Available Services",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            /// SERVICES SECTION
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2563EB),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    "Available Services",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2563EB),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
 
             /// SERVICES LIST
             StreamBuilder<QuerySnapshot>(
@@ -139,103 +214,98 @@ class CenterDetailPage extends StatelessWidget {
                   .collection('center_services')
                   .where('centerId', isEqualTo: centerId)
                   .snapshots(),
-
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(32),
+                    child: Center(
+                      child: Text(
+                        "No services linked to this center yet.",
+                        style: TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  );
                 }
 
                 var services = snapshot.data!.docs;
 
-                if (services.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text("No services available."),
-                  );
-                }
-
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   itemCount: services.length,
-
                   itemBuilder: (context, index) {
                     var service = services[index];
+                    var sData = service.data() as Map<String, dynamic>;
 
                     return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      padding: const EdgeInsets.all(14),
-
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 8,
-                            color: Colors.black.withOpacity(.05),
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
                         ],
+                        border: Border.all(color: const Color(0xFFF1F5F9)),
                       ),
-
                       child: Row(
                         children: [
-                          /// ICON
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2563EB).withOpacity(.15),
-                              borderRadius: BorderRadius.circular(10),
+                              color: const Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
                             ),
                             child: const Icon(
-                              Icons.build,
-                              color: Color(0xFF2563EB),
+                              Icons.build_circle_rounded,
+                              color: Color(0xFF64748B),
+                              size: 24,
                             ),
                           ),
-
-                          const SizedBox(width: 12),
-
-                          /// SERVICE INFO
+                          const SizedBox(width: 16),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  service['categoryName'],
+                                  sData['categoryName'] ?? "General Service",
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                    color: Color(0xFF2563EB),
                                   ),
                                 ),
-
                                 const SizedBox(height: 4),
-
                                 Text(
-                                  "₹ ${service['price']}",
+                                  "₹ ${sData['price']}",
                                   style: const TextStyle(
                                     color: Color(0xFF2563EB),
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-
-                          /// BOOK BUTTON
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF2563EB),
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
-                              ),
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -243,15 +313,17 @@ class CenterDetailPage extends StatelessWidget {
                                   builder: (_) => BookingPage(
                                     centerId: centerId,
                                     centerName: centerData['companyName'],
-                                    categoryId: service['categoryId'],
-                                    categoryName: service['categoryName'],
-                                    price: (service['price'] as num).toDouble(),
+                                    categoryId: sData['categoryId'],
+                                    categoryName: sData['categoryName'],
+                                    price: (sData['price'] as num).toDouble(),
                                   ),
                                 ),
                               );
                             },
-
-                            child: const Text("Book"),
+                            child: const Text(
+                              "Book Now",
+                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                            ),
                           ),
                         ],
                       ),
@@ -261,7 +333,7 @@ class CenterDetailPage extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 40),
           ],
         ),
       ),

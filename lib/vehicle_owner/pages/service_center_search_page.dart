@@ -22,37 +22,47 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF6FF),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2563EB),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: TextField(
-          controller: _searchController,
-          autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            hintText: "Search Service Center...",
-            hintStyle: TextStyle(color: Colors.white70),
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            setState(() {
-              _searchQuery = value.trim();
-            });
-          },
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
         ),
-        actions: [
-          if (_searchQuery.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.clear, color: Colors.white),
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _searchQuery = "";
-                });
-              },
+        title: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: TextField(
+            controller: _searchController,
+            autofocus: true,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
+            decoration: InputDecoration(
+              hintText: "Search for centers...",
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+              prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF64748B), size: 20),
+              suffixIcon: _searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 20),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchQuery = "");
+                      },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-        ],
+            onChanged: (value) => setState(() => _searchQuery = value.trim()),
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -65,15 +75,9 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                "No service centers available.",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
+            return _emptyState("No service centers available.");
           }
 
-          // Filter data locally for case-insensitive search
           var centers = snapshot.data!.docs.where((doc) {
             var data = doc.data() as Map<String, dynamic>;
             var companyName = (data['companyName'] ?? "").toString().toLowerCase();
@@ -81,134 +85,120 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
           }).toList();
 
           if (centers.isEmpty) {
-            return const Center(
-              child: Text(
-                "No service centers found matching your search.",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
+            return _emptyState("No results found for \"$_searchQuery\"");
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
+            physics: const BouncingScrollPhysics(),
             itemCount: centers.length,
             itemBuilder: (context, index) {
               var doc = centers[index];
               var data = doc.data() as Map<String, dynamic>;
-
               double rating = (data['avgRating'] ?? 0).toDouble();
-              int totalRatings = (data['totalRatings'] ?? 0);
+              int reviews = (data['totalRatings'] ?? 0);
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
                       blurRadius: 10,
-                      color: Colors.black.withOpacity(.05),
+                      offset: const Offset(0, 4),
                     ),
                   ],
+                  border: Border.all(color: const Color(0xFFF1F5F9)),
                 ),
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(24),
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => CenterDetailPage(
-                          centerId: doc.id,
-                          centerData: data,
-                        ),
+                        builder: (_) => CenterDetailPage(centerId: doc.id, centerData: data),
                       ),
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        /// HEADER
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2563EB).withOpacity(.15),
-                                borderRadius: BorderRadius.circular(10),
+                                color: const Color(0xFF2563EB).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: const Icon(
-                                Icons.store,
-                                color: Color(0xFF2563EB),
-                              ),
+                              child: const Icon(Icons.business_rounded, color: Color(0xFF2563EB), size: 24),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 16),
                             Expanded(
-                              child: Text(
-                                data['companyName'] ?? "Service Center",
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    data['companyName'] ?? "Service Center",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF2563EB),
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        rating.toStringAsFixed(1),
+                                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "($reviews reviews)",
+                                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            const Icon(
-                              Icons.arrow_forward_ios,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
+                            const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        /// RATING
+                        const SizedBox(height: 20),
+                        const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        const SizedBox(height: 20),
                         Row(
                           children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "($totalRatings reviews)",
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        /// LOCATION
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
+                            const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                "${data['location'] ?? ""}, ${data['district'] ?? ""}, ${data['state'] ?? ""}",
-                                style: const TextStyle(color: Colors.grey),
+                                "${data['location'] ?? ""}, ${data['district'] ?? ""}",
+                                style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        /// DESCRIPTION
-                        Text(
-                          data['description'] ?? "",
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(height: 1.4),
-                        ),
+                        if (data['description'] != null && data['description'].toString().isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            data['description'],
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, height: 1.5),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -217,6 +207,31 @@ class _ServiceCenterSearchPageState extends State<ServiceCenterSearchPage> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _emptyState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 20,
+              )
+            ]),
+            child: const Icon(Icons.search_off_rounded, size: 64, color: Color(0xFFCBD5E1)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            message,
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }
