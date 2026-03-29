@@ -14,11 +14,21 @@ class VehicleSearchPage extends StatefulWidget {
 class _VehicleSearchPageState extends State<VehicleSearchPage> {
   final TextEditingController searchController = TextEditingController();
   String searchQuery = "";
+  late Stream<QuerySnapshot> _bookingsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    String centerId = FirebaseAuth.instance.currentUser!.uid;
+    _bookingsStream = FirebaseFirestore.instance
+        .collection('bookings')
+        .where('centerId', isEqualTo: centerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
-    String centerId = FirebaseAuth.instance.currentUser!.uid;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -70,12 +80,17 @@ class _VehicleSearchPageState extends State<VehicleSearchPage> {
         /// RESULTS
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('bookings')
-                .where('centerId', isEqualTo: centerId)
-                .orderBy('createdAt', descending: true)
-                .snapshots(),
+            stream: _bookingsStream,
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                // This will print the specific Firestore index link to the debug console
+                print("FIRESTORE ERROR: ${snapshot.error}");
+
+                return _buildEmptyState(
+                  "Error loading records: ${snapshot.error}",
+                );
+              }
+
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
@@ -86,13 +101,23 @@ class _VehicleSearchPageState extends State<VehicleSearchPage> {
                 );
               }
 
-              var allBookings = snapshot.data!.docs;
+              var allBookings = snapshot.data!.docs.toList();
+
+              // Sort manually to avoid indexing issues
+              allBookings.sort((a, b) {
+                var tA = a.data() as Map<String, dynamic>;
+                var tB = b.data() as Map<String, dynamic>;
+                Timestamp timeA = tA['createdAt'] ?? Timestamp.now();
+                Timestamp timeB = tB['createdAt'] ?? Timestamp.now();
+                return timeB.compareTo(timeA);
+              });
 
               // Filter logic
               var filteredBookings = allBookings.where((doc) {
                 if (searchQuery.isEmpty) return false;
 
-                String vNum = (doc['vehicleNumber'] ?? "")
+                var data = doc.data() as Map<String, dynamic>;
+                String vNum = (data['vehicleNumber'] ?? "")
                     .toString()
                     .replaceAll(" ", "")
                     .toUpperCase();
@@ -103,13 +128,13 @@ class _VehicleSearchPageState extends State<VehicleSearchPage> {
 
               if (searchQuery.isEmpty) {
                 return _buildEmptyState(
-                  "Start typing to search for a vehicle's history.",
+                  "Start typing to search for a vehicle's history.\n(${allBookings.length} total records found for this center)",
                 );
               }
 
               if (filteredBookings.isEmpty) {
                 return _buildEmptyState(
-                  "No history found for '$searchQuery' at this center.\nTry checking the plate number format.",
+                  "No history found matching '$searchQuery'.\n(Searching through ${allBookings.length} total records for your center)",
                 );
               }
 
