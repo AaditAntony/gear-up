@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:gear_up/service-center/widgets/service_theme.dart';
 import '../auth/login_page.dart';
 
 class CenterRegisterPage extends StatefulWidget {
@@ -65,6 +66,8 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
         isLoading = false;
       });
 
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Registration successful. Waiting for admin approval."),
@@ -104,134 +107,188 @@ class _CenterRegisterPageState extends State<CenterRegisterPage> {
     }
   }
 
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(
+          color: ServiceTheme.textSecondary, fontWeight: FontWeight.w500),
+      prefixIcon: Icon(icon, color: ServiceTheme.accent),
+      filled: true,
+      fillColor: ServiceTheme.background.withOpacity(0.5),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: ServiceTheme.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: ServiceTheme.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: ServiceTheme.accent, width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF7ED),
-
-      body: Center(
-        child: Container(
-          width: 460,
-          padding: const EdgeInsets.all(30),
-
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(.08)),
-            ],
+      backgroundColor: ServiceTheme.background,
+      body: Stack(
+        children: [
+          /// DECORATIVE BLOBS
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                color: ServiceTheme.primary.withOpacity(0.04),
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
-
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.build_circle,
-                size: 50,
-                color: Color(0xFFF97316),
-              ),
-
-              const SizedBox(height: 10),
-
-              const Text(
-                "Service Center Registration",
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 25),
-
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: "Company Name",
-                  prefixIcon: const Icon(Icons.business),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+          
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Container(
+                width: 480,
+                padding: const EdgeInsets.all(40),
+                decoration: ServiceTheme.cardDecoration.copyWith(
+                  boxShadow: ServiceTheme.cardShadow,
                 ),
-              ),
-
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  prefixIcon: const Icon(Icons.lock),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: "Confirm Password",
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    /// GEAR ICON
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: ServiceTheme.accent.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.settings_suggest_rounded, // Premium Gear Icon
+                        size: 56,
+                        color: ServiceTheme.accent,
+                      ),
                     ),
-                  ),
 
-                  onPressed: isLoading ? null : registerCenter,
+                    const SizedBox(height: 24),
 
-                  icon: const Icon(Icons.app_registration),
+                    const Text(
+                      "Join the Network",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: ServiceTheme.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const Text(
+                      "Service Center Enrollment",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: ServiceTheme.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
 
-                  label: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          "Register",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 40),
+
+                    TextField(
+                      controller: nameController,
+                      decoration: _inputDecoration("Company Name", Icons.business_rounded),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: emailController,
+                      decoration: _inputDecoration("Email Address", Icons.email_rounded),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: _inputDecoration("Password", Icons.lock_rounded),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: true,
+                      decoration: _inputDecoration("Confirm Password", Icons.lock_outline_rounded),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: Container(
+                        decoration: ServiceTheme.accentButtonDecoration,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.transparent,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+
+                          onPressed: isLoading ? null : registerCenter,
+
+                          icon: const Icon(Icons.arrow_forward_rounded),
+
+                          label: isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  "Create Account",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                         ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Already part of the network?",
+                          style: TextStyle(color: ServiceTheme.textSecondary, fontSize: 13),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "Sign In",
+                            style: TextStyle(
+                              color: ServiceTheme.accent,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 15),
-
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.arrow_back),
-                label: const Text("Back to Login"),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
