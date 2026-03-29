@@ -22,20 +22,29 @@ class AdminSidebar extends StatelessWidget {
     bool isSelected = selectedIndex == index;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      child: Material(
-        color: isSelected ? const Color(0xFF334155) : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF334155) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ).copyWith(
+          border: isSelected ? Border.all(color: Colors.white.withOpacity(0.1)) : null,
+        ),
         child: ListTile(
+          dense: true,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           leading: Icon(
             icon,
-            color: isSelected ? Colors.white : Colors.grey[300],
+            color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+            size: 20,
           ),
           title: Text(
             title,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[300],
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              fontSize: 14,
             ),
           ),
           onTap: () => onItemSelected(index),
@@ -47,25 +56,46 @@ class AdminSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 260,
-      color: const Color(0xFF1E293B),
+      width: 280,
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E293B),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 15,
+            offset: Offset(4, 0),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// TOP LOGO / TITLE
-          const SizedBox(height: 40),
+          const SizedBox(height: 50),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [
-                Icon(Icons.admin_panel_settings, color: Colors.white),
-                SizedBox(width: 10),
-                Text(
-                  "Admin Panel",
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.admin_panel_settings,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Text(
+                  "GEAR UP",
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
                     color: Colors.white,
                   ),
                 ),
@@ -75,73 +105,98 @@ class AdminSidebar extends StatelessWidget {
 
           const SizedBox(height: 40),
 
-          /// MENU ITEMS
-          buildMenuItem(icon: Icons.dashboard, title: "Dashboard", index: 0),
-
-          if (isSuperAdmin)
-            buildMenuItem(
-              icon: Icons.verified_user,
-              title: "Approve Admins",
-              index: 1,
+          /// SECTION LABEL
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+            child: Text(
+              "MAIN MENU",
+              style: TextStyle(
+                color: Color(0xFF475569),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.1,
+              ),
             ),
-
-          buildMenuItem(
-            icon: Icons.approval,
-            title: "Approve Centers",
-            index: 2,
           ),
 
-          buildMenuItem(
-            icon: Icons.check_circle_outline,
-            title: "Approved Centers",
-            index: 6,
-          ),
+          /// MENU ITEMS
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  buildMenuItem(icon: Icons.dashboard_outlined, title: "Dashboard", index: 0),
 
-          buildMenuItem(
-            icon: Icons.highlight_off,
-            title: "Rejected Centers",
-            index: 7,
-          ),
+                  if (isSuperAdmin)
+                    buildMenuItem(
+                      icon: Icons.verified_user_outlined,
+                      title: "Approve Admins",
+                      index: 1,
+                    ),
 
-          buildMenuItem(
-            icon: Icons.block,
-            title: "Blocked Centers",
-            index: 8,
-          ),
+                  buildMenuItem(
+                    icon: Icons.approval_outlined,
+                    title: "Approve Centers",
+                    index: 2,
+                  ),
 
-          buildMenuItem(
-            icon: Icons.build,
-            title: "Service Categories",
-            index: 3,
-          ),
+                  buildMenuItem(
+                    icon: Icons.check_circle_outline,
+                    title: "Approved Centers",
+                    index: 6,
+                  ),
 
-          buildMenuItem(
-            icon: Icons.shopping_cart,
-            title: "Product Sales",
-            index: 4,
-          ),
+                  buildMenuItem(
+                    icon: Icons.highlight_off,
+                    title: "Rejected Centers",
+                    index: 7,
+                  ),
 
-          buildMenuItem(
-            icon: Icons.calendar_month,
-            title: "View Bookings",
-            index: 5,
-          ),
+                  buildMenuItem(
+                    icon: Icons.block_outlined,
+                    title: "Blocked Centers",
+                    index: 8,
+                  ),
 
-          const Spacer(),
+                  buildMenuItem(
+                    icon: Icons.build_circle_outlined,
+                    title: "Service Categories",
+                    index: 3,
+                  ),
+
+                  buildMenuItem(
+                    icon: Icons.shopping_cart_outlined,
+                    title: "Product Sales",
+                    index: 4,
+                  ),
+
+                  buildMenuItem(
+                    icon: Icons.calendar_today_outlined,
+                    title: "View Bookings",
+                    index: 5,
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           /// LOGOUT BUTTON
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.all(20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.redAccent),
+                dense: true,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
                 title: const Text(
-                  "Logout",
+                  "Logout Session",
                   style: TextStyle(
                     color: Colors.redAccent,
                     fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
                 onTap: () async {
@@ -157,7 +212,7 @@ class AdminSidebar extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 10),
         ],
       ),
     );

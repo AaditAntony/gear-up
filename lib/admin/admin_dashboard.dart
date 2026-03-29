@@ -80,7 +80,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Row(
         children: [
           /// SIDEBAR
@@ -102,41 +102,59 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 Container(
                   height: 70,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  decoration: const BoxDecoration(color: Color(0xFF1E293B)),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
                         "Admin Dashboard",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
+                          color: Color(0xFF1E293B),
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
 
                       Row(
                         children: [
-                          const Icon(
-                            Icons.admin_panel_settings,
-                            color: Colors.white,
-                          ),
-
-                          const SizedBox(width: 10),
-
-                          Text(
-                            isSuperAdmin ? "Super Admin" : "Admin",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B).withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.admin_panel_settings,
+                                  color: Color(0xFF1E293B),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isSuperAdmin ? "Super Admin" : "Admin",
+                                  style: const TextStyle(
+                                    color: Color(0xFF1E293B),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
 
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 16),
 
                           IconButton(
                             icon: const Icon(Icons.logout),
-                            color: Colors.white,
+                            color: Colors.redAccent,
                             onPressed: () async {
                               await FirebaseAuth.instance.signOut();
                             },
@@ -149,24 +167,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
                 /// PAGE CONTENT
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: getSelectedPage(),
-                    ),
-                  ),
+                  child: getSelectedPage(),
                 ),
               ],
             ),

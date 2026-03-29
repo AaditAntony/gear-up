@@ -22,23 +22,35 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
 
   Widget infoTile(IconData icon, String title, String value) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xfff8fafc),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blueGrey, size: 20),
-          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6).withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: const Color(0xFF3B82F6), size: 18),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF94A3B8),
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -46,6 +58,7 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
+                    color: Color(0xFF1E293B),
                   ),
                 ),
               ],
@@ -58,25 +71,42 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
 
   Widget imagePreview(String title, String base64Image) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          Row(
+            children: [
+              const Icon(Icons.description_rounded, size: 18, color: Color(0xFF64748B)),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
             child: Image.memory(
               base64Decode(base64Image),
-              height: 200,
+              height: 220,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -88,34 +118,71 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
 
   Widget sectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.only(bottom: 16, top: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 18,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B82F6),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget statusChip(String status) {
     Color color = Colors.orange;
+    IconData icon = Icons.hourglass_empty_rounded;
 
-    if (status == "approved") color = Colors.green;
-    if (status == "rejected") color = Colors.red;
-    if (status == "blocked") color = Colors.grey;
+    if (status == "approved") {
+      color = Colors.green;
+      icon = Icons.check_circle_rounded;
+    }
+    if (status == "rejected") {
+      color = Colors.red;
+      icon = Icons.cancel_rounded;
+    }
+    if (status == "blocked") {
+      color = Colors.grey;
+      icon = Icons.block_rounded;
+    }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(.15),
-        borderRadius: BorderRadius.circular(20),
+        color: color.withOpacity(.1),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
-      child: Text(
-        status.toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 8),
+          Text(
+            status.toUpperCase(),
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -123,13 +190,24 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6fb),
-
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text("Service Center Application Review"),
+        title: const Text(
+          "Review Application",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: const Color(0xFFE2E8F0), height: 1),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
             .collection('service_center_details')
@@ -148,236 +226,201 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
           String status = data['status'] ?? "pending";
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(30),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(40),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// HEADER
+                /// HEADER CARD
                 Container(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        blurRadius: 10,
-                        color: Colors.black.withOpacity(.05),
+                        blurRadius: 20,
+                        color: Colors.black.withOpacity(.03),
+                        offset: const Offset(0, 10),
                       ),
                     ],
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(18),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(.1),
-                          borderRadius: BorderRadius.circular(10),
+                          color: const Color(0xFF3B82F6).withOpacity(.1),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(
-                          Icons.store,
-                          color: Colors.blue,
-                          size: 28,
+                          Icons.store_rounded,
+                          color: Color(0xFF3B82F6),
+                          size: 40,
                         ),
                       ),
-
-                      const SizedBox(width: 16),
-
+                      const SizedBox(width: 24),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              data['companyName'] ?? "",
+                              data['companyName'] ?? "N/A",
                               style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1E293B),
+                                letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Experience: ${data['experienceYears']} Years",
-                              style: const TextStyle(color: Colors.grey),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.history_rounded, size: 16, color: Color(0xFF64748B)),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "${data['experienceYears']} Years Experience",
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-
                       statusChip(status),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
 
-                /// MAIN LAYOUT
+                /// CONTENT GRID
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// LEFT SIDE INFO
+                    /// LEFT COLUMN
                     Expanded(
                       flex: 2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          sectionTitle("Owner Details"),
-
+                          sectionTitle("Owner Information"),
                           GridView.count(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 3.3,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 3.5,
                             children: [
-                              infoTile(
-                                Icons.person,
-                                "Owner",
-                                data['ownerName'] ?? "",
-                              ),
-                              infoTile(
-                                Icons.email,
-                                "Email",
-                                data['email'] ?? "",
-                              ),
-                              infoTile(
-                                Icons.phone,
-                                "Phone",
-                                data['phone'] ?? "",
-                              ),
-                              infoTile(
-                                Icons.phone_android,
-                                "Alt Phone",
-                                data['alternatePhone'] ?? "",
-                              ),
+                              infoTile(Icons.person_rounded, "FULL NAME", data['ownerName'] ?? ""),
+                              infoTile(Icons.email_rounded, "EMAIL ADDRESS", data['email'] ?? ""),
+                              infoTile(Icons.phone_rounded, "PRIMARY PHONE", data['phone'] ?? ""),
+                              infoTile(Icons.phone_android_rounded, "ALTERNATE PHONE", data['alternatePhone'] ?? ""),
                             ],
                           ),
 
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 32),
 
-                          sectionTitle("Location"),
-
+                          sectionTitle("Business & Location"),
                           GridView.count(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 3.3,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 3.5,
                             children: [
-                              infoTile(
-                                Icons.location_on,
-                                "Address",
-                                data['location'] ?? "",
-                              ),
-                              infoTile(
-                                Icons.map,
-                                "District",
-                                data['district'] ?? "",
-                              ),
-                              infoTile(
-                                Icons.flag,
-                                "State",
-                                data['state'] ?? "",
-                              ),
-                              infoTile(
-                                Icons.pin_drop,
-                                "Pincode",
-                                data['pincode'] ?? "",
-                              ),
+                              infoTile(Icons.location_on_rounded, "LOCATION", data['location'] ?? ""),
+                              infoTile(Icons.map_rounded, "DISTRICT", data['district'] ?? ""),
+                              infoTile(Icons.public_rounded, "STATE", data['state'] ?? ""),
+                              infoTile(Icons.pin_drop_rounded, "PINCODE", data['pincode'] ?? ""),
                             ],
                           ),
 
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 16),
+                          infoTile(Icons.badge_rounded, "GST REGISTRATION NUMBER", data['gstNumber'] ?? ""),
 
-                          sectionTitle("Business Information"),
+                          const SizedBox(height: 32),
 
-                          infoTile(
-                            Icons.receipt,
-                            "GST Number",
-                            data['gstNumber'] ?? "",
-                          ),
-
-                          const SizedBox(height: 15),
-
+                          sectionTitle("Description"),
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: const Color(0xfff8fafc),
-                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
                             ),
-                            child: Text(data['description'] ?? ""),
+                            child: Text(
+                              data['description'] ?? "No description provided.",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                color: Color(0xFF475569),
+                                height: 1.6,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(width: 25),
+                    const SizedBox(width: 32),
 
-                    /// RIGHT SIDE DOCUMENTS
+                    /// RIGHT COLUMN
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          sectionTitle("Verification Documents"),
                           imagePreview("Business License", data['image1']),
-                          const SizedBox(height: 20),
-                          imagePreview("Workshop Image", data['image2']),
+                          const SizedBox(height: 24),
+                          imagePreview("Workshop / Facility", data['image2']),
                         ],
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 35),
+                const SizedBox(height: 48),
 
-                /// ACTION BUTTON BAR
+                /// ACTION BAR
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        blurRadius: 10,
-                        color: Colors.black.withOpacity(.05),
+                        blurRadius: 15,
+                        color: Colors.black.withOpacity(.04),
+                        offset: const Offset(0, -4),
                       ),
                     ],
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                      const Icon(Icons.gavel_rounded, color: Color(0xFF64748B)),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Text(
+                          "Decide on this application after reviewing all provided documents.",
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w500,
                           ),
-                          onPressed: () => updateStatus(context, "approved"),
-                          child: const Text("Approve"),
                         ),
                       ),
-
-                      const SizedBox(width: 15),
-
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () => updateStatus(context, "rejected"),
-                          child: const Text("Reject"),
-                        ),
-                      ),
-
-                      const SizedBox(width: 15),
-
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () => updateStatus(context, "blocked"),
-                          child: const Text("Block"),
-                        ),
-                      ),
+                      _actionButton("Approve", Colors.green, () => updateStatus(context, "approved")),
+                      const SizedBox(width: 12),
+                      _actionButton("Reject", Colors.orange, () => updateStatus(context, "rejected")),
+                      const SizedBox(width: 12),
+                      _actionButton("Block", Colors.red, () => updateStatus(context, "blocked")),
                     ],
                   ),
                 ),
@@ -385,6 +428,23 @@ class ViewServiceCenterDetailPage extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _actionButton(String label, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+      ),
+      onPressed: onPressed,
+      child: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
       ),
     );
   }
