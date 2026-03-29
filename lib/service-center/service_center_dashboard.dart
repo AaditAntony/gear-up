@@ -8,6 +8,7 @@ import 'widgets/service_center_sidebar.dart';
 import 'pages/center_home_page.dart';
 import 'pages/add_services_page.dart';
 import 'pages/my_bookings_page.dart';
+import 'pages/vehicle_search_page.dart';
 
 class ServiceCenterDashboard extends StatefulWidget {
   const ServiceCenterDashboard({super.key});
@@ -33,6 +34,8 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
         return const SalesDashboardPage();
       case 5:
         return const CenterProfilePage();
+      case 6:
+        return const VehicleSearchPage();
       default:
         return const ServiceHomePage();
     }
@@ -52,6 +55,8 @@ class _ServiceCenterDashboardState extends State<ServiceCenterDashboard> {
         return "Performance Metrics";
       case 5:
         return "Center Profile";
+      case 6:
+        return "Vehicle Lookup";
       default:
         return "Dashboard";
     }
