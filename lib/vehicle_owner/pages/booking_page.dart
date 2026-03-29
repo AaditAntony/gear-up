@@ -29,6 +29,7 @@ class _BookingPageState extends State<BookingPage> {
   String? selectedVehicleNumber;
   String? selectedComplaint;
   bool isLoading = false;
+  List<String> bookedSlots = [];
 
   final List<String> slots = [
     "09:00 AM",
@@ -39,6 +40,11 @@ class _BookingPageState extends State<BookingPage> {
     "03:00 PM",
     "04:00 PM",
     "05:00 PM",
+    "06:00 PM",
+    "07:00 PM",
+    "08:00 PM",
+    "09:00 PM",
+    "10:00 PM",
   ];
 
   final List<String> complaints = [
@@ -53,20 +59,102 @@ class _BookingPageState extends State<BookingPage> {
     "Oil Leakage",
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    DateTime now = DateTime.now();
+    selectedDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ); // Normalize to midnight
+    fetchBookedSlots();
+  }
+
   Future<void> pickDate() async {
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
+      initialDate: selectedDate ?? today,
+      firstDate: today,
+      lastDate: today.add(const Duration(days: 30)),
     );
 
     if (picked != null) {
       setState(() {
-        selectedDate = picked;
+        selectedDate = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+        ); // Normalize
         selectedSlot = null;
+        bookedSlots = []; // Reset until fetched
       });
+      fetchBookedSlots();
     }
+  }
+
+  Future<void> fetchBookedSlots() async {
+    if (selectedDate == null) return;
+
+    try {
+      String dateStr = selectedDate!.toIso8601String();
+      var snapshot = await FirebaseFirestore.instance
+          .collection('bookings')
+          .where('centerId', isEqualTo: widget.centerId)
+          .where('bookingDate', isEqualTo: dateStr)
+          .get();
+
+      setState(() {
+        bookedSlots = snapshot.docs
+            .map((doc) => doc['bookingSlot'] as String)
+            .toList();
+      });
+    } catch (e) {
+      debugPrint("Error fetching slots: $e");
+    }
+  }
+
+  bool _isSlotSelectable(String slot) {
+    // 1. Check if slot is already booked
+    if (bookedSlots.contains(slot)) return false;
+
+    // 2. Check if slot is in the past for today
+    if (selectedDate != null) {
+      DateTime now = DateTime.now();
+      DateTime today = DateTime(now.year, now.month, now.day);
+      DateTime selected = DateTime(
+        selectedDate!.year,
+        selectedDate!.month,
+        selectedDate!.day,
+      );
+
+      if (selected.isAtSameMomentAs(today)) {
+        // Parse slot time (e.g., "09:00 AM")
+        int hour = int.parse(slot.split(":")[0]);
+        int minute = int.parse(slot.split(":")[1].split(" ")[0]);
+        String period = slot.split(" ")[1];
+
+        if (period == "PM" && hour != 12) hour += 12;
+        if (period == "AM" && hour == 12) hour = 0;
+
+        DateTime slotTime = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          minute,
+        );
+
+        // If current time is 12:00, cannot book 12:00 PM or before
+        // The user said: "if the time is 12 in the computer i cannot boot the appointment before 12 and n 12"
+        // This means slotTime must be > now
+        return slotTime.isAfter(now);
+      }
+    }
+
+    return true;
   }
 
   Future<void> createBooking() async {
@@ -84,75 +172,65 @@ class _BookingPageState extends State<BookingPage> {
       setState(() => isLoading = true);
 
       String uid = FirebaseAuth.instance.currentUser!.uid;
-      String date = selectedDate!.toIso8601String();
+      String dateStr = selectedDate!.toIso8601String();
 
-      var centerCheck = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('centerId', isEqualTo: widget.centerId)
-          .where('bookingDate', isEqualTo: date)
-          .where('bookingSlot', isEqualTo: selectedSlot)
-          .get();
+      await FirebaseFirestore.instance.runTransaction((transaction) async {
+        // 1. Check if center already has this slot booked
+        var centerCheck = await FirebaseFirestore.instance
+            .collection('bookings')
+            .where('centerId', isEqualTo: widget.centerId)
+            .where('bookingDate', isEqualTo: dateStr)
+            .where('bookingSlot', isEqualTo: selectedSlot)
+            .get();
 
-      if (centerCheck.docs.isNotEmpty) {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "This service center already has a booking in this slot",
-            ),
-          ),
-        );
-        return;
-      }
+        if (centerCheck.docs.isNotEmpty) {
+          throw Exception("This slot was just taken by someone else!");
+        }
 
-      var userCheck = await FirebaseFirestore.instance
-          .collection('bookings')
-          .where('userId', isEqualTo: uid)
-          .where('bookingDate', isEqualTo: date)
-          .where('bookingSlot', isEqualTo: selectedSlot)
-          .get();
+        // 2. Check if user already has this slot booked for another vehicle
+        var userCheck = await FirebaseFirestore.instance
+            .collection('bookings')
+            .where('userId', isEqualTo: uid)
+            .where('bookingDate', isEqualTo: dateStr)
+            .where('bookingSlot', isEqualTo: selectedSlot)
+            .get();
 
-      if (userCheck.docs.isNotEmpty) {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "You already have another vehicle booked at this time",
-            ),
-          ),
-        );
-        return;
-      }
+        if (userCheck.docs.isNotEmpty) {
+          throw Exception(
+            "You already have another vehicle booked at this time",
+          );
+        }
 
-      await FirebaseFirestore.instance.collection('bookings').add({
-        'userId': uid,
-        'centerId': widget.centerId,
-        'centerName': widget.centerName,
-        'categoryId': widget.categoryId,
-        'categoryName': widget.categoryName,
-        'vehicleId': selectedVehicleId,
-        'vehicleNumber': selectedVehicleNumber,
-        'bookingDate': date,
-        'bookingSlot': selectedSlot,
-        'price': widget.price,
-        'complaint': selectedComplaint,
-        'status': 'pending',
-        'createdAt': Timestamp.now(),
+        // 3. Create the booking
+        transaction
+            .set(FirebaseFirestore.instance.collection('bookings').doc(), {
+              'userId': uid,
+              'centerId': widget.centerId,
+              'centerName': widget.centerName,
+              'categoryId': widget.categoryId,
+              'categoryName': widget.categoryName,
+              'vehicleId': selectedVehicleId,
+              'vehicleNumber': selectedVehicleNumber,
+              'bookingDate': dateStr,
+              'bookingSlot': selectedSlot,
+              'price': widget.price,
+              'complaint': selectedComplaint,
+              'status': 'pending',
+              'createdAt': Timestamp.now(),
+            });
       });
 
       setState(() => isLoading = false);
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Booking created successfully")),
       );
-
       Navigator.pop(context);
     } catch (e) {
       setState(() => isLoading = false);
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Booking failed")));
+      String msg = e.toString().contains("Exception:")
+          ? e.toString().split("Exception:")[1].trim()
+          : "Booking failed";
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 
@@ -194,14 +272,15 @@ class _BookingPageState extends State<BookingPage> {
         ),
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF2563EB), size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF2563EB),
+            size: 18,
+          ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: const Color(0xFFE2E8F0),
-          ),
+          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
         ),
       ),
       body: Column(
@@ -295,16 +374,24 @@ class _BookingPageState extends State<BookingPage> {
 
                     return DropdownButtonFormField<String>(
                       value: selectedVehicleId,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
-                      decoration: _inputDecoration(Icons.directions_car_rounded, "Select vehicle from garage"),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2563EB),
+                      ),
+                      decoration: _inputDecoration(
+                        Icons.directions_car_rounded,
+                        "Select vehicle from garage",
+                      ),
                       items: vehicles.map((doc) {
                         return DropdownMenuItem(
                           value: doc.id,
-                          onTap: () => selectedVehicleNumber = doc['vehicleNumber'],
+                          onTap: () =>
+                              selectedVehicleNumber = doc['vehicleNumber'],
                           child: Text(doc['vehicleNumber']),
                         );
                       }).toList(),
-                      onChanged: (value) => setState(() => selectedVehicleId = value),
+                      onChanged: (value) =>
+                          setState(() => selectedVehicleId = value),
                     );
                   },
                 ),
@@ -315,12 +402,19 @@ class _BookingPageState extends State<BookingPage> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: selectedComplaint,
-                  style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF2563EB)),
-                  decoration: _inputDecoration(Icons.report_problem_rounded, "What's wrong with the vehicle?"),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2563EB),
+                  ),
+                  decoration: _inputDecoration(
+                    Icons.report_problem_rounded,
+                    "What's wrong with the vehicle?",
+                  ),
                   items: complaints.map((c) {
                     return DropdownMenuItem(value: c, child: Text(c));
                   }).toList(),
-                  onChanged: (value) => setState(() => selectedComplaint = value),
+                  onChanged: (value) =>
+                      setState(() => selectedComplaint = value),
                 ),
 
                 const SizedBox(height: 24),
@@ -334,21 +428,35 @@ class _BookingPageState extends State<BookingPage> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                        width: 1.5,
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today_rounded, color: Color(0xFF64748B), size: 18),
+                        const Icon(
+                          Icons.calendar_today_rounded,
+                          color: Color(0xFF64748B),
+                          size: 18,
+                        ),
                         const SizedBox(width: 12),
                         Text(
-                          selectedDate == null ? "Pick a preferred date" : selectedDate.toString().split(" ")[0],
+                          selectedDate == null
+                              ? "Pick a preferred date"
+                              : selectedDate.toString().split(" ")[0],
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: selectedDate == null ? const Color(0xFF94A3B8) : const Color(0xFF2563EB),
+                            color: selectedDate == null
+                                ? const Color(0xFF94A3B8)
+                                : const Color(0xFF2563EB),
                           ),
                         ),
                         const Spacer(),
-                        const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF64748B)),
+                        const Icon(
+                          Icons.arrow_drop_down_rounded,
+                          color: Color(0xFF64748B),
+                        ),
                       ],
                     ),
                   ),
@@ -363,34 +471,60 @@ class _BookingPageState extends State<BookingPage> {
                   runSpacing: 12,
                   children: slots.map((slot) {
                     bool isSelected = selectedSlot == slot;
+                    bool isSelectable = _isSlotSelectable(slot);
+
                     return InkWell(
-                      onTap: () => setState(() => selectedSlot = slot),
+                      onTap: isSelectable
+                          ? () => setState(() => selectedSlot = slot)
+                          : null,
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF2563EB) : Colors.white,
+                          color: isSelected
+                              ? const Color(0xFF2563EB)
+                              : isSelectable
+                              ? Colors.white
+                              : const Color(
+                                  0xFFF1F5F9,
+                                ), // Light grey for disabled
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                            color: isSelected
+                                ? const Color(0xFF2563EB)
+                                : isSelectable
+                                ? const Color(0xFFE2E8F0)
+                                : const Color(0xFFE2E8F0),
                             width: 1.5,
                           ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFF2563EB).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF2563EB,
+                                    ).withOpacity(0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
-                                  )
+                                  ),
                                 ]
                               : [],
                         ),
                         child: Text(
                           slot,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : const Color(0xFF475569),
+                            color: isSelected
+                                ? Colors.white
+                                : isSelectable
+                                ? const Color(0xFF475569)
+                                : const Color(0xFF94A3B8), // Muted for disabled
                             fontWeight: FontWeight.w700,
                             fontSize: 13,
+                            decoration: isSelectable
+                                ? null
+                                : TextDecoration.lineThrough,
                           ),
                         ),
                       ),
@@ -403,7 +537,12 @@ class _BookingPageState extends State<BookingPage> {
 
           /// BOTTOM ACTION
           Container(
-            padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 16),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              16,
+              24,
+              MediaQuery.of(context).padding.bottom + 16,
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -422,14 +561,27 @@ class _BookingPageState extends State<BookingPage> {
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 onPressed: isLoading ? null : createBooking,
                 child: isLoading
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
                     : const Text(
                         "Confirm Service Booking",
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 0.5),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                        ),
                       ),
               ),
             ),
@@ -450,7 +602,11 @@ class _BookingPageState extends State<BookingPage> {
           ),
           child: Text(
             "$step",
-            style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w900, fontSize: 11),
+            style: const TextStyle(
+              color: Color(0xFF2563EB),
+              fontWeight: FontWeight.w900,
+              fontSize: 11,
+            ),
           ),
         ),
         const SizedBox(width: 10),
@@ -470,7 +626,11 @@ class _BookingPageState extends State<BookingPage> {
   InputDecoration _inputDecoration(IconData icon, String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500, fontSize: 14),
+      hintStyle: const TextStyle(
+        color: Color(0xFF94A3B8),
+        fontWeight: FontWeight.w500,
+        fontSize: 14,
+      ),
       prefixIcon: Icon(icon, color: const Color(0xFF64748B), size: 18),
       filled: true,
       fillColor: Colors.white,
